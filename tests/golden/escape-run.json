@@ -1,0 +1,78 @@
+{
+  "_note": "Run north into the wall at (4,9), sidestep east, run north through the gap to (5,5), run back south to (5,11), dash west then south onto the entrance. Escapes at the end of tick 159.",
+  "simVersion": 1,
+  "seed": 55021,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_rooms",
+    "version": 1,
+    "vaultLevel": 1,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 13
+    },
+    "_map": [
+      "#########",
+      "#...#...#",
+      "#...#...#",
+      "#.......#",
+      "###.#####",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#####.###",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "####E####"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAEAAAABAQAAAAEAAAABAQAAAAAAAAABAQEBAAEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQEAAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+    "entrance": [
+      4,
+      12
+    ],
+    "objects": []
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "RunStart",
+      "dir": "N"
+    },
+    {
+      "tick": 30,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 35,
+      "type": "RunStart",
+      "dir": "N"
+    },
+    {
+      "tick": 80,
+      "type": "RunStop"
+    },
+    {
+      "tick": 90,
+      "type": "RunStart",
+      "dir": "S"
+    },
+    {
+      "tick": 150,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 155,
+      "type": "Dash",
+      "dir": "S"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 160,
+    "hash": "017b5395fd449588"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "_note": "Run north through the door, across the pit and onto the ice (all walkable in M1), then a tiptoe dash west and a decoy, and never come back. Times out at 1800 ticks.",
+  "simVersion": 1,
+  "seed": 99120,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_hazards",
+    "version": 1,
+    "vaultLevel": 1,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 13
+    },
+    "_map": [
+      "#########",
+      "#.~~~~~.#",
+      "#.~...~.#",
+      "#.~.O.~.#",
+      "#.......#",
+      "####D####",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "####E####"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAEBAQEBAABAQAEAAAABAABAQAEAAMABAABAQAAAAAAAAABAQEBAQIBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+    "entrance": [
+      4,
+      12
+    ],
+    "objects": [
+      {
+        "id": 7,
+        "type": "treasure",
+        "x": 4,
+        "y": 2,
+        "value": 250
+      },
+      {
+        "id": 2,
+        "type": "drip_pipe",
+        "x": 6,
+        "y": 8,
+        "rot": 1,
+        "cycle": 45,
+        "offset": 10
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "RunStart",
+      "dir": "N"
+    },
+    {
+      "tick": 120,
+      "type": "TiptoeOn"
+    },
+    {
+      "tick": 130,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 140,
+      "type": "Decoy"
+    },
+    {
+      "tick": 141,
+      "type": "RunStop"
+    }
+  ],
+  "expected": {
+    "outcome": "TimedOut",
+    "ticks": 1800,
+    "hash": "bcda0f0b15d17c92"
+  }
+}

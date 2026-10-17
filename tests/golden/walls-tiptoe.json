@@ -1,0 +1,125 @@
+{
+  "_note": "Dash into a wall, run into a wall, tiptoe dashes west and north, decoy, run north into a wall, run south into a wall, then dash east and south onto the entrance. Escapes at the end of tick 79. Stores its log as base64 (readable copy in _commands).",
+  "simVersion": 1,
+  "seed": 7,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_maze",
+    "version": 1,
+    "vaultLevel": 1,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 13
+    },
+    "_map": [
+      "#########",
+      "#.......#",
+      "#.##.##.#",
+      "#.......#",
+      "#.#####.#",
+      "#...#...#",
+      "#.#.#.#.#",
+      "#.#...#.#",
+      "#.#####.#",
+      "#.......#",
+      "###.#.###",
+      "#.......#",
+      "####E####"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQABAQABAQABAQAAAAAAAAABAQABAQEBAQABAQAAAAEAAAABAQABAAEAAQABAQABAAAAAQABAQABAQEBAQABAQAAAAAAAAABAQEBAAEAAQEBAQAAAAAAAAABAQEBAQABAQEB",
+    "entrance": [
+      4,
+      12
+    ],
+    "objects": [
+      {
+        "id": 3,
+        "type": "treasure",
+        "x": 4,
+        "y": 6,
+        "value": 400
+      },
+      {
+        "id": 1,
+        "type": "night_owl",
+        "x": 1,
+        "y": 3,
+        "patrol": [
+          [
+            1,
+            3
+          ],
+          [
+            7,
+            3
+          ],
+          [
+            7,
+            1
+          ]
+        ]
+      }
+    ]
+  },
+  "_commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 1,
+      "type": "RunStart",
+      "dir": "N"
+    },
+    {
+      "tick": 12,
+      "type": "TiptoeOn"
+    },
+    {
+      "tick": 13,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 23,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 33,
+      "type": "Decoy"
+    },
+    {
+      "tick": 34,
+      "type": "TiptoeOff"
+    },
+    {
+      "tick": 35,
+      "type": "RunStart",
+      "dir": "N"
+    },
+    {
+      "tick": 50,
+      "type": "RunStart",
+      "dir": "S"
+    },
+    {
+      "tick": 70,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 75,
+      "type": "Dash",
+      "dir": "S"
+    }
+  ],
+  "log": "AAgBAQsDARgKAAoFAQQBAQ8RFAgFEA==",
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 80,
+    "hash": "c4a03009f40ededd"
+  }
+}
