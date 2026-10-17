@@ -3,9 +3,9 @@ using System;
 namespace Wick.Sim
 {
     /// <summary>
-    /// Reads the vault JSON document (tech-design "Data model") into a validated VaultDef.
-    /// The server parses client-supplied vaults with this, so every rule the sim relies on
-    /// is checked here.
+    /// Reads the vault JSON document (tech-design "Data model") into a VaultDef. Checks what the
+    /// sim needs to run safely (structure, bounds, ids, trap timing); design rules for
+    /// player-built vaults are VaultValidator's job, and anything a player builds must pass both.
     /// </summary>
     public static class VaultJson
     {
@@ -85,9 +85,9 @@ namespace Wick.Sim
                 hoard,
                 root.GetString("theme", "crypt"));
 
-            if (!vault.InBounds(entrance) || !vault.IsWalkable(entrance))
+            if (!vault.InBounds(entrance))
             {
-                throw new FormatException("Entrance " + entrance + " must be an in-bounds walkable tile");
+                throw new FormatException("Entrance " + entrance + " is out of bounds");
             }
 
             for (int i = 0; i < vault.ObjectCount; i++)
@@ -112,48 +112,6 @@ namespace Wick.Sim
                 throw new FormatException(what + " is out of bounds at " + o.Pos);
             }
 
-            bool onWall = vault.TileAt(o.Pos) == TileType.Wall;
-            if (o.Type == ObjectType.Brazier)
-            {
-                if (!onWall)
-                {
-                    throw new FormatException(what + " must be on a wall tile");
-                }
-
-                bool reachable = false;
-                for (int d = 0; d < 4; d++)
-                {
-                    reachable |= vault.IsWalkable(o.Pos.Step((Dir)d));
-                }
-
-                if (!reachable)
-                {
-                    throw new FormatException(what + " has no walkable tile next to it");
-                }
-
-                return;
-            }
-
-            if (onWall)
-            {
-                throw new FormatException(what + " cannot be on a wall tile");
-            }
-
-            for (int i = 0; i < vault.ObjectCount; i++)
-            {
-                ObjectDef other = vault.GetObject(i);
-                bool crateInvolved = o.Type == ObjectType.Crate || other.Type == ObjectType.Crate;
-                if (other.Id != o.Id && other.Pos == o.Pos && crateInvolved)
-                {
-                    throw new FormatException(what + " shares its tile with a crate");
-                }
-            }
-
-            if ((o.Type == ObjectType.Crate || o.Type == ObjectType.SnufferBell) && o.Pos == vault.Entrance)
-            {
-                throw new FormatException(what + " cannot be on the entrance");
-            }
-
             if (ObjectTypes.IsTimedTrap(o.Type))
             {
                 int min = ObjectTypes.MinCycle(o.Type);
@@ -172,9 +130,9 @@ namespace Wick.Sim
             {
                 foreach (TilePos p in o.Patrol)
                 {
-                    if (!vault.IsWalkable(p))
+                    if (!vault.InBounds(p))
                     {
-                        throw new FormatException(what + " has a patrol point on a blocked tile " + p);
+                        throw new FormatException(what + " has a patrol point out of bounds " + p);
                     }
                 }
             }

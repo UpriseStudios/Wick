@@ -36,8 +36,8 @@ VAULTS = {
         {"id": 1, "type": "drip_pipe", "x": 3, "y": 9, "cycle": 45},
         {"id": 2, "type": "spike_floor", "x": 4, "y": 5, "cycle": 60, "offset": 20},
         {"id": 3, "type": "spike_floor", "x": 3, "y": 7, "cycle": 70},
-        {"id": 4, "type": "treasure", "x": 4, "y": 2, "value": 300},
-        {"id": 5, "type": "treasure", "x": 1, "y": 1, "value": 150},
+        {"id": 4, "type": "treasure", "x": 4, "y": 2, "value": 100},
+        {"id": 5, "type": "treasure", "x": 1, "y": 1, "value": 100},
         {"id": 6, "type": "brazier", "x": 0, "y": 6},
     ], level=1, hoard=[1, 1, 7, 3]),
 
@@ -61,8 +61,8 @@ VAULTS = {
         {"id": 2, "type": "bellows", "x": 1, "y": 10, "rot": 1, "cycle": 75},
         {"id": 3, "type": "crate", "x": 5, "y": 10},  # on the gust row: (6,10) and (7,10) are sheltered
         {"id": 4, "type": "crate", "x": 2, "y": 9},
-        {"id": 5, "type": "treasure", "x": 2, "y": 2, "value": 250},
-        {"id": 6, "type": "treasure", "x": 6, "y": 2, "value": 250},
+        {"id": 5, "type": "treasure", "x": 2, "y": 2, "value": 200},
+        {"id": 6, "type": "treasure", "x": 6, "y": 2, "value": 200},
         {"id": 7, "type": "treasure", "x": 4, "y": 1, "value": 200},
         {"id": 8, "type": "brazier", "x": 8, "y": 10},
     ], level=2, hoard=[1, 1, 7, 3]),
@@ -88,8 +88,8 @@ VAULTS = {
         {"id": 3, "type": "snuffer_bell", "x": 7, "y": 9},
         {"id": 4, "type": "drip_pipe", "x": 7, "y": 6, "cycle": 40, "offset": 15},
         {"id": 5, "type": "treasure", "x": 5, "y": 1, "value": 300},
-        {"id": 6, "type": "treasure", "x": 7, "y": 2, "value": 200},
-        {"id": 7, "type": "treasure", "x": 1, "y": 1, "value": 100},
+        {"id": 6, "type": "treasure", "x": 7, "y": 2, "value": 300},
+        {"id": 7, "type": "treasure", "x": 1, "y": 1, "value": 300},
         {"id": 8, "type": "brazier", "x": 0, "y": 5},
     ], level=3, hoard=[4, 1, 7, 2]),
 }

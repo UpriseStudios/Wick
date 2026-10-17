@@ -67,14 +67,14 @@
       "type": "treasure",
       "x": 7,
       "y": 2,
-      "value": 200
+      "value": 300
     },
     {
       "id": 7,
       "type": "treasure",
       "x": 1,
       "y": 1,
-      "value": 100
+      "value": 300
     },
     {
       "id": 8,

@@ -99,12 +99,18 @@ namespace Wick.Sim.Tests
         }
 
         [Test]
-        public void RejectsEntranceOnWallOrOutOfBounds()
+        public void RejectsEntranceOutOfBounds()
         {
-            string onWall = TestVaults.Json(new[] { "E#" }).Replace("\"entrance\":[0,0]", "\"entrance\":[1,0]");
             string outside = TestVaults.Json(new[] { "E#" }).Replace("\"entrance\":[0,0]", "\"entrance\":[5,0]");
-            Assert.Throws<FormatException>(() => VaultJson.Parse(onWall));
             Assert.Throws<FormatException>(() => VaultJson.Parse(outside));
+        }
+
+        [Test]
+        public void DesignRules_AreLeftToTheValidator()
+        {
+            // A treasure on a wall parses (the sim runs safely); VaultValidator reports it.
+            VaultDef v = WithObjects("[{\"id\":1,\"type\":\"treasure\",\"x\":0,\"y\":0,\"value\":5}]");
+            Assert.AreEqual(1, v.ObjectCount);
         }
 
         [Test]
@@ -173,19 +179,13 @@ namespace Wick.Sim.Tests
         }
 
         [TestCase("[{\"id\":1,\"type\":\"dragon\",\"x\":1,\"y\":1}]", TestName = "UnknownType")]
-        [TestCase("[{\"id\":1,\"type\":\"treasure\",\"x\":0,\"y\":0,\"value\":5}]", TestName = "TreasureOnWall")]
         [TestCase("[{\"id\":1,\"type\":\"treasure\",\"x\":1,\"y\":1,\"value\":0}]", TestName = "TreasureNoValue")]
-        [TestCase("[{\"id\":1,\"type\":\"brazier\",\"x\":2,\"y\":1}]", TestName = "BrazierOnFloor")]
-        [TestCase("[{\"id\":1,\"type\":\"brazier\",\"x\":0,\"y\":0}]", TestName = "BrazierUnreachable")]
         [TestCase("[{\"id\":1,\"type\":\"drip_pipe\",\"x\":1,\"y\":1,\"cycle\":6}]", TestName = "DripCycleTooShort")]
         [TestCase("[{\"id\":1,\"type\":\"spike_floor\",\"x\":1,\"y\":1,\"cycle\":35}]", TestName = "SpikeCycleTooShort")]
         [TestCase("[{\"id\":1,\"type\":\"bellows\",\"x\":1,\"y\":1,\"cycle\":30,\"offset\":30}]", TestName = "OffsetNotBelowCycle")]
         [TestCase("[{\"id\":1,\"type\":\"bellows\",\"x\":1,\"y\":1,\"cycle\":30,\"rot\":4}]", TestName = "BadRot")]
-        [TestCase("[{\"id\":1,\"type\":\"night_owl\",\"x\":2,\"y\":1,\"patrol\":[[2,1],[2,0]]}]", TestName = "PatrolIntoWall")]
-        [TestCase("[{\"id\":1,\"type\":\"crate\",\"x\":1,\"y\":2}]", TestName = "CrateOnEntrance")]
-        [TestCase("[{\"id\":1,\"type\":\"snuffer_bell\",\"x\":1,\"y\":2}]", TestName = "BellOnEntrance")]
-        [TestCase("[{\"id\":1,\"type\":\"crate\",\"x\":2,\"y\":1},{\"id\":2,\"type\":\"treasure\",\"x\":2,\"y\":1,\"value\":5}]", TestName = "TreasureUnderCrate")]
-        [TestCase("[{\"id\":1,\"type\":\"crate\",\"x\":2,\"y\":1},{\"id\":2,\"type\":\"night_owl\",\"x\":3,\"y\":1,\"patrol\":[[2,1]]}]", TestName = "PatrolIntoCrate")]
+        [TestCase("[{\"id\":1,\"type\":\"night_owl\",\"x\":2,\"y\":1,\"patrol\":[[2,1],[9,9]]}]", TestName = "PatrolOutOfBounds")]
+        [TestCase("[{\"id\":1,\"type\":\"crate\",\"x\":7,\"y\":1}]", TestName = "ObjectOutOfBounds")]
         public void RejectsInvalidObjects(string objects)
         {
             Assert.Throws<FormatException>(() => WithObjects(objects));

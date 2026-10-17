@@ -79,14 +79,14 @@
       "type": "treasure",
       "x": 2,
       "y": 2,
-      "value": 250
+      "value": 200
     },
     {
       "id": 6,
       "type": "treasure",
       "x": 6,
       "y": 2,
-      "value": 250
+      "value": 200
     },
     {
       "id": 7,
