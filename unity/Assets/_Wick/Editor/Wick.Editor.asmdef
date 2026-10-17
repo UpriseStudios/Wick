@@ -1,0 +1,19 @@
+{
+    "name": "Wick.Editor",
+    "rootNamespace": "Wick.Editor",
+    "references": [
+        "Wick.Sim",
+        "Wick.Game"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

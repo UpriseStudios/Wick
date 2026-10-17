@@ -1,0 +1,16 @@
+{
+    "name": "Wick.Services",
+    "rootNamespace": "Wick.Services",
+    "references": [
+        "Wick.Sim"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
