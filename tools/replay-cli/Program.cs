@@ -59,15 +59,18 @@ namespace Wick.ReplayCli
             }
 
             RaidResult r = RaidRunner.RunToEnd(raid.Vault, raid.Seed, raid.Log);
-            string line = name + ": outcome=" + r.Outcome + " ticks=" + r.Ticks + " hash=" + r.HashHex;
+            string line = name + ": outcome=" + r.Outcome + " ticks=" + r.Ticks + " stars=" + r.Stars +
+                " loot=" + r.Loot + " hash=" + r.HashHex;
 
             int code = 0;
             if (raid.HasExpected)
             {
-                bool ok = r.Outcome == raid.ExpectedOutcome && r.Ticks == raid.ExpectedTicks && r.HashHex == raid.ExpectedHash;
+                bool ok = raid.Matches(r);
                 line += ok
                     ? "  OK"
                     : "  MISMATCH (expected outcome=" + raid.ExpectedOutcome + " ticks=" + raid.ExpectedTicks +
+                      (raid.ExpectedStars != null ? " stars=" + raid.ExpectedStars : "") +
+                      (raid.ExpectedLoot != null ? " loot=" + raid.ExpectedLoot : "") +
                       " hash=" + raid.ExpectedHash + ")";
                 code = ok ? 0 : 1;
             }

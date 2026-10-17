@@ -120,6 +120,13 @@
   "expected": {
     "outcome": "Escaped",
     "ticks": 80,
-    "hash": "1858fd41510eea7d"
+    "hash": "1858fd41510eea7d",
+    "stars": 1,
+    "loot": 0
+  },
+  "expectedEvents": {
+    "GuardianAlerted": [],
+    "FlickerLost": [],
+    "TreasureTaken": []
   }
 }

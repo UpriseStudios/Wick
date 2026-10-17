@@ -38,7 +38,66 @@ namespace Wick.Sim.Tests
             RaidResult r = RaidRunner.RunToEnd(raid.Vault, raid.Seed, raid.Log);
             Assert.AreEqual(raid.ExpectedOutcome, r.Outcome, "outcome");
             Assert.AreEqual(raid.ExpectedTicks, r.Ticks, "ticks");
+            if (raid.ExpectedStars != null)
+            {
+                Assert.AreEqual(raid.ExpectedStars, r.Stars, "stars");
+            }
+
+            if (raid.ExpectedLoot != null)
+            {
+                Assert.AreEqual(raid.ExpectedLoot, r.Loot, "loot");
+            }
+
             Assert.AreEqual(raid.ExpectedHash, r.HashHex, "hash");
+        }
+
+        /// <summary>
+        /// Optional "expectedEvents": { "FlickerLost": [14, 60], "GuardianAlerted": [] }. For each
+        /// listed type, the ticks it fires on must match exactly (hand-worked in the file's _note).
+        /// </summary>
+        [TestCaseSource(nameof(GoldenFiles))]
+        public void ListedEventsFireOnTheirTicks(string file)
+        {
+            RaidFile raid = Load(file);
+            JsonNode expected = raid.Root.Find("expectedEvents");
+            if (expected == null)
+            {
+                Assert.Pass("no expectedEvents");
+            }
+
+            var ticks = new List<int>[Enum.GetValues(typeof(SimEventType)).Length];
+            for (int i = 0; i < ticks.Length; i++)
+            {
+                ticks[i] = new List<int>();
+            }
+
+            var sim = new RaidSim(raid.Vault, raid.Seed, raid.Log);
+            while (!sim.IsOver)
+            {
+                int tick = sim.State.Tick;
+                sim.Step();
+                foreach (SimEvent e in sim.Events)
+                {
+                    ticks[(int)e.Type].Add(tick);
+                }
+            }
+
+            foreach (SimEventType type in Enum.GetValues(typeof(SimEventType)))
+            {
+                JsonNode list = expected.Find(type.ToString());
+                if (list == null)
+                {
+                    continue;
+                }
+
+                var want = new int[list.Count];
+                for (int i = 0; i < want.Length; i++)
+                {
+                    want[i] = list[i].AsInt();
+                }
+
+                CollectionAssert.AreEqual(want, ticks[(int)type], type + " ticks");
+            }
         }
 
         [TestCaseSource(nameof(GoldenFiles))]

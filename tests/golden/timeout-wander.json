@@ -78,6 +78,14 @@
   "expected": {
     "outcome": "TimedOut",
     "ticks": 1800,
-    "hash": "88315777104e1da8"
+    "hash": "c82bc80d644e674e",
+    "stars": 2,
+    "loot": 0
+  },
+  "expectedEvents": {
+    "TreasureTaken": [
+      94
+    ],
+    "FlickerLost": []
   }
 }

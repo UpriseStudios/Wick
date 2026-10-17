@@ -12,12 +12,23 @@ namespace Wick.Sim
         /// <summary>Running hash at each fold, to pinpoint a mismatch to a one-second window.</summary>
         public readonly ulong[] Checkpoints;
 
-        public RaidResult(Outcome outcome, int ticks, ulong finalHash, ulong[] checkpoints)
+        /// <summary>0-3, see Scoring.Stars.</summary>
+        public readonly int Stars;
+
+        /// <summary>Treasure value kept: carried value if Wick escaped, otherwise 0.</summary>
+        public readonly int Loot;
+
+        public readonly int Flickers;
+
+        public RaidResult(Outcome outcome, int ticks, ulong finalHash, ulong[] checkpoints, int stars, int loot, int flickers)
         {
             Outcome = outcome;
             Ticks = ticks;
             FinalHash = finalHash;
             Checkpoints = checkpoints;
+            Stars = stars;
+            Loot = loot;
+            Flickers = flickers;
         }
 
         public string HashHex => FormatHash(FinalHash);

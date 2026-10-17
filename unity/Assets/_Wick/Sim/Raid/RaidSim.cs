@@ -119,7 +119,8 @@ namespace Wick.Sim
 
         public RaidResult GetResult()
         {
-            return new RaidResult(State.Outcome, State.Tick, State.Hash.Value, State.Checkpoints.ToArray());
+            return new RaidResult(State.Outcome, State.Tick, State.Hash.Value, State.Checkpoints.ToArray(),
+                Scoring.Stars(_vault, State), Scoring.Loot(State), State.Wick.Flickers);
         }
 
         // ---- 1. Inputs -------------------------------------------------------------------
@@ -208,14 +209,8 @@ namespace Wick.Sim
                 return;
             }
 
-            // TODO M2: carried treasure slows Wick; ice tiles slide.
-            int speed = w.MoveIsRun ? SimTuning.RunSpeed : SimTuning.DashSpeed;
-            if (w.Tiptoe)
-            {
-                speed /= SimTuning.TiptoeSpeedDivisor;
-            }
-
-            w.Progress += speed;
+            // Ice tiles are plain floor in the vertical slice (Ice Tiles trap is Vault Level 3).
+            w.Progress += WickSpeed(in w);
             if (w.Progress < SubTile.PerTile)
             {
                 return;

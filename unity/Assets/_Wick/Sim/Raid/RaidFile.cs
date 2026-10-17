@@ -5,13 +5,16 @@ namespace Wick.Sim
     /// <summary>
     /// A replayable raid on disk (golden replays, replay-cli):
     /// { "simVersion", "seed", "vault": {vault JSON}, "log": base64 | "commands": [{tick,type,dir}],
-    ///   "expected": { "outcome", "ticks", "hash" } (optional) }.
+    ///   "expected": { "outcome", "ticks", "hash", "stars"?, "loot"? } (optional) }.
     /// </summary>
     public sealed class RaidFile
     {
         private RaidFile(JsonNode root, int simVersion, int seed, VaultDef vault, InputLog log,
-            bool hasExpected, Outcome expectedOutcome, int expectedTicks, string expectedHash)
+            bool hasExpected, Outcome expectedOutcome, int expectedTicks, string expectedHash,
+            int? expectedStars = null, int? expectedLoot = null)
         {
+            ExpectedStars = expectedStars;
+            ExpectedLoot = expectedLoot;
             Root = root;
             SimVersion = simVersion;
             Seed = seed;
@@ -37,6 +40,22 @@ namespace Wick.Sim
         /// <summary>Expected final hash as 16 lowercase hex digits.</summary>
         public string ExpectedHash { get; }
 
+        /// <summary>Expected stars and loot, when the file states them.</summary>
+        public int? ExpectedStars { get; }
+
+        public int? ExpectedLoot { get; }
+
+        /// <summary>Whether a result matches every expectation this file states.</summary>
+        public bool Matches(RaidResult r)
+        {
+            return HasExpected
+                && r.Outcome == ExpectedOutcome
+                && r.Ticks == ExpectedTicks
+                && r.HashHex == ExpectedHash
+                && (ExpectedStars == null || r.Stars == ExpectedStars)
+                && (ExpectedLoot == null || r.Loot == ExpectedLoot);
+        }
+
         public static RaidFile Parse(string json)
         {
             JsonNode root = JsonReader.Parse(json);
@@ -57,8 +76,12 @@ namespace Wick.Sim
                 throw new FormatException("expected.hash must be 16 hex digits");
             }
 
+            JsonNode stars = expected.Find("stars");
+            JsonNode loot = expected.Find("loot");
             return new RaidFile(root, simVersion, seed, vault, log, true,
-                ParseOutcome(expected.GetString("outcome")), expected.GetInt("ticks"), hash);
+                ParseOutcome(expected.GetString("outcome")), expected.GetInt("ticks"), hash,
+                stars == null ? (int?)null : stars.AsInt(),
+                loot == null ? (int?)null : loot.AsInt());
         }
 
         private static InputLog ReadLog(JsonNode root)
