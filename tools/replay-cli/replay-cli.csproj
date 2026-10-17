@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>replay-cli</AssemblyName>
+    <RootNamespace>Wick.ReplayCli</RootNamespace>
+    <!-- Match Unity's compiler so sim code that builds here also builds in Unity. -->
+    <LangVersion>9.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Sim is linked, never copied: one source for Unity, server and tools. -->
+    <Compile Include="../../unity/Assets/_Wick/Sim/**/*.cs" LinkBase="Sim" />
+  </ItemGroup>
+
+</Project>
