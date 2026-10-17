@@ -1,0 +1,126 @@
+{
+  "_note": "Bellows at (7,9) facing west, cycle 60: gusts on ticks 0-14, 60-74, 120-134 along row 9 until the crate at (3,9). Runs north and stops on (4,9) (occupied from tick 24): the tick-60 gust hits and dims him. Goes round via row 10 to shelter at (2,9) behind the crate (arrives tick 80); the tick-120 gust misses. Home on tick 164.",
+  "simVersion": 3,
+  "seed": 4102,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_bellows",
+    "version": 1,
+    "vaultLevel": 3,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 13
+    },
+    "_map": [
+      "#########",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "####E####"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+    "entrance": [
+      4,
+      12
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "bellows",
+        "x": 7,
+        "y": 9,
+        "rot": 3,
+        "cycle": 60
+      },
+      {
+        "id": 2,
+        "type": "crate",
+        "x": 3,
+        "y": 9
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "RunStart",
+      "dir": "N"
+    },
+    {
+      "tick": 25,
+      "type": "RunStop"
+    },
+    {
+      "tick": 61,
+      "type": "Dash",
+      "dir": "S"
+    },
+    {
+      "tick": 66,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 71,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 76,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 140,
+      "type": "Dash",
+      "dir": "S"
+    },
+    {
+      "tick": 145,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 150,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 155,
+      "type": "Dash",
+      "dir": "S"
+    },
+    {
+      "tick": 160,
+      "type": "Dash",
+      "dir": "S"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 165,
+    "stars": 0,
+    "loot": 0,
+    "hash": "2d796ddcfe3848d0"
+  },
+  "expectedEvents": {
+    "TrapFired": [
+      0,
+      60,
+      120
+    ],
+    "NearMiss": [],
+    "FlickerLost": [
+      60
+    ]
+  }
+}

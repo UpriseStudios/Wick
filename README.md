@@ -63,10 +63,11 @@ Unity EditMode tests: in the Editor, use **Window > General > Test Runner > Edit
 The same `Sim.Tests` source runs in both, including the golden replays in
 `tests/golden/`, so both sides must produce identical hashes.
 
-Replay CLI: re-simulates raid files and prints outcome, ticks and hash, plus
-`OK`/`MISMATCH` when the file has an `expected` block. Exit code 0 = all OK,
-1 = mismatch, 2 = load error. Add `--checkpoints` to print the hash for every
-second, to find where two runs diverge.
+Replay CLI: re-simulates raid files and prints outcome, ticks, stars, loot and
+hash, plus `OK`/`MISMATCH` when the file has an `expected` block. Exit code
+0 = all OK, 1 = mismatch, 2 = load error. Add `--checkpoints` to print the hash
+for every second (to find where two runs diverge) and `--events` to print every
+sim event with its tick.
 
 ```
 dotnet run --project tools/replay-cli -- tests/golden/*.json
@@ -76,9 +77,13 @@ dotnet run --project tools/replay-cli -- tests/golden/*.json
 
 Each file in `tests/golden/` holds a vault (with a readable `_map` next to the
 base64 `tiles`), a seed, the input log (readable `commands`, or base64 `log`)
-and the expected outcome, ticks and hash. Any sim rule change bumps
-`SimInfo.Version`; re-record goldens deliberately: check the outcome and ticks
-are still what you intend, then update `simVersion` and `hash` from replay-cli.
+and the expected outcome, ticks, stars, loot and hash. An optional
+`expectedEvents` block pins the ticks of key events (for example
+`"FlickerLost": [64]`); the `_note` explains how they were worked out. Any sim
+rule change bumps `SimInfo.Version`; re-record goldens deliberately: check the
+outcome, ticks and events are still what you intend, then update `simVersion`
+and `hash` from replay-cli. The fuzz test's corpus hash in `FuzzTests.cs` is
+re-recorded the same way.
 
 ## CI
 

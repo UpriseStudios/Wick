@@ -1,0 +1,137 @@
+{
+  "_note": "Hoard is rows 1-2. Runs up column 3; the Drip Pipe at (3,5) (ticks 60-65) catches him on tick 64. Reaches the hoard, takes the 300 pile at (3,1) on tick 104 (now 10% slower), relights at the wall brazier above (4,1) on tick 113 and takes the 200 pile at (5,1) on tick 119 (20% slower). Runs home through the drip's gap and escapes with 3 flickers: 3 stars, 500 loot.",
+  "simVersion": 3,
+  "seed": 4105,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_heist",
+    "version": 1,
+    "vaultLevel": 3,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 13
+    },
+    "_map": [
+      "#########",
+      "#.......#",
+      "#.......#",
+      "###.#####",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "####E####"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQEBAAEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+    "entrance": [
+      4,
+      12
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "drip_pipe",
+        "x": 3,
+        "y": 5,
+        "cycle": 60
+      },
+      {
+        "id": 2,
+        "type": "treasure",
+        "x": 3,
+        "y": 1,
+        "value": 300
+      },
+      {
+        "id": 3,
+        "type": "treasure",
+        "x": 5,
+        "y": 1,
+        "value": 200
+      },
+      {
+        "id": 4,
+        "type": "brazier",
+        "x": 4,
+        "y": 0
+      }
+    ],
+    "hoard": [
+      1,
+      1,
+      7,
+      2
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 10,
+      "type": "RunStart",
+      "dir": "N"
+    },
+    {
+      "tick": 111,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 117,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 123,
+      "type": "RunStart",
+      "dir": "W"
+    },
+    {
+      "tick": 140,
+      "type": "RunStart",
+      "dir": "S"
+    },
+    {
+      "tick": 300,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 310,
+      "type": "Dash",
+      "dir": "S"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 317,
+    "stars": 3,
+    "loot": 500,
+    "hash": "d2e2ab5f8e5c8400"
+  },
+  "expectedEvents": {
+    "FlickerLost": [
+      64
+    ],
+    "TreasureTaken": [
+      104,
+      119
+    ],
+    "BrazierUsed": [
+      113
+    ]
+  }
+}

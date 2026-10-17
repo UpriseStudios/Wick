@@ -1,0 +1,102 @@
+{
+  "_note": "Night Owl guarding (4,7) facing south; Wax Moths at (1,8). One dash north puts the owl inside Wick's light: alerted on tick 4 (hand-worked). He drops a decoy at (4,11) on tick 5 (it burns until tick 93) and slips west to (2,11). The decoy pulls the owl and the moths; when it burns out the owl walks back north and the moths drift onto Wick, draining a flicker on tick 246 (contact from tick 187; inspected against the 25 ticks/tile drift, not hand-traced). He then dashes home: escapes on tick 274 (hand-worked).",
+  "simVersion": 3,
+  "seed": 4104,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_owl",
+    "version": 1,
+    "vaultLevel": 3,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 13
+    },
+    "_map": [
+      "#########",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "####E####"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+    "entrance": [
+      4,
+      12
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "night_owl",
+        "x": 4,
+        "y": 7,
+        "rot": 2
+      },
+      {
+        "id": 2,
+        "type": "wax_moths",
+        "x": 1,
+        "y": 8
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 5,
+      "type": "Decoy"
+    },
+    {
+      "tick": 6,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 11,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 260,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 265,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 270,
+      "type": "Dash",
+      "dir": "S"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 275,
+    "stars": 0,
+    "loot": 0,
+    "hash": "5d17b3cc61e7320e"
+  },
+  "expectedEvents": {
+    "GuardianAlerted": [
+      4
+    ],
+    "FlickerLost": [
+      246
+    ]
+  }
+}

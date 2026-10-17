@@ -1,0 +1,96 @@
+{
+  "_note": "Drip Pipe at (4,10), cycle 30: drips on ticks 0-5 and 30-35. Dashes north: (4,10) is occupied on ticks 13-17, between drips. Waits at (4,9); the drip at tick 30 fires next to him (NearMiss 30). Dashes back south at 30, mistimed: occupied (4,10) on tick 32, hit. Home on tick 44 with 2 flickers.",
+  "simVersion": 3,
+  "seed": 4101,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_drip",
+    "version": 1,
+    "vaultLevel": 3,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 13
+    },
+    "_map": [
+      "#########",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "####E####"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+    "entrance": [
+      4,
+      12
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "drip_pipe",
+        "x": 4,
+        "y": 10,
+        "cycle": 30
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 6,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 11,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 16,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 30,
+      "type": "Dash",
+      "dir": "S"
+    },
+    {
+      "tick": 35,
+      "type": "Dash",
+      "dir": "S"
+    },
+    {
+      "tick": 40,
+      "type": "Dash",
+      "dir": "S"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 45,
+    "stars": 0,
+    "loot": 0,
+    "hash": "e28cd26e63b337d2"
+  },
+  "expectedEvents": {
+    "TrapFired": [
+      0,
+      30
+    ],
+    "NearMiss": [
+      30
+    ],
+    "FlickerLost": [
+      32
+    ]
+  }
+}

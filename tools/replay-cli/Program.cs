@@ -13,6 +13,7 @@ namespace Wick.ReplayCli
         public static int Main(string[] args)
         {
             bool showCheckpoints = false;
+            bool showEvents = false;
             int files = 0;
             int exitCode = 0;
 
@@ -24,20 +25,26 @@ namespace Wick.ReplayCli
                     continue;
                 }
 
+                if (arg == "--events")
+                {
+                    showEvents = true;
+                    continue;
+                }
+
                 files++;
-                exitCode = Math.Max(exitCode, Replay(arg, showCheckpoints));
+                exitCode = Math.Max(exitCode, Replay(arg, showCheckpoints, showEvents));
             }
 
             if (files == 0)
             {
-                Console.Error.WriteLine("usage: replay-cli [--checkpoints] <raid.json> [more.json ...]");
+                Console.Error.WriteLine("usage: replay-cli [--checkpoints] [--events] <raid.json> [more.json ...]");
                 return 2;
             }
 
             return exitCode;
         }
 
-        private static int Replay(string path, bool showCheckpoints)
+        private static int Replay(string path, bool showCheckpoints, bool showEvents)
         {
             string name = Path.GetFileName(path);
             RaidFile raid;
@@ -58,7 +65,21 @@ namespace Wick.ReplayCli
                 return 2;
             }
 
-            RaidResult r = RaidRunner.RunToEnd(raid.Vault, raid.Seed, raid.Log);
+            var sim = new RaidSim(raid.Vault, raid.Seed, raid.Log);
+            while (!sim.IsOver)
+            {
+                int tick = sim.State.Tick;
+                sim.Step();
+                if (showEvents)
+                {
+                    foreach (SimEvent e in sim.Events)
+                    {
+                        Console.WriteLine("  tick " + tick + ": " + e);
+                    }
+                }
+            }
+
+            RaidResult r = sim.GetResult();
             string line = name + ": outcome=" + r.Outcome + " ticks=" + r.Ticks + " stars=" + r.Stars +
                 " loot=" + r.Loot + " hash=" + r.HashHex;
 

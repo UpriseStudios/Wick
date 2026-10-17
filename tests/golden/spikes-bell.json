@@ -1,0 +1,96 @@
+{
+  "_note": "Spike Floor at (4,10), cycle 60: raised ticks 0-19 and 60-79, warning rumble at 45. Steps onto it at tick 42 (occupied), hears the warning at 45, is hit when it rises at 60. Moves on north and steps on the Snuffer Bell plate at (4,8): occupied on tick 72, instant snuff.",
+  "simVersion": 3,
+  "seed": 4103,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_spikes",
+    "version": 1,
+    "vaultLevel": 3,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 13
+    },
+    "_map": [
+      "#########",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "#.......#",
+      "####E####"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+    "entrance": [
+      4,
+      12
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "spike_floor",
+        "x": 4,
+        "y": 10,
+        "cycle": 60
+      },
+      {
+        "id": 2,
+        "type": "snuffer_bell",
+        "x": 4,
+        "y": 8
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 20,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 40,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 61,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 70,
+      "type": "Dash",
+      "dir": "N"
+    }
+  ],
+  "expected": {
+    "outcome": "Snuffed",
+    "ticks": 73,
+    "stars": 0,
+    "loot": 0,
+    "hash": "8b35860328697d12"
+  },
+  "expectedEvents": {
+    "TrapWarning": [
+      45
+    ],
+    "TrapFired": [
+      0,
+      60,
+      72
+    ],
+    "FlickerLost": [
+      60
+    ],
+    "Snuffed": [
+      72
+    ]
+  }
+}
