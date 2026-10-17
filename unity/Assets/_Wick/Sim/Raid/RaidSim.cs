@@ -14,15 +14,30 @@ namespace Wick.Sim
         public const ulong RngStream = 0x5749434BUL;
 
         private readonly VaultDef _vault;
-        private readonly InputLog _log;
+        private readonly List<Command> _commands;
         private readonly List<SimEvent> _events = new List<SimEvent>(32);
         private int _nextCommand;
         private bool _arrivedThisTick;
 
+        /// <summary>A live raid: commands arrive through Submit.</summary>
+        public RaidSim(VaultDef vault, int seed)
+            : this(vault, seed, InputLog.Empty)
+        {
+        }
+
         public RaidSim(VaultDef vault, int seed, InputLog log)
         {
             _vault = vault ?? throw new ArgumentNullException(nameof(vault));
-            _log = log ?? throw new ArgumentNullException(nameof(log));
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
+            _commands = new List<Command>(log.Count + 64);
+            for (int i = 0; i < log.Count; i++)
+            {
+                _commands.Add(log[i]);
+            }
 
             State = new RaidState();
             State.Rng = new Pcg32(unchecked((uint)seed), RngStream);
@@ -70,6 +85,38 @@ namespace Wick.Sim
 
             State.Tick++;
         }
+
+        /// <summary>
+        /// Adds a live command. It must be stamped for a tick that has not been simulated yet
+        /// (normally State.Tick, "the next tick") and not before the last command.
+        /// </summary>
+        public void Submit(Command command)
+        {
+            if (IsOver)
+            {
+                throw new InvalidOperationException("The raid has ended");
+            }
+
+            if (command.Tick < State.Tick)
+            {
+                throw new ArgumentException("Command for tick " + command.Tick + " but tick " + State.Tick + " is next");
+            }
+
+            if (_commands.Count > 0 && command.Tick < _commands[_commands.Count - 1].Tick)
+            {
+                throw new ArgumentException("Command ticks must not go backwards");
+            }
+
+            if ((byte)command.Type > (byte)CommandType.Decoy || (byte)command.Dir > (byte)Dir.W)
+            {
+                throw new ArgumentException("Invalid command " + command);
+            }
+
+            _commands.Add(command);
+        }
+
+        /// <summary>Every command of this raid so far, for replays and server verification.</summary>
+        public InputLog RecordedLog => new InputLog(_commands.ToArray());
 
         /// <summary>Whether Wick's flame lights tile p this tick. Off-grid tiles are never lit.</summary>
         public bool IsLit(TilePos p)
@@ -127,9 +174,9 @@ namespace Wick.Sim
 
         private void ApplyInputs()
         {
-            while (_nextCommand < _log.Count && _log[_nextCommand].Tick <= State.Tick)
+            while (_nextCommand < _commands.Count && _commands[_nextCommand].Tick <= State.Tick)
             {
-                Apply(_log[_nextCommand]);
+                Apply(_commands[_nextCommand]);
                 _nextCommand++;
             }
         }

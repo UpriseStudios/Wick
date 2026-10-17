@@ -40,6 +40,22 @@ namespace Wick.Sim
             return RadiusUnits(wick.Flickers, wick.Tiptoe, wick.GustDimTicks > 0);
         }
 
+        /// <summary>
+        /// What the 5-second scout flyover reveals, before the raid clock starts: every tile
+        /// except the hoard room ("inner rooms stay dark"). Without a hoard, everything.
+        /// Presentation only: not raid state and not hashed.
+        /// </summary>
+        public static void ComputeScout(VaultDef vault, bool[] lit)
+        {
+            for (int y = 0; y < vault.Height; y++)
+            {
+                for (int x = 0; x < vault.Width; x++)
+                {
+                    lit[y * vault.Width + x] = !(vault.HasHoard && vault.Hoard.Contains(new TilePos(x, y)));
+                }
+            }
+        }
+
         /// <summary>Fills lit (row-major, Width * Height) for Wick's current state. No allocation.</summary>
         public static void Compute(VaultDef vault, in WickState wick, bool[] lit)
         {
