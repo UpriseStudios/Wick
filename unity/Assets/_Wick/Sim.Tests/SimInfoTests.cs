@@ -5,9 +5,9 @@ namespace Wick.Sim.Tests
     public class SimInfoTests
     {
         [Test]
-        public void Version_IsOne()
+        public void Version_IsTwo()
         {
-            Assert.AreEqual(1, SimInfo.Version);
+            Assert.AreEqual(2, SimInfo.Version);
         }
     }
 }

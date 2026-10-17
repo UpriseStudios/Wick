@@ -74,7 +74,7 @@ A raid is a pure function: the same vault, seed and input log always produce the
 
 ```
 1. apply inputs stamped for this tick
-2. move Wick (and decoy timer)
+2. move Wick (and decoy timer), then recompute the tiles his flame lights
 3. advance traps by tick
 4. update guardians, sorted by entity id
 5. resolve hits: flicker loss, snuff, invulnerability window

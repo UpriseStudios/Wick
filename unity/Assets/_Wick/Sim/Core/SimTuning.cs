@@ -20,6 +20,14 @@ namespace Wick.Sim
 
         public const int TiptoeSpeedDivisor = 2;
 
+        /// <summary>Flame light radius in sub-tile units at 3, 2 and 1 flickers.</summary>
+        public const int LightRadius3Flickers = 4 * SubTile.PerTile;
+        public const int LightRadius2Flickers = 3 * SubTile.PerTile;
+        public const int LightRadius1Flicker = 2 * SubTile.PerTile;
+
+        /// <summary>Tiptoe divides the light radius by this.</summary>
+        public const int TiptoeLightDivisor = 2;
+
         /// <summary>How long a decoy distracts guardians (3 seconds).</summary>
         public const int DecoyTicks = 3 * TicksPerSecond;
     }

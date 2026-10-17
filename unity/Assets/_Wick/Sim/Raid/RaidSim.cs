@@ -26,6 +26,8 @@ namespace Wick.Sim
             State.Wick.Tile = vault.Entrance;
             State.Wick.Facing = Dir.N;
             State.Wick.Flickers = SimTuning.StartFlickers;
+            State.Lit = new bool[vault.Width * vault.Height];
+            UpdateLight();
         }
 
         public RaidState State { get; }
@@ -43,7 +45,8 @@ namespace Wick.Sim
             _arrivedThisTick = false;
 
             ApplyInputs();      // 1. apply inputs stamped for this tick
-            MoveWick();         // 2. move Wick (and decoy timer)
+            MoveWick();         // 2. move Wick (and decoy timer),
+            UpdateLight();      //    then recompute his light so steps 3-7 see this tick's lit tiles
             AdvanceTraps();     // 3. advance traps by tick
             UpdateGuardians();  // 4. update guardians, sorted by entity id
             ResolveHits();      // 5. resolve hits: flicker loss, snuff, invulnerability window
@@ -52,6 +55,12 @@ namespace Wick.Sim
             FoldHash();         // 8. every 30 ticks (and at the end): fold state into running hash
 
             State.Tick++;
+        }
+
+        /// <summary>Whether Wick's flame lights tile p this tick. Off-grid tiles are never lit.</summary>
+        public bool IsLit(TilePos p)
+        {
+            return _vault.InBounds(p) && State.Lit[p.Y * _vault.Width + p.X];
         }
 
         public RaidResult GetResult()
@@ -184,6 +193,11 @@ namespace Wick.Sim
                     w.Progress = leftover;
                 }
             }
+        }
+
+        private void UpdateLight()
+        {
+            Lighting.Compute(_vault, in State.Wick, State.Lit);
         }
 
         private bool TryStartMove(ref WickState w, Dir dir, bool isRun)

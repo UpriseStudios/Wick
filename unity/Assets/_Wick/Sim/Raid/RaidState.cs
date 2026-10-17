@@ -53,6 +53,12 @@ namespace Wick.Sim
         public Pcg32 Rng;
         public Fnv1a64 Hash;
 
+        /// <summary>
+        /// Tiles lit by Wick's flame this tick, row-major (y * vault width + x). Derived from
+        /// Wick's state and the vault, so it is not hashed separately. Read it with RaidSim.IsLit.
+        /// </summary>
+        public bool[] Lit;
+
         /// <summary>Running hash after each fold (every 30 ticks and at the end).</summary>
         public readonly List<ulong> Checkpoints = new List<ulong>(SimTuning.RaidTicks / SimTuning.HashIntervalTicks + 1);
     }
