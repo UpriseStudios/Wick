@@ -1,0 +1,254 @@
+.root {
+    flex-grow: 1;
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ---- HUD ---------------------------------------------------------------- */
+
+.hud {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+}
+
+.topbar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px 48px 0 48px;
+}
+
+.flickers {
+    flex-direction: row;
+}
+
+.flicker {
+    width: 34px;
+    height: 52px;
+    margin-right: 12px;
+    border-radius: 17px;
+    background-color: rgb(255, 170, 70);
+}
+
+.flicker.out {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.timer {
+    font-size: 72px;
+    color: rgb(240, 236, 225);
+    -unity-font-style: bold;
+}
+
+.timer.urgent {
+    color: rgb(255, 90, 70);
+}
+
+.loot {
+    font-size: 52px;
+    color: rgb(255, 215, 90);
+    -unity-font-style: bold;
+}
+
+.banner {
+    position: absolute;
+    top: 22%;
+    left: 0; right: 0;
+    -unity-text-align: middle-center;
+    font-size: 60px;
+    color: rgba(240, 236, 225, 0.85);
+    -unity-font-style: bold;
+}
+
+.stealth-icon {
+    position: absolute;
+    left: 48px;
+    bottom: 64px;
+    padding: 16px 28px;
+    border-radius: 36px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border-width: 4px;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.stealth-icon.active {
+    background-color: rgb(90, 140, 255);
+    border-color: rgb(180, 205, 255);
+}
+
+.stealth-text {
+    font-size: 34px;
+    color: rgba(255, 255, 255, 0.45);
+    -unity-font-style: bold;
+}
+
+.stealth-icon.active .stealth-text {
+    color: rgb(255, 255, 255);
+}
+
+.bottom-right {
+    position: absolute;
+    right: 40px;
+    bottom: 48px;
+    flex-direction: row;
+    align-items: flex-end;
+}
+
+.round-button {
+    width: 200px;
+    height: 200px;
+    margin-left: 28px;
+    border-radius: 100px;
+    font-size: 40px;
+    -unity-font-style: bold;
+    color: rgb(30, 22, 12);
+    background-color: rgb(255, 200, 110);
+    border-width: 0;
+}
+
+.round-button.used {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.4);
+}
+
+#stealth-button {
+    background-color: rgb(110, 150, 255);
+}
+
+#stealth-button.active {
+    background-color: rgb(190, 210, 255);
+}
+
+/* ---- Panels --------------------------------------------------------------- */
+
+.panel {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    background-color: rgba(8, 6, 10, 0.92);
+    align-items: center;
+    justify-content: center;
+    padding: 64px;
+}
+
+.title {
+    font-size: 110px;
+    color: rgb(255, 200, 110);
+    -unity-font-style: bold;
+    margin-bottom: 24px;
+}
+
+.subtitle {
+    font-size: 48px;
+    color: rgb(225, 220, 205);
+    margin-bottom: 40px;
+}
+
+.list {
+    width: 80%;
+}
+
+.wide-button {
+    height: 140px;
+    margin: 14px 0;
+    font-size: 46px;
+    border-radius: 24px;
+    color: rgb(30, 22, 12);
+    background-color: rgb(255, 200, 110);
+    border-width: 0;
+    width: 80%;
+}
+
+.list .wide-button {
+    width: 100%;
+}
+
+.stars {
+    flex-direction: row;
+    margin-bottom: 32px;
+}
+
+.star {
+    width: 120px;
+    height: 120px;
+    margin: 0 16px;
+    rotate: 45deg;
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.star.on {
+    background-color: rgb(255, 210, 70);
+}
+
+.dev-block {
+    margin: 16px 0 32px 0;
+    align-items: center;
+}
+
+.mono {
+    font-size: 30px;
+    color: rgb(190, 190, 190);
+}
+
+.match {
+    font-size: 40px;
+    -unity-font-style: bold;
+    color: rgb(120, 230, 120);
+}
+
+.match.bad {
+    color: rgb(255, 90, 70);
+}
+
+/* ---- Dev menu ------------------------------------------------------------- */
+
+.dev-toggle {
+    position: absolute;
+    left: 24px;
+    top: 150px;
+    width: 120px;
+    height: 72px;
+    font-size: 28px;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.12);
+    color: rgb(220, 220, 220);
+    border-width: 0;
+}
+
+.dev-panel {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    top: 240px;
+    padding: 32px;
+    border-radius: 24px;
+    background-color: rgba(10, 10, 14, 0.94);
+}
+
+.dev-panel Toggle {
+    font-size: 36px;
+    margin: 10px 0;
+    color: rgb(225, 225, 225);
+}
+
+.section {
+    font-size: 36px;
+    color: rgb(255, 200, 110);
+    margin-top: 24px;
+}
+
+.golden-list {
+    max-height: 600px;
+    margin: 12px 0 20px 0;
+}
+
+.golden-list .wide-button {
+    width: 100%;
+    height: 96px;
+    font-size: 34px;
+    margin: 8px 0;
+}

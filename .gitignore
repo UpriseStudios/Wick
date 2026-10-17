@@ -67,3 +67,11 @@ TestResults/
 Thumbs.db
 .idea/
 *.swp
+
+# Copied from tests/golden by Wick.Editor.GoldenSync (source of truth stays in tests/golden).
+/unity/Assets/_Wick/Resources/DevGoldens/
+/unity/Assets/_Wick/Resources/DevGoldens.meta
+
+# Device builds
+/unity/Builds/
+/Builds/

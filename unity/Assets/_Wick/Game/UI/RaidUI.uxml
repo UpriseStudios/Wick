@@ -1,0 +1,65 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="RaidUI.uss" />
+    <ui:VisualElement name="root" class="root" picking-mode="Ignore">
+
+        <!-- In-raid HUD. Containers ignore touches; only buttons block swipes. -->
+        <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+            <ui:VisualElement class="topbar" picking-mode="Ignore">
+                <ui:VisualElement name="flickers" class="flickers" picking-mode="Ignore">
+                    <ui:VisualElement class="flicker" picking-mode="Ignore" />
+                    <ui:VisualElement class="flicker" picking-mode="Ignore" />
+                    <ui:VisualElement class="flicker" picking-mode="Ignore" />
+                </ui:VisualElement>
+                <ui:Label name="timer" text="60" class="timer" picking-mode="Ignore" />
+                <ui:Label name="loot" text="0" class="loot" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:Label name="banner" text="SCOUTING" class="banner" picking-mode="Ignore" />
+            <ui:VisualElement name="stealth-icon" class="stealth-icon" picking-mode="Ignore">
+                <ui:Label text="STEALTH" class="stealth-text" picking-mode="Ignore" />
+            </ui:VisualElement>
+            <ui:VisualElement class="bottom-right" picking-mode="Ignore">
+                <ui:Button name="stealth-button" text="Sneak" class="round-button blocks-input" />
+                <ui:Button name="decoy-button" text="Decoy" class="round-button blocks-input" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Vault picker. -->
+        <ui:VisualElement name="picker" class="panel blocks-input">
+            <ui:Label text="WICK" class="title" />
+            <ui:Label text="Choose a dev vault" class="subtitle" />
+            <ui:VisualElement name="picker-list" class="list" />
+        </ui:VisualElement>
+
+        <!-- Results. -->
+        <ui:VisualElement name="results" class="panel blocks-input">
+            <ui:Label name="result-title" text="ESCAPED" class="title" />
+            <ui:VisualElement name="stars" class="stars">
+                <ui:VisualElement class="star" />
+                <ui:VisualElement class="star" />
+                <ui:VisualElement class="star" />
+            </ui:VisualElement>
+            <ui:Label name="result-loot" text="Loot 0" class="subtitle" />
+            <ui:VisualElement name="result-dev" class="dev-block">
+                <ui:Label name="result-live-hash" class="mono" />
+                <ui:Label name="result-replay-hash" class="mono" />
+                <ui:Label name="result-match" class="match" />
+            </ui:VisualElement>
+            <ui:Button name="retry-button" text="Retry" class="wide-button" />
+            <ui:Button name="menu-button" text="Vaults" class="wide-button" />
+        </ui:VisualElement>
+
+        <!-- Dev menu (development builds and the Editor only). -->
+        <ui:Button name="dev-toggle" text="DEV" class="dev-toggle blocks-input" />
+        <ui:VisualElement name="dev-menu" class="dev-panel blocks-input">
+            <ui:Label name="dev-fps" class="mono" />
+            <ui:Label name="dev-tick" class="mono" />
+            <ui:Label name="dev-hash" class="mono" />
+            <ui:Toggle name="dev-grid" label="Tile grid" />
+            <ui:Toggle name="dev-lit" label="Lit tiles from Sim" />
+            <ui:Toggle name="dev-stealth-button" label="Stealth button (fallback)" />
+            <ui:Label text="Replay a golden raid" class="section" />
+            <ui:ScrollView name="dev-goldens" class="golden-list" />
+            <ui:Button name="dev-vaults" text="Back to vaults" class="wide-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
