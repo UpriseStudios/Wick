@@ -13,6 +13,7 @@ namespace Wick.Game
         [SerializeField] private Transform _body;
         [SerializeField] private Transform _flame;
         [SerializeField] private Light _flameLight;
+        [SerializeField] private ReactionDriver _reactions;
 
         private ViewContext _ctx;
         private float _range;
@@ -28,6 +29,11 @@ namespace Wick.Game
             if (_flameLight != null)
             {
                 _flameLight.color = ctx.Tuning.FlameColor;
+            }
+
+            if (_reactions != null)
+            {
+                _reactions.Init(ctx);
             }
         }
 
@@ -60,10 +66,20 @@ namespace Wick.Game
                 float size = 0.15f + 0.06f * _range / _ctx.Tuning.FlameRangePerTile + _flare * 0.15f;
                 _flame.localScale = Vector3.one * size;
             }
+
+            if (_reactions != null)
+            {
+                _reactions.Sync();
+            }
         }
 
         public void OnSimEvent(in SimEvent e)
         {
+            if (_reactions != null)
+            {
+                _reactions.OnSimEvent(e);
+            }
+
             if (e.Type == SimEventType.TreasureTaken || e.Type == SimEventType.BrazierUsed)
             {
                 _flare = 1f;

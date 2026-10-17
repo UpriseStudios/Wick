@@ -1,0 +1,102 @@
+using UnityEngine;
+using Wick.Sim;
+
+namespace Wick.Game
+{
+    /// <summary>
+    /// Fixed-angle 3/4 camera: smooth follow on Wick, a short zoom punch when he loses a
+    /// flicker, and the scout flyover from the far end of the vault back to him.
+    /// Runs after the views so it follows this frame's interpolated position.
+    /// </summary>
+    [DefaultExecutionOrder(100)]
+    public sealed class RaidCamera : MonoBehaviour
+    {
+        [SerializeField] private VaultView _vaultView;
+        [SerializeField] private RaidTuning _tuning;
+
+        private Vector3 _focus;
+        private Vector3 _velocity;
+        private float _punch;
+        private bool _scouting;
+        private float _scoutTime;
+        private Vector3 _scoutFrom;
+
+        public bool IsScouting => _scouting;
+
+        public void Bind(VaultView vaultView, RaidTuning tuning)
+        {
+            _vaultView = vaultView;
+            _tuning = tuning;
+        }
+
+        private void OnEnable()
+        {
+            _vaultView.SimEventRaised += OnSimEvent;
+            _vaultView.Built += OnBuilt;
+        }
+
+        private void OnDisable()
+        {
+            _vaultView.SimEventRaised -= OnSimEvent;
+            _vaultView.Built -= OnBuilt;
+        }
+
+        /// <summary>Flies from the vault's far end to Wick over ScoutSeconds.</summary>
+        public void BeginScout()
+        {
+            VaultDef vault = _vaultView.Context.Vault;
+            _scoutFrom = SimPose.TileCenter(new TilePos(vault.Width / 2, 0));
+            _scoutTime = 0f;
+            _scouting = true;
+            _focus = _scoutFrom;
+            _velocity = Vector3.zero;
+        }
+
+        public void EndScout()
+        {
+            _scouting = false;
+        }
+
+        private void OnBuilt(VaultView view)
+        {
+            _focus = view.Wick.transform.position;
+            _velocity = Vector3.zero;
+            _punch = 0f;
+        }
+
+        private void OnSimEvent(SimEvent e)
+        {
+            if (e.Type == SimEventType.FlickerLost || e.Type == SimEventType.Snuffed)
+            {
+                _punch = 1f;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (_vaultView.Wick == null)
+            {
+                return;
+            }
+
+            Vector3 wick = _vaultView.Wick.transform.position;
+            if (_scouting)
+            {
+                _scoutTime += Time.deltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(_scoutTime / _tuning.ScoutSeconds));
+                _focus = Vector3.Lerp(_scoutFrom, wick, t);
+            }
+            else
+            {
+                _focus = Vector3.SmoothDamp(_focus, wick, ref _velocity, _tuning.FollowSmoothTime);
+            }
+
+            _punch = Mathf.MoveTowards(_punch, 0f, Time.deltaTime / Mathf.Max(0.01f, _tuning.PunchSeconds));
+            float zoom = 1f + (_tuning.PunchZoom - 1f) * Mathf.Sin(_punch * Mathf.PI * 0.5f);
+            float distance = _tuning.CameraDistance / zoom;
+
+            Quaternion rotation = Quaternion.Euler(_tuning.CameraPitch, _tuning.CameraYaw, 0f);
+            transform.SetPositionAndRotation(_focus - rotation * Vector3.forward * distance, rotation);
+        }
+    }
+}
