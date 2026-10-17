@@ -82,7 +82,8 @@ namespace Wick.Sim
                 entrance,
                 objects,
                 hasHoard,
-                hoard);
+                hoard,
+                root.GetString("theme", "crypt"));
 
             if (!vault.InBounds(entrance) || !vault.IsWalkable(entrance))
             {
@@ -182,6 +183,91 @@ namespace Wick.Sim
             {
                 throw new FormatException(what + " needs 0 < value <= " + SimTuning.MaxTreasureValue);
             }
+        }
+
+        /// <summary>
+        /// Writes a vault as compact JSON in the data-model layout. Fields the sim does not use
+        /// (ownerId, buildPoints, clearCheck) are added by the callers that own them.
+        /// </summary>
+        public static string Write(VaultDef vault)
+        {
+            var w = new JsonWriter();
+            w.BeginObject();
+            WriteFields(w, vault);
+            w.EndObject();
+            return w.ToString();
+        }
+
+        /// <summary>Writes the vault's fields into an object the caller has already begun.</summary>
+        public static void WriteFields(JsonWriter w, VaultDef vault)
+        {
+            w.Field("schema", vault.Schema);
+            w.Field("vaultId", vault.VaultId ?? "");
+            w.Field("version", vault.Version);
+            w.Field("vaultLevel", vault.VaultLevel);
+            w.Field("theme", vault.Theme ?? "crypt");
+            w.Name("grid").BeginObject().Field("w", vault.Width).Field("h", vault.Height).EndObject();
+
+            var bytes = new byte[vault.Width * vault.Height];
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = (byte)vault.TileAtIndex(i);
+            }
+
+            w.Field("tiles", Convert.ToBase64String(bytes));
+            w.Name("entrance");
+            WritePos(w, vault.Entrance);
+            if (vault.HasHoard)
+            {
+                TileRect r = vault.Hoard;
+                w.Name("hoard").BeginArray().Value(r.MinX).Value(r.MinY).Value(r.MaxX).Value(r.MaxY).EndArray();
+            }
+
+            w.Name("objects").BeginArray();
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                ObjectDef o = vault.GetObject(i);
+                w.BeginObject();
+                w.Field("id", o.Id);
+                w.Field("type", ObjectTypes.Name(o.Type));
+                w.Field("x", o.Pos.X);
+                w.Field("y", o.Pos.Y);
+                if (o.Rot != 0)
+                {
+                    w.Field("rot", o.Rot);
+                }
+
+                if (ObjectTypes.IsTimedTrap(o.Type))
+                {
+                    w.Field("cycle", o.Cycle);
+                    w.Field("offset", o.Offset);
+                }
+
+                if (o.Type == ObjectType.Treasure)
+                {
+                    w.Field("value", o.Value);
+                }
+
+                if (o.Patrol.Length > 0)
+                {
+                    w.Name("patrol").BeginArray();
+                    foreach (TilePos p in o.Patrol)
+                    {
+                        WritePos(w, p);
+                    }
+
+                    w.EndArray();
+                }
+
+                w.EndObject();
+            }
+
+            w.EndArray();
+        }
+
+        private static void WritePos(JsonWriter w, TilePos p)
+        {
+            w.BeginArray().Value(p.X).Value(p.Y).EndArray();
         }
 
         private static ObjectDef[] ReadObjects(JsonNode list)

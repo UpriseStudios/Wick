@@ -33,8 +33,9 @@ namespace Wick.Sim
         private readonly bool[] _blocked;
 
         public VaultDef(int schema, string vaultId, int version, int vaultLevel, int width, int height,
-            TileType[] tiles, TilePos entrance, ObjectDef[] objects, bool hasHoard, TileRect hoard)
+            TileType[] tiles, TilePos entrance, ObjectDef[] objects, bool hasHoard, TileRect hoard, string theme = "crypt")
         {
+            Theme = theme;
             Schema = schema;
             VaultId = vaultId;
             Version = version;
@@ -63,6 +64,7 @@ namespace Wick.Sim
         }
 
         public int Schema { get; }
+        public string Theme { get; }
         public string VaultId { get; }
         public int Version { get; }
         public int VaultLevel { get; }
@@ -85,6 +87,12 @@ namespace Wick.Sim
         public bool InBounds(TilePos p)
         {
             return p.X >= 0 && p.Y >= 0 && p.X < Width && p.Y < Height;
+        }
+
+        /// <summary>Raw tile type at row-major index i.</summary>
+        public TileType TileAtIndex(int i)
+        {
+            return _tiles[i];
         }
 
         /// <summary>Tile at p; out-of-bounds positions read as Wall.</summary>

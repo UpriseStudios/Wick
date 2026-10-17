@@ -35,6 +35,23 @@ namespace Wick.Sim
             }
         }
 
+        public static string Name(ObjectType type)
+        {
+            switch (type)
+            {
+                case ObjectType.DripPipe: return "drip_pipe";
+                case ObjectType.Bellows: return "bellows";
+                case ObjectType.SpikeFloor: return "spike_floor";
+                case ObjectType.SnufferBell: return "snuffer_bell";
+                case ObjectType.NightOwl: return "night_owl";
+                case ObjectType.WaxMoths: return "wax_moths";
+                case ObjectType.Treasure: return "treasure";
+                case ObjectType.Brazier: return "brazier";
+                case ObjectType.Crate: return "crate";
+                default: throw new ArgumentOutOfRangeException(nameof(type));
+            }
+        }
+
         public static bool IsTimedTrap(ObjectType type)
         {
             return type == ObjectType.DripPipe || type == ObjectType.Bellows || type == ObjectType.SpikeFloor;
