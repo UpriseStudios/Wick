@@ -3,8 +3,8 @@
 Mobile build-and-raid game: build trap vaults, raid other players' vaults as Wick,
 a living candle thief. Unity 6 LTS, URP, portrait.
 
-- Game design: [Docs/Wick — Game Design Spec.md](Docs/Wick%20—%20Game%20Design%20Spec.md)
-- Technical design: [Docs/Wick — Technical Design.md](Docs/Wick%20—%20Technical%20Design.md)
+- Game design: [docs/game-spec.md](docs/game-spec.md)
+- Technical design: [docs/tech-design.md](docs/tech-design.md)
 - Rules for contributors (human and AI): [CLAUDE.md](CLAUDE.md)
 
 ## Layout
