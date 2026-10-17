@@ -66,12 +66,9 @@ dotnet run --project tools/replay-cli -- raid.json
 
 ## CI
 
-`.github/workflows/ci.yml` runs the .NET sim tests and builds replay-cli on every
-push and pull request.
+`.github/workflows/ci.yml` runs on every push and pull request:
 
-The Unity EditMode job is commented out until a licence is available. To enable it:
-
-1. Follow the GameCI activation guide (https://game.ci/docs/github/activation) to
-   get a licence file.
-2. Add the repo secrets `UNITY_LICENSE`, `UNITY_EMAIL` and `UNITY_PASSWORD`.
-3. Uncomment the `unity-editmode` job in `ci.yml`.
+- `sim-dotnet`: the .NET sim tests, plus a build and smoke run of replay-cli.
+- `unity-editmode`: the Unity EditMode tests via GameCI. It needs the repo secrets
+  `UNITY_LICENSE`, `UNITY_EMAIL` and `UNITY_PASSWORD`; see the GameCI activation
+  guide (https://game.ci/docs/github/activation) to get or renew the licence file.
