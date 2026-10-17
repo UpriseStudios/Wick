@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "vaultId": "v_template_halls",
+  "version": 1,
+  "vaultLevel": 1,
+  "theme": "crypt",
+  "grid": {
+    "w": 9,
+    "h": 13
+  },
+  "_map": [
+    "#########",
+    "#.......#",
+    "#.......#",
+    "#.......#",
+    "####D####",
+    "#.......#",
+    "#.......#",
+    "#.......#",
+    "#.......#",
+    "####D####",
+    "#.......#",
+    "#.......#",
+    "####E####"
+  ],
+  "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQIBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQIBAQEBAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+  "entrance": [
+    4,
+    12
+  ],
+  "objects": [
+    {
+      "id": 1,
+      "type": "treasure",
+      "x": 4,
+      "y": 2,
+      "value": 100
+    }
+  ],
+  "hoard": [
+    1,
+    1,
+    7,
+    3
+  ]
+}
