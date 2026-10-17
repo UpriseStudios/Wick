@@ -41,9 +41,19 @@ and tools. It is never copied: the .NET projects include
 1. Install **Unity Hub** and Unity **6000.6.4f1** (the version in
    `unity/ProjectSettings/ProjectVersion.txt`), with Android and iOS build support.
 2. Install the **.NET 8 SDK** (`dotnet --list-sdks` should show 8.0.x).
-3. Clone the repo, then in Unity Hub choose **Add > Add project from disk** and pick
-   the `unity/` folder (not the repo root).
-4. Open the project. The first import takes a few minutes.
+3. Install **Git LFS** (`git lfs version`), then clone the repo. Binary assets
+   (images, meshes, audio, fonts) are stored in LFS; see `.gitattributes`.
+4. Once per clone, turn on Unity's smart merge for scenes and prefabs:
+
+   ```
+   git config merge.unityyamlmerge.name "Unity SmartMerge"
+   git config merge.unityyamlmerge.driver '"C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/Tools/UnityYAMLMerge.exe" merge -p %O %B %A %A'
+   git config merge.unityyamlmerge.recursive binary
+   ```
+
+5. In Unity Hub choose **Add > Add project from disk** and pick the `unity/`
+   folder (not the repo root).
+6. Open the project. The first import takes a few minutes.
 
 ## Running tests
 

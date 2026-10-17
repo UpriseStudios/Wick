@@ -30,6 +30,8 @@ jobs:
       checks: write   # unity-test-runner posts results as a check run
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       # No Library cache: with Unity 6000.6 a restored Library gets the Editor killed
       # (exit 137) during startup, while a clean import passes in about the same time.
