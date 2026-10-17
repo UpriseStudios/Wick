@@ -13,6 +13,8 @@
   <ItemGroup>
     <!-- Sim is linked, never copied: one source for Unity, server and tools. -->
     <Compile Include="../../unity/Assets/_Wick/Sim/**/*.cs" LinkBase="Sim" />
+    <!-- Tests are shared with Unity's Wick.Sim.Tests the same way. -->
+    <Compile Include="../../unity/Assets/_Wick/Sim.Tests/**/*.cs" LinkBase="Sim.Tests" />
   </ItemGroup>
 
   <ItemGroup>
