@@ -19,9 +19,11 @@ unity/                       Unity project (open this folder in the Hub)
     Editor/       Wick.Editor      vault editor tools, debug windows -> Sim, Game
     Art/ Audio/ Prefabs/ Scenes/ Data/
 server/
-  Wick.Sim.Server.Tests/     .NET 8 NUnit; compiles Sim as linked source
+  Wick.Sim.Server.Tests/     .NET 8 NUnit; compiles Sim and Sim.Tests as linked source
 tools/
   replay-cli/                .NET 8 console; compiles Sim as linked source
+tests/
+  golden/                    golden replays (vault, seed, log, expected hash)
 ```
 
 `Wick.Sim` is the one deterministic simulation shared by the client, Cloud Code
@@ -58,11 +60,25 @@ Unity EditMode tests: in the Editor, use **Window > General > Test Runner > Edit
 "C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe" -batchmode -projectPath unity -runTests -testPlatform EditMode -testResults results.xml
 ```
 
-Replay CLI (a placeholder that prints `ok` until M1):
+The same `Sim.Tests` source runs in both, including the golden replays in
+`tests/golden/`, so both sides must produce identical hashes.
+
+Replay CLI: re-simulates raid files and prints outcome, ticks and hash, plus
+`OK`/`MISMATCH` when the file has an `expected` block. Exit code 0 = all OK,
+1 = mismatch, 2 = load error. Add `--checkpoints` to print the hash for every
+second, to find where two runs diverge.
 
 ```
-dotnet run --project tools/replay-cli -- raid.json
+dotnet run --project tools/replay-cli -- tests/golden/*.json
 ```
+
+### Golden replays
+
+Each file in `tests/golden/` holds a vault (with a readable `_map` next to the
+base64 `tiles`), a seed, the input log (readable `commands`, or base64 `log`)
+and the expected outcome, ticks and hash. Any sim rule change bumps
+`SimInfo.Version`; re-record goldens deliberately: check the outcome and ticks
+are still what you intend, then update `simVersion` and `hash` from replay-cli.
 
 ## CI
 
