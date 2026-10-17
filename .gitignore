@@ -1,0 +1,60 @@
+# ---- Unity (project lives in unity/) ----
+/unity/[Ll]ibrary/
+/unity/[Tt]emp/
+/unity/[Oo]bj/
+/unity/[Bb]uild/
+/unity/[Bb]uilds/
+/unity/[Ll]ogs/
+/unity/[Uu]ser[Ss]ettings/
+/unity/[Mm]emoryCaptures/
+/unity/[Rr]ecordings/
+/unity/Assets/Plugins/Editor/JetBrains*
+
+# Unity-generated IDE files (regenerated on open)
+/unity/.vs/
+/unity/.vscode/
+/unity/.idea/
+/unity/.gradle/
+/unity/ExportedObj/
+/unity/.consulo/
+/unity/*.csproj
+/unity/*.unityproj
+/unity/*.sln
+/unity/*.slnx
+/unity/*.suo
+/unity/*.tmp
+/unity/*.user
+/unity/*.userprefs
+/unity/*.pidb
+/unity/*.booproj
+/unity/*.svd
+/unity/*.pdb
+/unity/*.mdb
+/unity/*.opendb
+/unity/*.VC.db
+/unity/sysinfo.txt
+/unity/crashlytics-build.properties
+
+# Unity build artefacts
+*.apk
+*.aab
+*.unitypackage
+*.app
+
+# Unity test results
+results.xml
+/unity/artifacts/
+
+# ---- .NET ----
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+.vs/
+
+# ---- OS / editors ----
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
