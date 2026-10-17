@@ -55,6 +55,42 @@ and tools. It is never copied: the .NET projects include
    folder (not the repo root).
 6. Open the project. The first import takes a few minutes.
 
+## Playing a raid
+
+Open `Assets/_Wick/Scenes/Raid.unity` and press Play. Pick a dev vault; after
+the 5-second scout the clock starts. In the Editor the mouse stands in for a
+thumb:
+
+- **Drag** past 40 dp: dash one tile. **Drag and hold** at the end: run;
+  release to stop. Dragging while running steers.
+- **Click** (no drag): toggle stealth. Swipes keep moving Wick while stealthy.
+- **Decoy** button, bottom right.
+- **DEV** button, top left (development builds and the Editor): FPS, tick,
+  current hash, tile grid, the sim's lit tiles (should match the lit area
+  exactly), the fallback stealth-button scheme, and golden replays.
+
+The results screen shows stars and loot, and in development builds the live
+hash next to a headless replay of the recorded log (`MATCH` expected).
+
+Content is generated from code and committed. After changing
+`Assets/_Wick/Editor/WickContentBuilder.cs`, run **Wick > Rebuild Placeholder
+Content**. Dev vaults come from `tools/golden/make_dev_vaults.py`. Tuning lives
+in `Assets/_Wick/Data/RaidTuning.asset` and `InputTuning.asset`.
+
+## Building for Android
+
+**Wick > Build Android Dev APK** writes `unity/Builds/Wick-dev.apk` (development
+build, IL2CPP, ARM64). From the command line:
+
+```
+"C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe" -batchmode -quit -projectPath unity -buildTarget Android -executeMethod Wick.Editor.AndroidBuild.BuildDev
+adb install -r unity/Builds/Wick-dev.apk
+```
+
+**Wick > Capture Dev Screenshots** renders each dev vault (scout, live, lit
+overlay) to `unity/Builds/Screenshots`, which is handy for checking rendering
+changes without a device.
+
 ## Running tests
 
 Sim tests in .NET (fast, the same as CI):
