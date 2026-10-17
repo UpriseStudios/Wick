@@ -59,8 +59,8 @@ VAULTS = {
     ], [
         {"id": 1, "type": "night_owl", "x": 1, "y": 6, "rot": 1, "patrol": [[1, 6], [7, 6], [7, 5], [1, 5]]},
         {"id": 2, "type": "bellows", "x": 1, "y": 10, "rot": 1, "cycle": 75},
-        {"id": 3, "type": "crate", "x": 4, "y": 9},
-        {"id": 4, "type": "crate", "x": 4, "y": 11},
+        {"id": 3, "type": "crate", "x": 5, "y": 10},  # on the gust row: (6,10) and (7,10) are sheltered
+        {"id": 4, "type": "crate", "x": 2, "y": 9},
         {"id": 5, "type": "treasure", "x": 2, "y": 2, "value": 250},
         {"id": 6, "type": "treasure", "x": 6, "y": 2, "value": 250},
         {"id": 7, "type": "treasure", "x": 4, "y": 1, "value": 200},
