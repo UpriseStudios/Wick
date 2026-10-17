@@ -78,9 +78,9 @@
   "expected": {
     "outcome": "TimedOut",
     "ticks": 1800,
-    "hash": "c82bc80d644e674e",
     "stars": 2,
-    "loot": 0
+    "loot": 0,
+    "hash": "c82bc80d644e674e"
   },
   "expectedEvents": {
     "TreasureTaken": [

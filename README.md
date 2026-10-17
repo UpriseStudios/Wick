@@ -80,10 +80,24 @@ base64 `tiles`), a seed, the input log (readable `commands`, or base64 `log`)
 and the expected outcome, ticks, stars, loot and hash. An optional
 `expectedEvents` block pins the ticks of key events (for example
 `"FlickerLost": [64]`); the `_note` explains how they were worked out. Any sim
-rule change bumps `SimInfo.Version`; re-record goldens deliberately: check the
-outcome, ticks and events are still what you intend, then update `simVersion`
-and `hash` from replay-cli. The fuzz test's corpus hash in `FuzzTests.cs` is
-re-recorded the same way.
+rule change bumps `SimInfo.Version` and re-records goldens deliberately.
+
+The goldens are generated from `tools/golden/make_goldens.py`, which is their
+source of truth (Python 3.8+, standard library only). After a rule change:
+
+1. Bump `SimInfo.Version` and `SIM_VERSION` in `make_goldens.py`. If outcomes,
+   ticks, stars, loot or event ticks should change, update them there by hand
+   and explain why in the `_note`.
+2. `python tools/golden/make_goldens.py` rewrites the files, keeping their
+   current hashes.
+3. `python tools/golden/rerecord.py` replays them and updates a hash only when
+   that golden's outcome, ticks, stars and loot still match. Anything else is
+   reported and left alone.
+4. Run the tests: they check `expectedEvents`, and `FuzzTests.cs` has a corpus
+   hash that must be updated by hand from the test's failure message.
+
+To add a golden, add an entry to `GOLDENS` in `make_goldens.py`, work out the
+expected values by hand, then run steps 2–4.
 
 ## CI
 

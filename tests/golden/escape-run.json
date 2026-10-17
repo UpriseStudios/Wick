@@ -73,9 +73,9 @@
   "expected": {
     "outcome": "Escaped",
     "ticks": 160,
-    "hash": "1605617b7e5f2604",
     "stars": 1,
-    "loot": 0
+    "loot": 0,
+    "hash": "1605617b7e5f2604"
   },
   "expectedEvents": {
     "FlickerLost": [],
