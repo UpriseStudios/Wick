@@ -59,7 +59,7 @@ namespace Wick.Game
 
         private void OnBuilt(VaultView view)
         {
-            _focus = view.Wick.transform.position;
+            _focus = FocusFor(view.Wick.transform.position, _tuning);
             _velocity = Vector3.zero;
             _punch = 0f;
         }
@@ -79,7 +79,7 @@ namespace Wick.Game
                 return;
             }
 
-            Vector3 wick = _vaultView.Wick.transform.position;
+            Vector3 wick = FocusFor(_vaultView.Wick.transform.position, _tuning);
             if (_scouting)
             {
                 _scoutTime += Time.deltaTime;
@@ -93,10 +93,21 @@ namespace Wick.Game
 
             _punch = Mathf.MoveTowards(_punch, 0f, Time.deltaTime / Mathf.Max(0.01f, _tuning.PunchSeconds));
             float zoom = 1f + (_tuning.PunchZoom - 1f) * Mathf.Sin(_punch * Mathf.PI * 0.5f);
-            float distance = _tuning.CameraDistance / zoom;
+            Place(transform, _focus, _tuning, zoom);
+        }
 
-            Quaternion rotation = Quaternion.Euler(_tuning.CameraPitch, _tuning.CameraYaw, 0f);
-            transform.SetPositionAndRotation(_focus - rotation * Vector3.forward * distance, rotation);
+        /// <summary>Where the camera centres for Wick at this position (looking ahead, north).</summary>
+        public static Vector3 FocusFor(Vector3 wick, RaidTuning tuning)
+        {
+            return wick + Vector3.forward * tuning.CameraLookAhead;
+        }
+
+        /// <summary>Puts a camera transform at the raid angle looking at focus.</summary>
+        public static void Place(Transform camera, Vector3 focus, RaidTuning tuning, float zoom = 1f)
+        {
+            Quaternion rotation = Quaternion.Euler(tuning.CameraPitch, tuning.CameraYaw, 0f);
+            float distance = tuning.CameraDistance / zoom;
+            camera.SetPositionAndRotation(focus - rotation * Vector3.forward * distance, rotation);
         }
     }
 }

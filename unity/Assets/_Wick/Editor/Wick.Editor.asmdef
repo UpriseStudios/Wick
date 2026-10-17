@@ -3,7 +3,9 @@
     "rootNamespace": "Wick.Editor",
     "references": [
         "Wick.Sim",
-        "Wick.Game"
+        "Wick.Game",
+        "UnityEngine.UI",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [
         "Editor"

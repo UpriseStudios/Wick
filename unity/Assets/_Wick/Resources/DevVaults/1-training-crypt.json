@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "vaultId": "v_dev_training",
+  "version": 1,
+  "vaultLevel": 1,
+  "theme": "crypt",
+  "grid": {
+    "w": 9,
+    "h": 13
+  },
+  "_map": [
+    "#########",
+    "#.......#",
+    "#.......#",
+    "#.......#",
+    "####D####",
+    "#.......#",
+    "#.......#",
+    "#.......#",
+    "###.#####",
+    "#.......#",
+    "#.......#",
+    "#.......#",
+    "####E####"
+  ],
+  "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQIBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAAEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+  "entrance": [
+    4,
+    12
+  ],
+  "objects": [
+    {
+      "id": 1,
+      "type": "drip_pipe",
+      "x": 3,
+      "y": 9,
+      "cycle": 45
+    },
+    {
+      "id": 2,
+      "type": "spike_floor",
+      "x": 4,
+      "y": 5,
+      "cycle": 60,
+      "offset": 20
+    },
+    {
+      "id": 3,
+      "type": "spike_floor",
+      "x": 3,
+      "y": 7,
+      "cycle": 70
+    },
+    {
+      "id": 4,
+      "type": "treasure",
+      "x": 4,
+      "y": 2,
+      "value": 300
+    },
+    {
+      "id": 5,
+      "type": "treasure",
+      "x": 1,
+      "y": 1,
+      "value": 150
+    },
+    {
+      "id": 6,
+      "type": "brazier",
+      "x": 0,
+      "y": 6
+    }
+  ],
+  "hoard": [
+    1,
+    1,
+    7,
+    3
+  ]
+}

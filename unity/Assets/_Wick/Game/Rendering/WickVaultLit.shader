@@ -3,7 +3,8 @@
 //
 // The mask is Wick.Sim's lit-tile set, written to _WickVisMask (R8, one texel per tile) by
 // VisibilityMask. This shader never decides visibility; it only reads that texel exactly
-// (LOAD, no filtering) for the tile under each fragment. Unlit tiles are drawn at _WickVisDark.
+// (LOAD, no filtering) for the tile under each fragment. Unlit tiles are drawn as a flat
+// _WickVisDark fraction of their base colour (faint silhouettes, no lighting, no emission).
 Shader "Wick/VaultLit"
 {
     Properties
@@ -41,6 +42,7 @@ Shader "Wick/VaultLit"
             TEXTURE2D(_WickVisMask);
             float4 _WickVisGrid; // x = width, y = height, z = 1 when a mask is active
             half _WickVisDark;
+            half _WickLitBoost; // extra flat light on lit tiles so they always read brighter than unlit ones
 
             struct Attributes
             {
@@ -66,6 +68,7 @@ Shader "Wick/VaultLit"
 
             // Tile (x, y) is centred on world (x, 0, -y); see SimPose. Nudging inward along the
             // normal keeps a wall face (which sits exactly on a tile boundary) on its own tile.
+            // 1 when the fragment's tile is lit by the sim, 0 when not.
             half SampleVisibility(float3 positionWS, float3 normalWS)
             {
                 if (_WickVisGrid.z < 0.5 || _IgnoreMask > 0.5)
@@ -77,11 +80,10 @@ Shader "Wick/VaultLit"
                 int2 tile = int2(floor(p.x + 0.5), floor(-p.z + 0.5));
                 if (tile.x < 0 || tile.y < 0 || tile.x >= (int)_WickVisGrid.x || tile.y >= (int)_WickVisGrid.y)
                 {
-                    return _WickVisDark;
+                    return 0;
                 }
 
-                half lit = LOAD_TEXTURE2D(_WickVisMask, tile).r;
-                return lerp(_WickVisDark, (half)1, lit);
+                return LOAD_TEXTURE2D(_WickVisMask, tile).r;
             }
 
             half4 Frag(Varyings input) : SV_Target
@@ -106,9 +108,9 @@ Shader "Wick/VaultLit"
                 LIGHT_LOOP_END
                 #endif
 
-                half3 color = _BaseColor.rgb * light + _EmissionColor.rgb;
-                color *= SampleVisibility(input.positionWS, normalWS);
-                return half4(color, 1);
+                half3 lit = _BaseColor.rgb * (light + _WickLitBoost) + _EmissionColor.rgb;
+                half3 unlit = _BaseColor.rgb * _WickVisDark;
+                return half4(lerp(unlit, lit, SampleVisibility(input.positionWS, normalWS)), 1);
             }
             ENDHLSL
         }

@@ -40,6 +40,17 @@ namespace Wick.Game
 
         private void LateUpdate()
         {
+            Draw(null);
+        }
+
+        /// <summary>Queues the overlay for rendering (all cameras when camera is null).</summary>
+        public void Draw(Camera camera)
+        {
+            if (_quad == null)
+            {
+                Awake();
+            }
+
             if (_runner.Sim == null || _material == null || (!ShowGrid && !ShowLit))
             {
                 return;
@@ -56,21 +67,21 @@ namespace Wick.Game
 
                     if (ShowLit && _runner.Sim.IsLit(p))
                     {
-                        Graphics.DrawMesh(_quad, Matrix4x4.TRS(c, Quaternion.identity, new Vector3(0.9f, 1f, 0.9f)), _material, 0, null, 0, _litBlock);
+                        Graphics.DrawMesh(_quad, Matrix4x4.TRS(c, Quaternion.identity, new Vector3(0.9f, 1f, 0.9f)), _material, 0, camera, 0, _litBlock);
                     }
 
                     if (ShowGrid)
                     {
-                        DrawLine(c + new Vector3(0f, 0.01f, 0.5f), new Vector3(1f, 1f, 0.03f));
-                        DrawLine(c + new Vector3(0.5f, 0.01f, 0f), new Vector3(0.03f, 1f, 1f));
+                        DrawLine(c + new Vector3(0f, 0.01f, 0.5f), new Vector3(1f, 1f, 0.03f), camera);
+                        DrawLine(c + new Vector3(0.5f, 0.01f, 0f), new Vector3(0.03f, 1f, 1f), camera);
                     }
                 }
             }
         }
 
-        private void DrawLine(Vector3 center, Vector3 scale)
+        private void DrawLine(Vector3 center, Vector3 scale, Camera camera)
         {
-            Graphics.DrawMesh(_quad, Matrix4x4.TRS(center, Quaternion.identity, scale), _material, 0, null, 0, _gridBlock);
+            Graphics.DrawMesh(_quad, Matrix4x4.TRS(center, Quaternion.identity, scale), _material, 0, camera, 0, _gridBlock);
         }
 
         private static Mesh BuildQuad()

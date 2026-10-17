@@ -52,6 +52,12 @@ namespace Wick.Game
 
         private void LateUpdate()
         {
+            SyncAll();
+        }
+
+        /// <summary>Refreshes the mask and moves every view to the current interpolated state.</summary>
+        public void SyncAll()
+        {
             if (_runner.Sim == null || Context == null)
             {
                 return;

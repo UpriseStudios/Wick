@@ -14,6 +14,7 @@ namespace Wick.Game
         private static readonly int MaskId = Shader.PropertyToID("_WickVisMask");
         private static readonly int GridId = Shader.PropertyToID("_WickVisGrid");
         private static readonly int DarkId = Shader.PropertyToID("_WickVisDark");
+        private static readonly int BoostId = Shader.PropertyToID("_WickLitBoost");
 
         [SerializeField] private RaidRunner _runner;
         [SerializeField] private RaidTuning _tuning;
@@ -110,7 +111,7 @@ namespace Wick.Game
 
             Shader.SetGlobalTexture(MaskId, _texture);
             Shader.SetGlobalVector(GridId, new Vector4(vault.Width, vault.Height, 1f, 0f));
-            Shader.SetGlobalFloat(DarkId, _tuning != null ? _tuning.UnlitBrightness : 0.08f);
+            ApplyTuning();
         }
 
         // Texel (x, y) is tile (x, y): row y of the data is texture row y.
@@ -123,7 +124,13 @@ namespace Wick.Game
 
             _texture.SetPixelData(_pixels, 0);
             _texture.Apply(false);
-            Shader.SetGlobalFloat(DarkId, _tuning != null ? _tuning.UnlitBrightness : 0.08f);
+            ApplyTuning();
+        }
+
+        private void ApplyTuning()
+        {
+            Shader.SetGlobalFloat(DarkId, _tuning != null ? _tuning.UnlitBrightness : 0.04f);
+            Shader.SetGlobalFloat(BoostId, _tuning != null ? _tuning.LitBoost : 0.2f);
         }
 
         private static void DestroySafe(Object o)

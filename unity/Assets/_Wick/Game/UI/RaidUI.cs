@@ -35,6 +35,7 @@ namespace Wick.Game
         private Label _devTick;
         private Label _devHash;
         private float _fps;
+        private bool _ready;
 
         public event Action<int> VaultPicked;
         public event Action<int> GoldenPicked;
@@ -50,8 +51,23 @@ namespace Wick.Game
             _overlay = overlay;
         }
 
-        private void OnEnable()
+        private void Start()
         {
+            EnsureReady();
+        }
+
+        /// <summary>
+        /// Queries the document on first use: UIDocument builds its tree in its own OnEnable,
+        /// and other scripts may call in from their Start before ours runs.
+        /// </summary>
+        private void EnsureReady()
+        {
+            if (_ready)
+            {
+                return;
+            }
+
+            _ready = true;
             _root = GetComponent<UIDocument>().rootVisualElement;
             _hud = _root.Q("hud");
             _picker = _root.Q("picker");
@@ -105,6 +121,7 @@ namespace Wick.Game
 
         public void ShowPicker(IReadOnlyList<string> vaultNames)
         {
+            EnsureReady();
             VisualElement list = _picker.Q("picker-list");
             list.Clear();
             for (int i = 0; i < vaultNames.Count; i++)
@@ -120,6 +137,7 @@ namespace Wick.Game
 
         public void SetGoldens(IReadOnlyList<string> goldenNames)
         {
+            EnsureReady();
             var list = _root.Q<ScrollView>("dev-goldens");
             list.Clear();
             for (int i = 0; i < goldenNames.Count; i++)
@@ -137,18 +155,21 @@ namespace Wick.Game
 
         public void ShowHud(string banner)
         {
+            EnsureReady();
             ShowOnly(_hud);
             SetBanner(banner);
         }
 
         public void SetBanner(string text)
         {
+            EnsureReady();
             _banner.text = text ?? "";
             Show(_banner, !string.IsNullOrEmpty(text));
         }
 
         public void ShowResults(RaidResult result, string liveHash, string replayHash, bool? match)
         {
+            EnsureReady();
             ShowOnly(_results);
             _results.Q<Label>("result-title").text =
                 result.Outcome == Outcome.Escaped ? "ESCAPED" : result.Outcome == Outcome.Snuffed ? "SNUFFED" : "TIME UP";
@@ -171,6 +192,7 @@ namespace Wick.Game
 
         private void Update()
         {
+            EnsureReady();
             _fps = Mathf.Lerp(_fps, 1f / Mathf.Max(Time.unscaledDeltaTime, 1e-4f), 0.05f);
             Show(_stealthButton, _input.Tuning.UseStealthButton);
 

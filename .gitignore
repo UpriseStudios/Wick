@@ -75,3 +75,7 @@ Thumbs.db
 # Device builds
 /unity/Builds/
 /Builds/
+
+# Python
+__pycache__/
+*.pyc
