@@ -31,12 +31,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
-        with:
-          path: unity/Library
-          key: Library-${{ hashFiles('unity/Assets/**', 'unity/Packages/**', 'unity/ProjectSettings/**') }}
-          restore-keys: Library-
-
+      # No Library cache: with Unity 6000.6 a restored Library gets the Editor killed
+      # (exit 137) during startup, while a clean import passes in about the same time.
       - uses: game-ci/unity-test-runner@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
