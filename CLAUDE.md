@@ -28,7 +28,7 @@ docs/tech-design.md. Read the relevant section before starting any task.
 ## Commands
 - Sim tests (.NET): dotnet test server/Wick.Sim.Server.Tests
 - Unity tests: "C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe" -batchmode -projectPath unity -runTests
-  -testPlatform EditMode -testResults results.xml -quit
+  -testPlatform EditMode -testResults results.xml
 - Replay check: dotnet run --project tools/replay-cli -- raid.json
 
 ## Definition of done
