@@ -25,6 +25,9 @@ jobs:
   unity-editmode:
     name: Unity EditMode tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write   # unity-test-runner posts results as a check run
     steps:
       - uses: actions/checkout@v4
 
