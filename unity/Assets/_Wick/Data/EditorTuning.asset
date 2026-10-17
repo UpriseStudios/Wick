@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c088ff921f07592c087de09c1f1ea66, type: 3}
+  m_Name: EditorTuning
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.EditorTuning
+  DragDp: 12
+  LongPressSeconds: 0.5
+  TapMaxSeconds: 0.35
+  FallbackDpi: 320
+  Pitch: 65
+  Distance: 17
+  MinDistance: 7
+  MaxDistance: 40
+  FrameShiftTiles: 2.5
+  LitBoost: 0.55

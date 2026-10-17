@@ -41,6 +41,7 @@ namespace Wick.Game
         public event Action<int> GoldenPicked;
         public event Action RetryPressed;
         public event Action MenuPressed;
+        public event Action EditorPressed;
 
         public static bool DevBuild => Debug.isDebugBuild;
 
@@ -132,7 +133,19 @@ namespace Wick.Game
                 list.Add(b);
             }
 
+            var editor = new Button(() => EditorPressed?.Invoke()) { text = "Vault editor" };
+            editor.AddToClassList("wide-button");
+            editor.AddToClassList("editor-button");
+            list.Add(editor);
+
             ShowOnly(_picker);
+        }
+
+        /// <summary>Renames the results screen's second button ("Vaults", or "Back to editor").</summary>
+        public void SetMenuLabel(string text)
+        {
+            EnsureReady();
+            _root.Q<Button>("menu-button").text = text;
         }
 
         public void SetGoldens(IReadOnlyList<string> goldenNames)

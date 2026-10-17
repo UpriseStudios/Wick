@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ccf9a6c6e9e21e5a6a17e67e1a77fec, type: 3}
+  m_Name: EditorAssets
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.EditorAssets
+  Registry: {fileID: 11400000, guid: 4d49a88e9cb1d9f4c98a6060ee2fece2, type: 2}
+  Tuning: {fileID: 11400000, guid: e4ab763faf1abe74a99c5be34f345015, type: 2}
+  EntranceMarker: {fileID: 8237261805053151605, guid: 69bc4661d523e874eb7962641a10631a, type: 3}
+  HoardEdge: {fileID: 2254997833374757833, guid: 6760c08d922a43846a1c48c7aa292b7f, type: 3}
+  Waypoint: {fileID: 6410245713225030545, guid: a59f6ad5bfc6347439701e3ccc610a8f, type: 3}
+  CornerMarker: {fileID: 4882581774287022812, guid: e32dc55950c4dd44687505ae09fcbd15, type: 3}
+  PatrolLine: {fileID: 2100000, guid: 48405480eb7c39a4193b6c439e998215, type: 2}

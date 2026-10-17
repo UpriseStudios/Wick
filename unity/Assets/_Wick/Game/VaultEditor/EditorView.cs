@@ -1,0 +1,317 @@
+using System.Collections.Generic;
+using UnityEngine;
+using Wick.Sim;
+
+namespace Wick.Game
+{
+    /// <summary>
+    /// Draws a draft with the same prefabs as a raid (fully lit, no visibility mask), plus editor
+    /// markers: entrance, hoard frame, owl patrols, the first hoard corner and a placement ghost.
+    /// Anything the validator complains about is tinted red.
+    /// </summary>
+    public sealed class EditorView : MonoBehaviour
+    {
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
+
+        [SerializeField] private EditorAssets _assets;
+
+        private readonly List<GameObject> _objects = new List<GameObject>();
+        private readonly List<GameObject> _markers = new List<GameObject>();
+        private GameObject[] _tiles;
+        private TileType[] _shownTiles;
+        private Transform _tileRoot;
+        private Transform _objectRoot;
+        private Transform _markerRoot;
+        private MaterialPropertyBlock _block;
+        private GameObject _ghost;
+        private ObjectType _ghostType;
+
+        public void Bind(EditorAssets assets)
+        {
+            _assets = assets;
+        }
+
+        private void Awake()
+        {
+            EnsureRoots();
+        }
+
+        private void EnsureRoots()
+        {
+            if (_tileRoot != null)
+            {
+                return;
+            }
+
+            _block = new MaterialPropertyBlock();
+            _tileRoot = Child("Tiles");
+            _objectRoot = Child("Objects");
+            _markerRoot = Child("Markers");
+        }
+
+        /// <summary>Redraws the draft. Tiles update in place; objects and markers are rebuilt.</summary>
+        public void Build(VaultDraft draft, List<VaultIssue> issues, int selectedOwl, TilePos? hoardCorner)
+        {
+            EnsureRoots();
+            var badObjects = new HashSet<int>();
+            var badTiles = new HashSet<TilePos>();
+            foreach (VaultIssue issue in issues)
+            {
+                if (issue.ObjectId != 0)
+                {
+                    badObjects.Add(issue.ObjectId);
+                }
+                else if (draft.InBounds(issue.Tile))
+                {
+                    badTiles.Add(issue.Tile);
+                }
+            }
+
+            BuildTiles(draft, badTiles);
+
+            Clear(_objects);
+            foreach (DraftObject o in draft.Objects)
+            {
+                GameObject prefab = _assets.Registry.ForObject(o.Type);
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                GameObject go = Instantiate(prefab, _objectRoot);
+                Pose(go.transform, draft, o.Type, o.Pos, o.Rot);
+                HideRaidOnlyParts(go);
+                Tint(go, badObjects.Contains(o.Id) ? Color.red : (Color?)null, o.Id == selectedOwl);
+                _objects.Add(go);
+            }
+
+            Clear(_markers);
+            Marker(_assets.EntranceMarker, SimPose.TileCenter(draft.Entrance), Quaternion.identity);
+            if (draft.HasHoard)
+            {
+                BuildHoardFrame(draft.Hoard);
+            }
+
+            if (hoardCorner.HasValue)
+            {
+                Marker(_assets.CornerMarker, SimPose.TileCenter(hoardCorner.Value), Quaternion.identity);
+            }
+
+            foreach (DraftObject o in draft.Objects)
+            {
+                if (o.Type == ObjectType.NightOwl && (o.Patrol.Count > 0 || o.Id == selectedOwl))
+                {
+                    BuildPatrol(o, o.Id == selectedOwl);
+                }
+            }
+        }
+
+        /// <summary>Shows a translucent preview of an object being dragged from the tray.</summary>
+        public void ShowGhost(ObjectType type, VaultDraft draft, TilePos tile, bool valid)
+        {
+            if (_ghost == null || _ghostType != type)
+            {
+                HideGhost();
+                GameObject prefab = _assets.Registry.ForObject(type);
+                _ghost = Instantiate(prefab, transform);
+                _ghost.name = "Ghost";
+                HideRaidOnlyParts(_ghost);
+                _ghostType = type;
+            }
+
+            _ghost.SetActive(true);
+            Pose(_ghost.transform, draft, type, tile, 0);
+            _ghost.transform.position += Vector3.up * 0.15f;
+            Tint(_ghost, valid ? new Color(0.4f, 1f, 0.5f) : Color.red, false);
+        }
+
+        public void HideGhost()
+        {
+            if (_ghost != null)
+            {
+                Kill(_ghost);
+                _ghost = null;
+            }
+        }
+
+        // ---- Pieces ---------------------------------------------------------------------
+
+        private void BuildTiles(VaultDraft draft, HashSet<TilePos> badTiles)
+        {
+            int count = draft.Width * draft.Height;
+            if (_tiles == null || _tiles.Length != count)
+            {
+                if (_tiles != null)
+                {
+                    foreach (GameObject t in _tiles)
+                    {
+                        Kill(t);
+                    }
+                }
+
+                _tiles = new GameObject[count];
+                _shownTiles = new TileType[count];
+            }
+
+            for (int y = 0; y < draft.Height; y++)
+            {
+                for (int x = 0; x < draft.Width; x++)
+                {
+                    int i = y * draft.Width + x;
+                    var p = new TilePos(x, y);
+                    TileType type = draft.TileAt(p);
+                    if (_tiles[i] == null || _shownTiles[i] != type)
+                    {
+                        if (_tiles[i] != null)
+                        {
+                            Kill(_tiles[i]);
+                        }
+
+                        _tiles[i] = Instantiate(_assets.Registry.ForTile(type), SimPose.TileCenter(p), Quaternion.identity, _tileRoot);
+                        _shownTiles[i] = type;
+                    }
+
+                    Tint(_tiles[i], badTiles.Contains(p) ? Color.red : (Color?)null, false);
+                }
+            }
+        }
+
+        private void BuildHoardFrame(TileRect r)
+        {
+            float minX = r.MinX - 0.5f;
+            float maxX = r.MaxX + 0.5f;
+            float maxZ = -r.MinY + 0.5f;
+            float minZ = -r.MaxY - 0.5f;
+            float w = maxX - minX;
+            float d = maxZ - minZ;
+            Edge(new Vector3((minX + maxX) * 0.5f, 0.06f, maxZ), new Vector3(w, 0.06f, 0.08f));
+            Edge(new Vector3((minX + maxX) * 0.5f, 0.06f, minZ), new Vector3(w, 0.06f, 0.08f));
+            Edge(new Vector3(minX, 0.06f, (minZ + maxZ) * 0.5f), new Vector3(0.08f, 0.06f, d));
+            Edge(new Vector3(maxX, 0.06f, (minZ + maxZ) * 0.5f), new Vector3(0.08f, 0.06f, d));
+        }
+
+        private void Edge(Vector3 center, Vector3 scale)
+        {
+            GameObject e = Marker(_assets.HoardEdge, center, Quaternion.identity);
+            e.transform.localScale = scale;
+        }
+
+        private void BuildPatrol(DraftObject owl, bool selected)
+        {
+            var points = new List<Vector3> { SimPose.TileCenter(owl.Pos) + Vector3.up * 0.1f };
+            foreach (TilePos p in owl.Patrol)
+            {
+                Marker(_assets.Waypoint, SimPose.TileCenter(p), Quaternion.identity);
+                points.Add(SimPose.TileCenter(p) + Vector3.up * 0.1f);
+            }
+
+            if (owl.Patrol.Count > 1)
+            {
+                points.Add(SimPose.TileCenter(owl.Patrol[0]) + Vector3.up * 0.1f); // the loop closes
+            }
+
+            var lineGo = new GameObject("Patrol " + owl.Id);
+            lineGo.transform.SetParent(_markerRoot, false);
+            var line = lineGo.AddComponent<LineRenderer>();
+            line.sharedMaterial = _assets.PatrolLine;
+            line.widthMultiplier = selected ? 0.12f : 0.07f;
+            line.positionCount = points.Count;
+            line.SetPositions(points.ToArray());
+            line.numCapVertices = 2;
+            _markers.Add(lineGo);
+        }
+
+        /// <summary>Same placement rules as the raid views (BrazierView faces its open side).</summary>
+        private static void Pose(Transform t, VaultDraft draft, ObjectType type, TilePos pos, int rot)
+        {
+            t.position = SimPose.TileCenter(pos);
+            t.rotation = SimPose.Facing((Dir)rot);
+            if (type == ObjectType.Brazier)
+            {
+                for (int d = 0; d < 4; d++)
+                {
+                    var dir = (Dir)d;
+                    TilePos n = pos.Step(dir);
+                    if (draft.InBounds(n) && draft.TileAt(n) != TileType.Wall)
+                    {
+                        t.rotation = SimPose.Facing(dir);
+                        t.position = SimPose.TileCenter(pos) + SimPose.DirVector(dir) * 0.5f;
+                        break;
+                    }
+                }
+            }
+        }
+
+        /// <summary>Hides parts that only make sense mid-raid (spike warning flash).</summary>
+        private static void HideRaidOnlyParts(GameObject go)
+        {
+            Transform warning = go.transform.Find("Warning");
+            if (warning != null)
+            {
+                warning.gameObject.SetActive(false);
+            }
+        }
+
+        private void Tint(GameObject go, Color? color, bool highlight)
+        {
+            foreach (Renderer r in go.GetComponentsInChildren<Renderer>())
+            {
+                if (color == null && !highlight)
+                {
+                    r.SetPropertyBlock(null);
+                    continue;
+                }
+
+                r.GetPropertyBlock(_block);
+                if (color != null)
+                {
+                    _block.SetColor(BaseColorId, color.Value);
+                    _block.SetColor(EmissionId, color.Value * 0.35f);
+                }
+                else
+                {
+                    _block.SetColor(EmissionId, new Color(0.25f, 0.35f, 0.6f));
+                }
+
+                r.SetPropertyBlock(_block);
+            }
+        }
+
+        private GameObject Marker(GameObject prefab, Vector3 position, Quaternion rotation)
+        {
+            GameObject go = Instantiate(prefab, position, rotation, _markerRoot);
+            _markers.Add(go);
+            return go;
+        }
+
+        private static void Kill(Object o)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(o);
+            }
+            else
+            {
+                DestroyImmediate(o);
+            }
+        }
+
+        private Transform Child(string name)
+        {
+            var t = new GameObject(name).transform;
+            t.SetParent(transform, false);
+            return t;
+        }
+
+        private static void Clear(List<GameObject> list)
+        {
+            foreach (GameObject go in list)
+            {
+                Kill(go);
+            }
+
+            list.Clear();
+        }
+    }
+}

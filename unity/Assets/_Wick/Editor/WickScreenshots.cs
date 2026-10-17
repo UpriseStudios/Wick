@@ -59,7 +59,42 @@ namespace Wick.Editor
                 overlay.ShowGrid = false;
             }
 
+            CaptureEditor();
             Debug.Log("WickScreenshots: wrote " + Path.GetFullPath(OutputDir));
+        }
+
+        /// <summary>The vault editor with each template, plus one draft with problems shown in red.</summary>
+        private static void CaptureEditor()
+        {
+            EditorSceneManager.OpenScene("Assets/_Wick/Scenes/Editor.unity", OpenSceneMode.Single);
+            var view = Object.FindFirstObjectByType<EditorView>();
+            var editorCamera = Object.FindFirstObjectByType<EditorCamera>();
+            var camera = editorCamera.GetComponent<Camera>();
+            camera.aspect = 540f / 960f; // render as a portrait phone, whatever the batch screen is
+            var assets = AssetDatabase.LoadAssetAtPath<EditorAssets>("Assets/_Wick/Data/EditorAssets.asset");
+            Shader.SetGlobalVector("_WickVisGrid", Vector4.zero);
+            Shader.SetGlobalFloat("_WickLitBoost", assets.Tuning.LitBoost);
+
+            foreach (TextAsset text in Resources.LoadAll<TextAsset>("VaultTemplates"))
+            {
+                VaultDraft draft = VaultDraft.FromVault(VaultJson.Parse(text.text), text.name);
+                view.Build(draft, VaultValidator.Validate(draft.ToVaultDef()), -1, null);
+                editorCamera.Frame(draft.Width, draft.Height);
+                Render(camera, Path.Combine(OutputDir, "editor-" + text.name + ".png"));
+            }
+
+            // Problems in red: a drip on a wall, an owl below its level, and the owl's patrol selected.
+            VaultDraft broken = VaultDraft.FromVault(VaultJson.Parse(Resources.Load<TextAsset>("VaultTemplates/1-three-halls").text), "broken");
+            broken.Place(ObjectType.DripPipe, new TilePos(0, 6));
+            broken.Place(ObjectType.SpikeFloor, new TilePos(4, 7));
+            DraftObject owl = broken.Place(ObjectType.NightOwl, new TilePos(2, 6));
+            broken.AddWaypoint(owl.Id, new TilePos(2, 6));
+            broken.AddWaypoint(owl.Id, new TilePos(6, 6));
+            broken.AddWaypoint(owl.Id, new TilePos(6, 8));
+            broken.Place(ObjectType.Brazier, new TilePos(8, 6));
+            view.Build(broken, VaultValidator.Validate(broken.ToVaultDef()), owl.Id, null);
+            editorCamera.Frame(broken.Width, broken.Height);
+            Render(camera, Path.Combine(OutputDir, "editor-issues.png"));
         }
 
         private static void Render(Camera camera, string path)

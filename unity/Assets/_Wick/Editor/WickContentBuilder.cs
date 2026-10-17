@@ -28,6 +28,8 @@ namespace Wick.Editor
         private const string DataDir = Root + "/Data";
         private const string UiDir = Root + "/Game/UI";
         private const string ScenePath = Root + "/Scenes/Raid.unity";
+        private const string EditorScenePath = Root + "/Scenes/Editor.unity";
+        private const string EditorUiDir = Root + "/Game/VaultEditor";
 
         [MenuItem("Wick/Rebuild Placeholder Content")]
         public static void Build()
@@ -47,6 +49,12 @@ namespace Wick.Editor
             LoadOrCreate<InputTuning>(DataDir + "/InputTuning.asset");
             AssetDatabase.SaveAssets();
             BuildScene();
+            BuildEditorContent();
+            EditorBuildSettings.scenes = new[]
+            {
+                new EditorBuildSettingsScene(ScenePath, true),
+                new EditorBuildSettingsScene(EditorScenePath, true),
+            };
             RemoveTemplateLeftovers();
             ApplyProjectSettings();
             AssetDatabase.SaveAssets();
@@ -523,10 +531,111 @@ namespace Wick.Editor
             eventSystem.AddComponent<InputSystemUIInputModule>();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
         }
 
         // ---- Project ------------------------------------------------------------------------
+
+        // ---- Vault editor ----------------------------------------------------------------------
+
+        private static void BuildEditorContent()
+        {
+            Material entrance = Lit("EditorEntrance", new Color(0.3f, 1f, 0.5f), new Color(0.2f, 0.8f, 0.3f), ignoreMask: true);
+            Material hoard = Lit("EditorHoard", new Color(1f, 0.8f, 0.2f), new Color(0.9f, 0.6f, 0.1f), ignoreMask: true);
+            Material waypoint = Lit("EditorWaypoint", new Color(0.4f, 0.8f, 1f), new Color(0.2f, 0.5f, 0.9f), ignoreMask: true);
+            Material line = MaterialAsset("EditorPatrolLine", Shader.Find("Wick/Overlay"));
+            line.SetColor("_Color", new Color(0.4f, 0.8f, 1f, 0.85f));
+            EditorUtility.SetDirty(line);
+
+            EditorAssets assets = LoadOrCreate<EditorAssets>(DataDir + "/EditorAssets.asset");
+            assets.Registry = AssetDatabase.LoadAssetAtPath<ViewRegistry>(DataDir + "/ViewRegistry.asset");
+            assets.Tuning = LoadOrCreate<EditorTuning>(DataDir + "/EditorTuning.asset");
+            assets.EntranceMarker = Save("EditorEntrance", root =>
+            {
+                Box(root, "Base", new Vector3(0f, 0.03f, 0f), new Vector3(0.8f, 0.04f, 0.8f), entrance);
+                Box(root, "Arrow", new Vector3(0f, 0.06f, 0.15f), new Vector3(0.2f, 0.04f, 0.5f), entrance);
+            });
+            assets.HoardEdge = Save("EditorHoardEdge", root => Box(root, "Edge", Vector3.zero, Vector3.one, hoard));
+            assets.Waypoint = Save("EditorWaypoint", root =>
+                Prim(PrimitiveType.Cylinder, root, "Point", new Vector3(0f, 0.05f, 0f), new Vector3(0.3f, 0.04f, 0.3f), waypoint));
+            assets.CornerMarker = Save("EditorCorner", root =>
+                Prim(PrimitiveType.Cylinder, root, "Corner", new Vector3(0f, 0.08f, 0f), new Vector3(0.5f, 0.06f, 0.5f), hoard));
+            assets.PatrolLine = line;
+            EditorUtility.SetDirty(assets);
+            AssetDatabase.SaveAssets();
+
+            BuildEditorScene();
+        }
+
+        private static void BuildEditorScene()
+        {
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var assets = AssetDatabase.LoadAssetAtPath<EditorAssets>(DataDir + "/EditorAssets.asset");
+            var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(UiDir + "/RaidPanelSettings.asset");
+
+            // Building wants to see the whole vault: brighter ambient and a soft key light.
+            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.32f, 0.30f, 0.36f);
+            RenderSettings.ambientEquatorColor = new Color(0.22f, 0.20f, 0.24f);
+            RenderSettings.ambientGroundColor = new Color(0.10f, 0.10f, 0.12f);
+            RenderSettings.skybox = null;
+            RenderSettings.fog = false;
+
+            var lightGo = new GameObject("Key Light");
+            Light key = lightGo.AddComponent<Light>();
+            key.type = LightType.Directional;
+            key.intensity = 0.8f;
+            key.color = new Color(1f, 0.95f, 0.88f);
+            key.shadows = LightShadows.None;
+            lightGo.transform.rotation = Quaternion.Euler(55f, -30f, 0f);
+
+            var cameraGo = new GameObject("Editor Camera") { tag = "MainCamera" };
+            Camera camera = cameraGo.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.05f, 0.05f, 0.07f);
+            camera.fieldOfView = 40f;
+            camera.nearClipPlane = 0.3f;
+            camera.farClipPlane = 80f;
+            EditorCamera editorCamera = cameraGo.AddComponent<EditorCamera>();
+            Set(editorCamera, "_tuning", assets.Tuning);
+
+            var viewGo = new GameObject("Vault View");
+            EditorView view = viewGo.AddComponent<EditorView>();
+            Set(view, "_assets", assets);
+
+            var root = new GameObject("Vault Editor");
+            EditorInput input = root.AddComponent<EditorInput>();
+            Set(input, "_tuning", assets.Tuning);
+            VaultEditorController controller = root.AddComponent<VaultEditorController>();
+
+            var uiGo = new GameObject("UI");
+            UIDocument doc = uiGo.AddComponent<UIDocument>();
+            doc.panelSettings = panel;
+            doc.visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(EditorUiDir + "/EditorUI.uxml");
+            EditorUI ui = uiGo.AddComponent<EditorUI>();
+            Set(ui, "_controller", controller);
+            Set(ui, "_input", input);
+
+            var eventSystem = new GameObject("EventSystem");
+            eventSystem.AddComponent<EventSystem>();
+            eventSystem.AddComponent<InputSystemUIInputModule>();
+
+            Set(controller, "_assets", assets);
+            Set(controller, "_view", view);
+            Set(controller, "_camera", editorCamera);
+            Set(controller, "_input", input);
+            Set(controller, "_ui", ui);
+            var so = new SerializedObject(controller);
+            SerializedProperty hide = so.FindProperty("_hideDuringTest");
+            GameObject[] hidden = { cameraGo, lightGo, viewGo, uiGo, eventSystem };
+            hide.arraySize = hidden.Length;
+            for (int i = 0; i < hidden.Length; i++)
+            {
+                hide.GetArrayElementAtIndex(i).objectReferenceValue = hidden[i];
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorSceneManager.SaveScene(scene, EditorScenePath);
+        }
 
         private static void RemoveTemplateLeftovers()
         {

@@ -1,0 +1,327 @@
+.root {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ---- Shared ---------------------------------------------------------------- */
+
+.panel {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    background-color: rgb(14, 12, 18);
+    align-items: center;
+    padding: 80px 56px 56px 56px;
+}
+
+.title {
+    font-size: 84px;
+    color: rgb(255, 200, 110);
+    -unity-font-style: bold;
+    margin-bottom: 24px;
+}
+
+.section {
+    font-size: 40px;
+    color: rgb(255, 200, 110);
+    margin: 28px 0 12px 0;
+}
+
+.list {
+    width: 90%;
+}
+
+.wide-button {
+    height: 120px;
+    margin: 10px 0;
+    font-size: 42px;
+    border-radius: 22px;
+    color: rgb(30, 22, 12);
+    background-color: rgb(255, 200, 110);
+    border-width: 0;
+    flex-grow: 1;
+}
+
+.wide-button.secondary {
+    width: 90%;
+    flex-grow: 0;
+    margin-top: 32px;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: rgb(230, 230, 230);
+}
+
+.small-button {
+    height: 88px;
+    padding: 0 22px;
+    margin: 0 6px;
+    font-size: 32px;
+    border-radius: 16px;
+    border-width: 0;
+    color: rgb(235, 235, 235);
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+.tiny-button {
+    width: 72px;
+    height: 72px;
+    font-size: 40px;
+    border-radius: 36px;
+    border-width: 0;
+    color: rgb(235, 235, 235);
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+.draft-list {
+    width: 90%;
+    max-height: 760px;
+}
+
+.draft-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+#empty {
+    font-size: 36px;
+    color: rgb(180, 180, 180);
+    margin: 20px 0;
+}
+
+/* ---- Editor top ------------------------------------------------------------- */
+
+.editor {
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+}
+
+.topbar {
+    flex-direction: row;
+    align-items: center;
+    padding: 36px 20px 16px 20px;
+    background-color: rgba(10, 8, 14, 0.88);
+}
+
+.vault-name {
+    font-size: 34px;
+    color: rgb(240, 236, 225);
+    -unity-font-style: bold;
+    flex-grow: 1;
+    margin: 0 10px;
+    overflow: hidden;
+}
+
+.level {
+    font-size: 34px;
+    color: rgb(255, 200, 110);
+    margin: 0 10px;
+}
+
+.budget {
+    width: 230px;
+    margin: 0 12px;
+}
+
+.budget-track {
+    height: 22px;
+    border-radius: 11px;
+    background-color: rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+}
+
+.budget-fill {
+    height: 100%;
+    width: 0;
+    background-color: rgb(120, 220, 130);
+}
+
+.budget-fill.over {
+    background-color: rgb(255, 80, 60);
+}
+
+.budget-label {
+    font-size: 28px;
+    color: rgb(225, 225, 225);
+    -unity-text-align: middle-center;
+}
+
+.issues {
+    background-color: rgba(120, 220, 130, 0.35);
+}
+
+.issues.bad {
+    background-color: rgb(220, 60, 50);
+}
+
+.status {
+    font-size: 30px;
+    color: rgb(225, 220, 205);
+    padding: 10px 24px;
+    background-color: rgba(10, 8, 14, 0.6);
+}
+
+.toast {
+    position: absolute;
+    top: 260px;
+    left: 40px;
+    right: 40px;
+    padding: 22px;
+    border-radius: 20px;
+    font-size: 34px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    color: rgb(255, 255, 255);
+    background-color: rgba(40, 40, 60, 0.92);
+}
+
+.issues-panel {
+    position: absolute;
+    top: 220px;
+    left: 30px;
+    right: 30px;
+    padding: 24px;
+    border-radius: 24px;
+    background-color: rgba(18, 14, 22, 0.96);
+}
+
+.issue-list {
+    max-height: 700px;
+    margin-bottom: 16px;
+}
+
+.issue-list Label {
+    font-size: 32px;
+    color: rgb(255, 150, 130);
+    white-space: normal;
+    margin: 6px 0;
+}
+
+/* ---- Editor bottom ------------------------------------------------------------ */
+
+.bottom {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+}
+
+.hint {
+    font-size: 28px;
+    color: rgb(215, 210, 195);
+    white-space: normal;
+    padding: 8px 24px;
+    background-color: rgba(10, 8, 14, 0.6);
+}
+
+.owl-panel {
+    padding: 12px 16px;
+    margin: 0 16px 10px 16px;
+    border-radius: 20px;
+    background-color: rgba(30, 40, 70, 0.95);
+}
+
+.row {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.tools {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 10px 12px 4px 12px;
+    background-color: rgba(10, 8, 14, 0.9);
+}
+
+.tool {
+    width: 112px;
+    height: 84px;
+    margin: 4px;
+    font-size: 26px;
+    border-radius: 14px;
+    border-width: 0;
+    color: rgb(230, 230, 230);
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.tool.selected {
+    background-color: rgb(255, 200, 110);
+    color: rgb(30, 22, 12);
+}
+
+.tray-scroll {
+    background-color: rgba(10, 8, 14, 0.9);
+    padding: 6px 8px;
+}
+
+.tray {
+    flex-direction: row;
+}
+
+.tray-item {
+    width: 176px;
+    height: 132px;
+    margin: 4px 6px;
+    border-radius: 18px;
+    background-color: rgb(70, 60, 90);
+    align-items: center;
+    justify-content: center;
+}
+
+.tray-item Label {
+    font-size: 28px;
+    color: rgb(240, 240, 240);
+    -unity-font-style: bold;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+.tray-item .tray-cost {
+    font-size: 24px;
+    -unity-font-style: normal;
+    color: rgb(255, 210, 120);
+}
+
+.tray-item.locked {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.tray-item.locked Label {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.tray-item.dragging {
+    background-color: rgb(120, 100, 160);
+}
+
+.actions {
+    flex-direction: row;
+    padding: 10px 12px 40px 12px;
+    background-color: rgba(10, 8, 14, 0.95);
+}
+
+.action {
+    flex-grow: 1;
+    height: 110px;
+    margin: 0 6px;
+    font-size: 36px;
+    border-radius: 20px;
+    border-width: 0;
+    color: rgb(235, 235, 235);
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+.action.primary {
+    background-color: rgb(255, 200, 110);
+    color: rgb(30, 22, 12);
+    -unity-font-style: bold;
+}
+
+.action:disabled {
+    opacity: 0.35;
+}
+
+.action.dev {
+    flex-grow: 0;
+    width: 120px;
+    font-size: 26px;
+}

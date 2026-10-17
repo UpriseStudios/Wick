@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Wick/Scenes/Raid.unity
     guid: 4613a6ec72766364b9cbf5ac867a2fbb
+  - enabled: 1
+    path: Assets/_Wick/Scenes/Editor.unity
+    guid: 7996a023232fade409237d58d180fa43
   m_configObjects: {}

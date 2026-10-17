@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Wick.Sim;
 
 namespace Wick.Game
@@ -22,6 +23,7 @@ namespace Wick.Game
         private float _scoutLeft;
         private RaidFile _replaying;
         private System.Random _seeds;
+        private RaidLaunch.Request _launched;
 
         public void Bind(RaidRunner runner, RaidUI ui, RaidCamera camera, RaidTuning tuning)
         {
@@ -43,7 +45,8 @@ namespace Wick.Game
             _ui.VaultPicked += StartVault;
             _ui.GoldenPicked += StartGolden;
             _ui.RetryPressed += Retry;
-            _ui.MenuPressed += ShowPicker;
+            _ui.MenuPressed += OnMenu;
+            _ui.EditorPressed += OpenEditor;
         }
 
         private void OnDisable()
@@ -52,7 +55,8 @@ namespace Wick.Game
             _ui.VaultPicked -= StartVault;
             _ui.GoldenPicked -= StartGolden;
             _ui.RetryPressed -= Retry;
-            _ui.MenuPressed -= ShowPicker;
+            _ui.MenuPressed -= OnMenu;
+            _ui.EditorPressed -= OpenEditor;
         }
 
         private void Start()
@@ -66,6 +70,16 @@ namespace Wick.Game
             }
 
             _ui.SetGoldens(goldenNames);
+
+            // Loaded on top of the editor by its Test button: play that vault straight away.
+            _launched = RaidLaunch.Pending;
+            if (_launched != null)
+            {
+                _ui.SetMenuLabel("Back to editor");
+                StartLaunched();
+                return;
+            }
+
             ShowPicker();
         }
 
@@ -108,6 +122,32 @@ namespace Wick.Game
             _ui.ShowHud("SCOUTING");
         }
 
+        private void StartLaunched()
+        {
+            _replaying = null;
+            _runner.LoadLive(_launched.Vault, _seeds.Next());
+            _camera.BeginScout();
+            _scoutLeft = _tuning.ScoutSeconds;
+            _ui.ShowHud("TEST RAID");
+        }
+
+        private void OnMenu()
+        {
+            if (_launched != null)
+            {
+                _runner.Unload();
+                RaidLaunch.End(); // the editor unloads this scene
+                return;
+            }
+
+            ShowPicker();
+        }
+
+        private void OpenEditor()
+        {
+            SceneManager.LoadScene("Editor");
+        }
+
         private void StartGolden(int index)
         {
             _replaying = RaidFile.Parse(_goldens[index].text);
@@ -118,7 +158,11 @@ namespace Wick.Game
 
         private void Retry()
         {
-            if (_replaying != null)
+            if (_launched != null)
+            {
+                StartLaunched();
+            }
+            else if (_replaying != null)
             {
                 ShowPicker();
             }
@@ -136,6 +180,11 @@ namespace Wick.Game
                 bool matches = _replaying.Matches(result);
                 _ui.ShowResults(result, live, _replaying.ExpectedHash + " (golden)", matches);
                 return;
+            }
+
+            if (_launched != null)
+            {
+                RaidLaunch.ReportRun(new RaidRunReport(runner.Vault, runner.Seed, runner.Sim.RecordedLog, result));
             }
 
             // Replay the recorded log headlessly: it must give the same hash as the live run.
