@@ -77,6 +77,27 @@ Content is generated from code and committed. After changing
 Content**. Dev vaults come from `tools/golden/make_dev_vaults.py`. Tuning lives
 in `Assets/_Wick/Data/RaidTuning.asset` and `InputTuning.asset`.
 
+## Vault editor
+
+From the Raid scene's vault picker choose **Vault editor** (or open
+`Assets/_Wick/Scenes/Editor.unity`). Start from one of three templates, then:
+
+- **Paint bar:** Select, Floor, Wall, Door, Pit and Ice (cosmetic for now),
+  Entrance, Treasure, Hoard (tap two corners). Tap or drag to paint.
+- **Tray:** drag traps and guardians onto the grid. Items above the vault's
+  level are locked. In Select mode tap to rotate, drag to move, long-press to
+  delete; tap an owl to rotate it or edit its patrol (tap tiles to add points).
+- **Top bar:** Vault Level, the build budget and an issues list. Anything the
+  validator rejects is tinted red. Pinch to zoom, two fingers (or right mouse)
+  to pan. Undo and Redo cover every change; drafts save automatically.
+- **Test** plays the vault. Escaping with at least 1 star records the
+  clear-check; **Publish** then re-verifies it and saves the vault locally
+  (Cloud Save comes in M5). Any edit after a test needs a new test.
+
+Build rules (costs, budgets, unlock levels, treasure) are in
+`Assets/_Wick/Sim/Vault/VaultRules.cs`; the checks are in `VaultValidator.cs`.
+Templates come from `tools/golden/make_vault_templates.py`.
+
 ## Building for Android
 
 **Wick > Build Android Dev APK** writes `unity/Builds/Wick-dev.apk` (development

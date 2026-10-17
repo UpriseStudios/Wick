@@ -219,7 +219,7 @@ The client never writes wallet, inventory or live-vault data directly; every cha
 | `GetRaidTarget()` | Picks a live vault near the player's Crowns, excluding own and recently raided; returns vault, seed and a raid token that expires in 5 minutes |
 | `StartFriendRaid(vaultId)` | Same, for a specific vault from a link or friend list |
 | `SubmitRaid(token, log, claimed)` | Re-simulates; if the result matches, pays loot, updates Crowns and the defender's stats and bonus, stores the raid record and sends a push |
-| `PublishVault(draft)` | Checks schema, build budget and Vault Level limits, re-simulates the clear-check (needs at least 1 star), then writes `vault.live` |
+| `PublishVault(draft)` | Parses with `VaultJson`, runs `VaultValidator` (schema, build budget, Vault Level limits, placement, reachability), re-simulates the clear-check with `ClearCheck.Verify` (needs at least 1 star), then writes `vault.live`. `VaultJson` alone only checks what the sim needs to run safely, so the validator must always run too |
 | `GetDefenceLog()` / `GetReplay(raidId)` | Raids on your vault and their logs, for replay |
 | `StartUpgrade(item)` / `FinishUpgrade(item)` | Server-timed building and upgrades, including star gates and workshop slots |
 | `ClaimAdReward(placement)` | Pays only after the ad network's server-to-server callback confirms the view, within daily caps |
