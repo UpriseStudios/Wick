@@ -10,16 +10,34 @@ namespace Wick.Sim
     /// </summary>
     public static class Lighting
     {
-        /// <summary>Light radius in sub-tile units for a flame level, halved by tiptoe.</summary>
-        public static int RadiusUnits(int flickers, bool tiptoe)
+        /// <summary>
+        /// Light radius in sub-tile units for a flame level, halved by tiptoe, then shrunk by a
+        /// Bellows gust (never below MinLightRadius while any flicker is left).
+        /// </summary>
+        public static int RadiusUnits(int flickers, bool tiptoe, bool gustDimmed = false)
         {
             int radius;
             if (flickers >= 3) radius = SimTuning.LightRadius3Flickers;
             else if (flickers == 2) radius = SimTuning.LightRadius2Flickers;
             else if (flickers == 1) radius = SimTuning.LightRadius1Flicker;
-            else radius = 0;
+            else return 0;
 
-            return tiptoe ? radius / SimTuning.TiptoeLightDivisor : radius;
+            if (tiptoe)
+            {
+                radius /= SimTuning.TiptoeLightDivisor;
+            }
+
+            if (gustDimmed)
+            {
+                radius -= SimTuning.GustDimUnits;
+            }
+
+            return radius < SimTuning.MinLightRadius ? SimTuning.MinLightRadius : radius;
+        }
+
+        public static int RadiusUnits(in WickState wick)
+        {
+            return RadiusUnits(wick.Flickers, wick.Tiptoe, wick.GustDimTicks > 0);
         }
 
         /// <summary>Fills lit (row-major, Width * Height) for Wick's current state. No allocation.</summary>
@@ -27,7 +45,7 @@ namespace Wick.Sim
         {
             Array.Clear(lit, 0, lit.Length);
 
-            int radius = RadiusUnits(wick.Flickers, wick.Tiptoe);
+            int radius = RadiusUnits(in wick);
             if (radius <= 0)
             {
                 return;

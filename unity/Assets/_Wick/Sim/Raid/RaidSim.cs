@@ -32,6 +32,7 @@ namespace Wick.Sim
             State.Spent = new bool[vault.ObjectCount];
             State.Guardians = CreateGuardians(vault);
             State.Lit = new bool[vault.Width * vault.Height];
+            _trapActive = new bool[vault.ObjectCount];
             UpdateLight();
         }
 
@@ -266,41 +267,23 @@ namespace Wick.Sim
             return true;
         }
 
-        // ---- 3-6. Not yet implemented -----------------------------------------------------
-
-        private void AdvanceTraps()
-        {
-            // TODO M2: timed traps are a pure function of State.Tick (cycle length, phase offset).
-        }
-
-        private void UpdateGuardians()
-        {
-            // TODO M2: patrol, alert and chase, iterating guardians sorted by entity id;
-            // sight only against tiles inside Wick's light; decoy distraction.
-        }
-
-        private void ResolveHits()
-        {
-            // TODO M2: trap and guardian hits, pits; flicker loss, snuff, invulnerability window.
-        }
-
-        private void ResolvePickups()
-        {
-            // TODO M2: treasure piles (weight) and braziers (relight 1 flicker, once each).
-        }
+        // Steps 3-6 live in RaidSim.Traps.cs, RaidSim.Guardians.cs, RaidSim.Hits.cs and
+        // RaidSim.Pickups.cs.
 
         // ---- 7. End checks ---------------------------------------------------------------
 
         private void CheckEnd()
         {
             WickState w = State.Wick;
-            if (_arrivedThisTick && w.LeftEntrance && w.Tile == _vault.Entrance)
-            {
-                State.Outcome = Outcome.Escaped;
-            }
-            else if (w.Flickers <= 0)
+
+            // Snuffed wins: a flame that goes out on the entrance tile did not escape.
+            if (w.Flickers <= 0)
             {
                 State.Outcome = Outcome.Snuffed;
+            }
+            else if (_arrivedThisTick && w.LeftEntrance && w.Tile == _vault.Entrance)
+            {
+                State.Outcome = Outcome.Escaped;
             }
             else if (State.Tick + 1 >= SimTuning.RaidTicks)
             {
