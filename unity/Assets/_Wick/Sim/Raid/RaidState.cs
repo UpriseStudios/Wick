@@ -40,6 +40,56 @@ namespace Wick.Sim
         // Decoy
         public TilePos DecoyTile;
         public int DecoyTicksLeft;
+
+        // Hits, pickups, scoring
+        public int InvulnTicks;
+        public int CarriedPiles;
+        public int GustDimTicks;
+        public bool ReachedHoard;
+
+        /// <summary>The tile Wick counts as standing on for hits, contacts and pickups.</summary>
+        public TilePos Occupied => Motion.OccupiedTile(Tile, Moving, MoveDir, Progress);
+    }
+
+    public enum GuardianMode : byte
+    {
+        /// <summary>Owl walking its waypoints; moths hovering with nothing to chase.</summary>
+        Patrol = 0,
+
+        /// <summary>Owl hunting Wick; moths drifting toward Wick's light.</summary>
+        Chase = 1,
+
+        /// <summary>Drawn to an active decoy.</summary>
+        Distracted = 2,
+    }
+
+    /// <summary>A Night Owl or Wax Moths swarm. Every field is folded into the state hash.</summary>
+    public struct GuardianState
+    {
+        /// <summary>Index into the vault's objects (which are sorted by id).</summary>
+        public int ObjectIndex;
+
+        public ObjectType Kind;
+        public TilePos Tile;
+        public int Progress;
+        public bool Moving;
+        public Dir MoveDir;
+        public Dir Facing;
+        public GuardianMode Mode;
+
+        /// <summary>Owl: index of the waypoint it is heading for.</summary>
+        public int Waypoint;
+
+        /// <summary>Where the guardian is heading when chasing or distracted.</summary>
+        public TilePos Target;
+
+        /// <summary>Owl: ticks since it last saw Wick while chasing.</summary>
+        public int LostTicks;
+
+        /// <summary>Moths: consecutive ticks in contact with Wick.</summary>
+        public int ContactTicks;
+
+        public TilePos Occupied => Motion.OccupiedTile(Tile, Moving, MoveDir, Progress);
     }
 
     /// <summary>Mutable state of one raid. Owned and advanced only by RaidSim.</summary>
@@ -52,6 +102,15 @@ namespace Wick.Sim
         public Outcome Outcome;
         public Pcg32 Rng;
         public Fnv1a64 Hash;
+
+        /// <summary>
+        /// Per vault object (same order as the vault's objects, i.e. by id): a Snuffer Bell has
+        /// triggered, a treasure pile was taken, or a brazier was used.
+        /// </summary>
+        public bool[] Spent;
+
+        /// <summary>Night Owls and Wax Moths, sorted by entity id.</summary>
+        public GuardianState[] Guardians;
 
         /// <summary>
         /// Tiles lit by Wick's flame this tick, row-major (y * vault width + x). Derived from

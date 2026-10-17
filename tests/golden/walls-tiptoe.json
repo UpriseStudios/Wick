@@ -1,6 +1,6 @@
 {
   "_note": "Dash into a wall, run into a wall, tiptoe dashes west and north, decoy, run north into a wall, run south into a wall, then dash east and south onto the entrance. Escapes at the end of tick 79. Stores its log as base64 (readable copy in _commands).",
-  "simVersion": 2,
+  "simVersion": 3,
   "seed": 7,
   "vault": {
     "schema": 1,
@@ -120,6 +120,6 @@
   "expected": {
     "outcome": "Escaped",
     "ticks": 80,
-    "hash": "c4a03009f40ededd"
+    "hash": "a29014c55c9637d8"
   }
 }

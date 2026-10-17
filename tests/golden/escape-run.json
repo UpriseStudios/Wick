@@ -1,6 +1,6 @@
 {
   "_note": "Run north into the wall at (4,9), sidestep east, run north through the gap to (5,5), run back south to (5,11), dash west then south onto the entrance. Escapes at the end of tick 159.",
-  "simVersion": 2,
+  "simVersion": 3,
   "seed": 55021,
   "vault": {
     "schema": 1,
@@ -73,6 +73,6 @@
   "expected": {
     "outcome": "Escaped",
     "ticks": 160,
-    "hash": "017b5395fd449588"
+    "hash": "1605617b7e5f2604"
   }
 }

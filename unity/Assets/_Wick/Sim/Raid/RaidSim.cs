@@ -1,18 +1,21 @@
 using System;
+using System.Collections.Generic;
 
 namespace Wick.Sim
 {
     /// <summary>
     /// One raid as a pure function of (vault, seed, input log). Step() runs the fixed tick
-    /// order from the tech design; never reorder it (see CLAUDE.md).
+    /// order from the tech design; never reorder it (see CLAUDE.md). The steps live in the
+    /// RaidSim.*.cs partial files.
     /// </summary>
-    public sealed class RaidSim
+    public sealed partial class RaidSim
     {
         /// <summary>PCG32 stream id for raid randomness ("WICK").</summary>
         public const ulong RngStream = 0x5749434BUL;
 
         private readonly VaultDef _vault;
         private readonly InputLog _log;
+        private readonly List<SimEvent> _events = new List<SimEvent>(32);
         private int _nextCommand;
         private bool _arrivedThisTick;
 
@@ -26,6 +29,8 @@ namespace Wick.Sim
             State.Wick.Tile = vault.Entrance;
             State.Wick.Facing = Dir.N;
             State.Wick.Flickers = SimTuning.StartFlickers;
+            State.Spent = new bool[vault.ObjectCount];
+            State.Guardians = CreateGuardians(vault);
             State.Lit = new bool[vault.Width * vault.Height];
             UpdateLight();
         }
@@ -33,6 +38,12 @@ namespace Wick.Sim
         public RaidState State { get; }
 
         public bool IsOver => State.Outcome != Outcome.Running;
+
+        /// <summary>
+        /// What happened during the last Step(), for views, audio and clip highlights.
+        /// Cleared at the start of every step. The sim never reads these.
+        /// </summary>
+        public IReadOnlyList<SimEvent> Events => _events;
 
         /// <summary>Advances one tick. Does nothing once the raid has ended.</summary>
         public void Step()
@@ -43,6 +54,7 @@ namespace Wick.Sim
             }
 
             _arrivedThisTick = false;
+            _events.Clear();
 
             ApplyInputs();      // 1. apply inputs stamped for this tick
             MoveWick();         // 2. move Wick (and decoy timer),
@@ -61,6 +73,46 @@ namespace Wick.Sim
         public bool IsLit(TilePos p)
         {
             return _vault.InBounds(p) && State.Lit[p.Y * _vault.Width + p.X];
+        }
+
+        private void Emit(SimEventType type, int entityId, TilePos tile, int value)
+        {
+            _events.Add(new SimEvent(type, entityId, tile, value));
+        }
+
+        private static GuardianState[] CreateGuardians(VaultDef vault)
+        {
+            int count = 0;
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                if (ObjectTypes.IsGuardian(vault.GetObject(i).Type))
+                {
+                    count++;
+                }
+            }
+
+            var guardians = new GuardianState[count];
+            int n = 0;
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                ObjectDef o = vault.GetObject(i);
+                if (!ObjectTypes.IsGuardian(o.Type))
+                {
+                    continue;
+                }
+
+                guardians[n++] = new GuardianState
+                {
+                    ObjectIndex = i,
+                    Kind = o.Type,
+                    Tile = o.Pos,
+                    Facing = Dir.N,
+                    Mode = GuardianMode.Patrol,
+                    Target = o.Pos,
+                };
+            }
+
+            return guardians;
         }
 
         public RaidResult GetResult()

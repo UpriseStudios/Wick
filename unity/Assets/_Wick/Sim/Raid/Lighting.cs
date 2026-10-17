@@ -43,9 +43,7 @@ namespace Wick.Sim
             }
 
             // Line of sight is traced from the tile Wick is mostly in.
-            TilePos origin = wick.Moving && wick.Progress * 2 >= SubTile.PerTile
-                ? wick.Tile.Step(wick.MoveDir)
-                : wick.Tile;
+            TilePos origin = wick.Occupied;
 
             long r2 = (long)radius * radius;
             int reach = radius / SubTile.PerTile + 1;

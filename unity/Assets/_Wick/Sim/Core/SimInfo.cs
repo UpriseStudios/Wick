@@ -6,7 +6,7 @@ namespace Wick.Sim
     /// </summary>
     public static class SimInfo
     {
-        // 2: flame light radius and line of sight.
-        public const int Version = 2;
+        // 2: flame light radius and line of sight. 3: traps, guardians, hits, pickups, scoring.
+        public const int Version = 3;
     }
 }
