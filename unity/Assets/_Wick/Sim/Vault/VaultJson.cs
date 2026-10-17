@@ -156,6 +156,33 @@ namespace Wick.Sim
             return w.ToString();
         }
 
+        /// <summary>
+        /// The full vault document as stored and published: the layout plus its build points and,
+        /// when present, the clear-check run.
+        /// </summary>
+        public static string WriteDocument(VaultDef vault, ClearCheck clearCheck)
+        {
+            var w = new JsonWriter();
+            w.BeginObject();
+            WriteFields(w, vault);
+            w.Field("buildPoints", VaultRules.BuildPoints(vault));
+            if (clearCheck != null)
+            {
+                w.Name("clearCheck");
+                clearCheck.Write(w);
+            }
+
+            w.EndObject();
+            return w.ToString();
+        }
+
+        /// <summary>The clear-check stored in a vault document, or null.</summary>
+        public static ClearCheck ReadClearCheck(JsonNode root)
+        {
+            JsonNode node = root.Find("clearCheck");
+            return node == null || node.Kind == JsonKind.Null ? null : ClearCheck.FromNode(node);
+        }
+
         /// <summary>Writes the vault's fields into an object the caller has already begun.</summary>
         public static void WriteFields(JsonWriter w, VaultDef vault)
         {
