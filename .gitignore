@@ -1,4 +1,13 @@
 # ---- Unity (project lives in unity/) ----
+# Guard: opening the repo root in Unity by mistake creates a stray empty project.
+/Assets/
+/Library/
+/Logs/
+/Packages/
+/ProjectSettings/
+/Temp/
+/UserSettings/
+
 /unity/[Ll]ibrary/
 /unity/[Tt]emp/
 /unity/[Oo]bj/
