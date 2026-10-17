@@ -33,6 +33,7 @@ namespace Wick.Sim
             State.Guardians = CreateGuardians(vault);
             State.Lit = new bool[vault.Width * vault.Height];
             _trapActive = new bool[vault.ObjectCount];
+            InitGuardians();
             UpdateLight();
         }
 
@@ -107,9 +108,9 @@ namespace Wick.Sim
                     ObjectIndex = i,
                     Kind = o.Type,
                     Tile = o.Pos,
-                    Facing = Dir.N,
+                    Facing = o.Facing,
                     Mode = GuardianMode.Patrol,
-                    Target = o.Pos,
+                    Target = o.Patrol.Length > 0 ? o.Patrol[0] : o.Pos,
                 };
             }
 
