@@ -61,7 +61,7 @@ namespace Wick.Sim.Tests
             Assert.AreEqual(3, v.GetObject(2).Id);
 
             ObjectDef pipe = v.GetObject(0);
-            Assert.AreEqual("drip_pipe", pipe.Type);
+            Assert.AreEqual(ObjectType.DripPipe, pipe.Type);
             Assert.AreEqual(45, pipe.Cycle);
             Assert.AreEqual(10, pipe.Offset);
 
@@ -110,8 +110,93 @@ namespace Wick.Sim.Tests
         [Test]
         public void RejectsDuplicateObjectIds()
         {
-            string objects = "[{\"id\":1,\"type\":\"a\",\"x\":0,\"y\":0},{\"id\":1,\"type\":\"b\",\"x\":1,\"y\":0}]";
-            Assert.Throws<FormatException>(() => VaultJson.Parse(TestVaults.Json(new[] { "E." }, objects)));
+            string objects = "[{\"id\":1,\"type\":\"wax_moths\",\"x\":0,\"y\":0},{\"id\":1,\"type\":\"wax_moths\",\"x\":1,\"y\":0}]";
+            var e = Assert.Throws<FormatException>(() => VaultJson.Parse(TestVaults.Json(new[] { "E." }, objects)));
+            StringAssert.Contains("Duplicate object id", e.Message);
+        }
+
+        // Row 0 is wall; floor at y = 1..2. Entrance (1,2).
+        private static readonly string[] Small =
+        {
+            "#####",
+            "#...#",
+            "#E..#",
+            "#####",
+        };
+
+        private static VaultDef WithObjects(string objectsJson, string extra = "")
+        {
+            string json = TestVaults.Json(Small, objectsJson);
+            if (extra.Length > 0)
+            {
+                json = json.Substring(0, json.Length - 1) + "," + extra + "}";
+            }
+
+            return VaultJson.Parse(json);
+        }
+
+        [Test]
+        public void ParsesEveryObjectType()
+        {
+            VaultDef v = WithObjects("[" +
+                "{\"id\":1,\"type\":\"drip_pipe\",\"x\":1,\"y\":1,\"cycle\":30},\n" +
+                "{\"id\":2,\"type\":\"bellows\",\"x\":2,\"y\":1,\"rot\":1,\"cycle\":60,\"offset\":5},\n" +
+                "{\"id\":3,\"type\":\"spike_floor\",\"x\":3,\"y\":1,\"cycle\":60},\n" +
+                "{\"id\":4,\"type\":\"snuffer_bell\",\"x\":3,\"y\":2},\n" +
+                "{\"id\":5,\"type\":\"night_owl\",\"x\":2,\"y\":2,\"patrol\":[[2,2],[3,2]]},\n" +
+                "{\"id\":6,\"type\":\"wax_moths\",\"x\":2,\"y\":2},\n" +
+                "{\"id\":7,\"type\":\"treasure\",\"x\":1,\"y\":1,\"value\":100},\n" +
+                "{\"id\":8,\"type\":\"brazier\",\"x\":2,\"y\":0}]");
+            Assert.AreEqual(8, v.ObjectCount);
+            Assert.AreEqual(ObjectType.Bellows, v.GetObject(1).Type);
+            Assert.AreEqual(Dir.E, v.GetObject(1).Facing);
+            Assert.AreEqual(ObjectType.Brazier, v.GetObject(7).Type);
+        }
+
+        [Test]
+        public void Crate_BlocksWalkingButNotLight()
+        {
+            VaultDef v = WithObjects("[{\"id\":1,\"type\":\"crate\",\"x\":2,\"y\":1}]");
+            Assert.IsFalse(v.IsWalkable(new TilePos(2, 1)));
+            Assert.IsTrue(v.BlocksGust(new TilePos(2, 1)));
+            Assert.AreEqual(TileType.Floor, v.TileAt(new TilePos(2, 1)), "the tile itself is still floor");
+        }
+
+        [Test]
+        public void ParsesOptionalHoard()
+        {
+            Assert.IsFalse(WithObjects("[]").HasHoard);
+            VaultDef v = WithObjects("[]", "\"hoard\":[2,1,3,2]");
+            Assert.IsTrue(v.HasHoard);
+            Assert.IsTrue(v.Hoard.Contains(new TilePos(3, 2)));
+            Assert.IsFalse(v.Hoard.Contains(new TilePos(1, 2)));
+        }
+
+        [TestCase("[{\"id\":1,\"type\":\"dragon\",\"x\":1,\"y\":1}]", TestName = "UnknownType")]
+        [TestCase("[{\"id\":1,\"type\":\"treasure\",\"x\":0,\"y\":0,\"value\":5}]", TestName = "TreasureOnWall")]
+        [TestCase("[{\"id\":1,\"type\":\"treasure\",\"x\":1,\"y\":1,\"value\":0}]", TestName = "TreasureNoValue")]
+        [TestCase("[{\"id\":1,\"type\":\"brazier\",\"x\":2,\"y\":1}]", TestName = "BrazierOnFloor")]
+        [TestCase("[{\"id\":1,\"type\":\"brazier\",\"x\":0,\"y\":0}]", TestName = "BrazierUnreachable")]
+        [TestCase("[{\"id\":1,\"type\":\"drip_pipe\",\"x\":1,\"y\":1,\"cycle\":6}]", TestName = "DripCycleTooShort")]
+        [TestCase("[{\"id\":1,\"type\":\"spike_floor\",\"x\":1,\"y\":1,\"cycle\":35}]", TestName = "SpikeCycleTooShort")]
+        [TestCase("[{\"id\":1,\"type\":\"bellows\",\"x\":1,\"y\":1,\"cycle\":30,\"offset\":30}]", TestName = "OffsetNotBelowCycle")]
+        [TestCase("[{\"id\":1,\"type\":\"bellows\",\"x\":1,\"y\":1,\"cycle\":30,\"rot\":4}]", TestName = "BadRot")]
+        [TestCase("[{\"id\":1,\"type\":\"night_owl\",\"x\":2,\"y\":1,\"patrol\":[[2,1],[2,0]]}]", TestName = "PatrolIntoWall")]
+        [TestCase("[{\"id\":1,\"type\":\"crate\",\"x\":1,\"y\":2}]", TestName = "CrateOnEntrance")]
+        [TestCase("[{\"id\":1,\"type\":\"snuffer_bell\",\"x\":1,\"y\":2}]", TestName = "BellOnEntrance")]
+        [TestCase("[{\"id\":1,\"type\":\"crate\",\"x\":2,\"y\":1},{\"id\":2,\"type\":\"treasure\",\"x\":2,\"y\":1,\"value\":5}]", TestName = "TreasureUnderCrate")]
+        [TestCase("[{\"id\":1,\"type\":\"crate\",\"x\":2,\"y\":1},{\"id\":2,\"type\":\"night_owl\",\"x\":3,\"y\":1,\"patrol\":[[2,1]]}]", TestName = "PatrolIntoCrate")]
+        public void RejectsInvalidObjects(string objects)
+        {
+            Assert.Throws<FormatException>(() => WithObjects(objects));
+        }
+
+        [TestCase("\"hoard\":[2,1,5,2]", TestName = "HoardOutOfBounds")]
+        [TestCase("\"hoard\":[3,1,2,2]", TestName = "HoardInverted")]
+        [TestCase("\"hoard\":[1,1,2]", TestName = "HoardWrongShape")]
+        public void RejectsBadHoard(string hoard)
+        {
+            Assert.Throws<FormatException>(() => WithObjects("[]", hoard));
         }
 
         [Test]

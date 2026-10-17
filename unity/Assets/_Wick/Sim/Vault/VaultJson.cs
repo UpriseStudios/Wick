@@ -2,7 +2,11 @@ using System;
 
 namespace Wick.Sim
 {
-    /// <summary>Reads the vault JSON document (tech-design "Data model") into a validated VaultDef.</summary>
+    /// <summary>
+    /// Reads the vault JSON document (tech-design "Data model") into a validated VaultDef.
+    /// The server parses client-supplied vaults with this, so every rule the sim relies on
+    /// is checked here.
+    /// </summary>
     public static class VaultJson
     {
         public const int SupportedSchema = 1;
@@ -58,6 +62,15 @@ namespace Wick.Sim
             TilePos entrance = ReadPos(root.Get("entrance"), "entrance");
             ObjectDef[] objects = ReadObjects(root.Find("objects"));
 
+            bool hasHoard = false;
+            var hoard = new TileRect(0, 0, -1, -1);
+            JsonNode hoardNode = root.Find("hoard");
+            if (hoardNode != null && hoardNode.Kind != JsonKind.Null)
+            {
+                hoard = ReadRect(hoardNode, w, h);
+                hasHoard = true;
+            }
+
             var vault = new VaultDef(
                 schema,
                 root.GetString("vaultId", ""),
@@ -67,7 +80,9 @@ namespace Wick.Sim
                 h,
                 tiles,
                 entrance,
-                objects);
+                objects,
+                hasHoard,
+                hoard);
 
             if (!vault.InBounds(entrance) || !vault.IsWalkable(entrance))
             {
@@ -77,18 +92,96 @@ namespace Wick.Sim
             for (int i = 0; i < vault.ObjectCount; i++)
             {
                 ObjectDef o = vault.GetObject(i);
-                if (!vault.InBounds(o.Pos))
-                {
-                    throw new FormatException("Object " + o.Id + " is out of bounds at " + o.Pos);
-                }
-
                 if (i > 0 && vault.GetObject(i - 1).Id == o.Id)
                 {
                     throw new FormatException("Duplicate object id " + o.Id);
                 }
+
+                ValidateObject(vault, o);
             }
 
             return vault;
+        }
+
+        private static void ValidateObject(VaultDef vault, ObjectDef o)
+        {
+            string what = "Object " + o.Id + " (" + o.Type + ")";
+            if (!vault.InBounds(o.Pos))
+            {
+                throw new FormatException(what + " is out of bounds at " + o.Pos);
+            }
+
+            bool onWall = vault.TileAt(o.Pos) == TileType.Wall;
+            if (o.Type == ObjectType.Brazier)
+            {
+                if (!onWall)
+                {
+                    throw new FormatException(what + " must be on a wall tile");
+                }
+
+                bool reachable = false;
+                for (int d = 0; d < 4; d++)
+                {
+                    reachable |= vault.IsWalkable(o.Pos.Step((Dir)d));
+                }
+
+                if (!reachable)
+                {
+                    throw new FormatException(what + " has no walkable tile next to it");
+                }
+
+                return;
+            }
+
+            if (onWall)
+            {
+                throw new FormatException(what + " cannot be on a wall tile");
+            }
+
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                ObjectDef other = vault.GetObject(i);
+                bool crateInvolved = o.Type == ObjectType.Crate || other.Type == ObjectType.Crate;
+                if (other.Id != o.Id && other.Pos == o.Pos && crateInvolved)
+                {
+                    throw new FormatException(what + " shares its tile with a crate");
+                }
+            }
+
+            if ((o.Type == ObjectType.Crate || o.Type == ObjectType.SnufferBell) && o.Pos == vault.Entrance)
+            {
+                throw new FormatException(what + " cannot be on the entrance");
+            }
+
+            if (ObjectTypes.IsTimedTrap(o.Type))
+            {
+                int min = ObjectTypes.MinCycle(o.Type);
+                if (o.Cycle < min)
+                {
+                    throw new FormatException(what + " needs cycle >= " + min + ", got " + o.Cycle);
+                }
+
+                if (o.Offset < 0 || o.Offset >= o.Cycle)
+                {
+                    throw new FormatException(what + " needs 0 <= offset < cycle, got " + o.Offset);
+                }
+            }
+
+            if (o.Type == ObjectType.NightOwl)
+            {
+                foreach (TilePos p in o.Patrol)
+                {
+                    if (!vault.IsWalkable(p))
+                    {
+                        throw new FormatException(what + " has a patrol point on a blocked tile " + p);
+                    }
+                }
+            }
+
+            if (o.Type == ObjectType.Treasure && (o.Value <= 0 || o.Value > SimTuning.MaxTreasureValue))
+            {
+                throw new FormatException(what + " needs 0 < value <= " + SimTuning.MaxTreasureValue);
+            }
         }
 
         private static ObjectDef[] ReadObjects(JsonNode list)
@@ -110,7 +203,7 @@ namespace Wick.Sim
 
                 objects[i] = new ObjectDef(
                     o.GetInt("id"),
-                    o.GetString("type"),
+                    ObjectTypes.Parse(o.GetString("type")),
                     new TilePos(o.GetInt("x"), o.GetInt("y")),
                     rot,
                     o.GetInt("cycle", 0),
@@ -138,6 +231,22 @@ namespace Wick.Sim
             }
 
             return points;
+        }
+
+        private static TileRect ReadRect(JsonNode node, int w, int h)
+        {
+            if (node.Kind != JsonKind.Array || node.Count != 4)
+            {
+                throw new FormatException("hoard must be [x1, y1, x2, y2]");
+            }
+
+            var r = new TileRect(node[0].AsInt(), node[1].AsInt(), node[2].AsInt(), node[3].AsInt());
+            if (r.MinX < 0 || r.MinY < 0 || r.MaxX >= w || r.MaxY >= h || r.MinX > r.MaxX || r.MinY > r.MaxY)
+            {
+                throw new FormatException("hoard rect is out of bounds or inverted");
+            }
+
+            return r;
         }
 
         private static TilePos ReadPos(JsonNode pair, string what)
