@@ -36,7 +36,7 @@ and tools. It is never copied: the .NET projects include
 
 ## Setup
 
-1. Install **Unity Hub** and Unity **6000.3.26f1** (the version in
+1. Install **Unity Hub** and Unity **6000.6.4f1** (the version in
    `unity/ProjectSettings/ProjectVersion.txt`), with Android and iOS build support.
 2. Install the **.NET 8 SDK** (`dotnet --list-sdks` should show 8.0.x).
 3. Clone the repo, then in Unity Hub choose **Add > Add project from disk** and pick
@@ -55,7 +55,7 @@ Unity EditMode tests: in the Editor, use **Window > General > Test Runner > Edit
 > Run All**. From the command line:
 
 ```
-"C:\Program Files\Unity\Hub\Editor\6000.3.26f1\Editor\Unity.exe" -batchmode -projectPath unity -runTests -testPlatform EditMode -testResults results.xml
+"C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe" -batchmode -projectPath unity -runTests -testPlatform EditMode -testResults results.xml
 ```
 
 Replay CLI (a placeholder that prints `ok` until M1):
