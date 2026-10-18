@@ -267,6 +267,81 @@ namespace Wick.Game
             }
         }
 
+        public int Count(ObjectType type)
+        {
+            return Objects.FindAll(o => o.Type == type).Count;
+        }
+
+        // ---- Placement checks (the editor refuses a drop instead of placing it red) ---------
+
+        /// <summary>Why this item can't come out of the shop at all, or null if it can.</summary>
+        public string ShopBlock(ObjectType type)
+        {
+            int level = VaultRules.RequiredLevel(type);
+            if (level > Level)
+            {
+                return "Unlocks at Vault Level " + level;
+            }
+
+            if (type == ObjectType.Brazier && Count(type) >= VaultRules.BrazierLimit(Level))
+            {
+                return "No more braziers at this Vault Level";
+            }
+
+            if (type == ObjectType.Treasure && Count(type) >= VaultRules.MaxTreasurePiles(Level))
+            {
+                return "No more treasure piles at this Vault Level";
+            }
+
+            if (BuildPoints + VaultRules.Cost(type) > VaultRules.Budget(Level))
+            {
+                return "Not enough build points";
+            }
+
+            return null;
+        }
+
+        /// <summary>Why placing this item on p would be refused, or null if it can go there.</summary>
+        public string PlaceProblem(ObjectType type, TilePos p)
+        {
+            string block = ShopBlock(type);
+            if (block != null)
+            {
+                return block;
+            }
+
+            VaultDraft trial = Clone();
+            trial.Place(type, p);
+            return NewProblem(this, trial);
+        }
+
+        /// <summary>Why moving an object to p would be refused, or null if it can go there.</summary>
+        public string MoveProblem(int id, TilePos p)
+        {
+            VaultDraft trial = Clone();
+            if (!trial.Move(id, p))
+            {
+                return InBounds(p) ? null : "Off the vault";
+            }
+
+            return NewProblem(this, trial);
+        }
+
+        /// <summary>The first problem the change from before to after adds, or null.</summary>
+        public static string NewProblem(VaultDraft before, VaultDraft after)
+        {
+            List<VaultIssue> had = VaultValidator.Validate(before.ToVaultDef());
+            foreach (VaultIssue issue in VaultValidator.Validate(after.ToVaultDef()))
+            {
+                if (!had.Exists(h => h.Code == issue.Code && h.ObjectId == issue.ObjectId))
+                {
+                    return issue.Message;
+                }
+            }
+
+            return null;
+        }
+
         // ---- Conversion -----------------------------------------------------------------
 
         public VaultDef ToVaultDef()

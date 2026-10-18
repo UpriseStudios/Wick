@@ -156,6 +156,66 @@ namespace Wick.Game.Tests
             Assert.AreEqual(ObjectType.NightOwl, d.ObjectAt(new TilePos(4, 2)).Type);
         }
 
+        // ---- Placement checks -------------------------------------------------------------
+
+        [Test]
+        public void ShopBlock_ExplainsLevelLimitsAndBudget()
+        {
+            VaultDraft d = Halls();
+            Assert.IsNull(d.ShopBlock(ObjectType.DripPipe));
+            Assert.AreEqual("Unlocks at Vault Level 2", d.ShopBlock(ObjectType.NightOwl));
+
+            d.Place(ObjectType.Brazier, new TilePos(0, 6));
+            Assert.AreEqual("No more braziers at this Vault Level", d.ShopBlock(ObjectType.Brazier));
+
+            d.Place(ObjectType.Treasure, new TilePos(2, 2));
+            d.Place(ObjectType.Treasure, new TilePos(6, 2));
+            Assert.AreEqual("No more treasure piles at this Vault Level", d.ShopBlock(ObjectType.Treasure));
+
+            for (int i = 0; i < 6; i++)
+            {
+                d.Place(ObjectType.DripPipe, new TilePos(1 + i, 6));
+            }
+
+            Assert.AreEqual("Not enough build points", d.ShopBlock(ObjectType.Crate));
+        }
+
+        [Test]
+        public void PlaceProblem_RefusesWalls_AllowsOpenFloor()
+        {
+            VaultDraft d = Halls();
+            Assert.IsNotNull(d.PlaceProblem(ObjectType.DripPipe, new TilePos(0, 6)), "on a wall");
+            Assert.IsNotNull(d.PlaceProblem(ObjectType.Crate, d.Entrance), "crate on the entrance");
+            Assert.IsNull(d.PlaceProblem(ObjectType.DripPipe, new TilePos(2, 6)));
+            Assert.AreEqual(1, d.Objects.Count, "checks never change the draft");
+        }
+
+        [Test]
+        public void PlaceProblem_RefusesACrateThatBlocksTheOnlyDoor()
+        {
+            VaultDraft d = Halls();
+            Assert.IsNotNull(d.PlaceProblem(ObjectType.Crate, new TilePos(4, 9)));
+            Assert.IsNull(d.PlaceProblem(ObjectType.Crate, new TilePos(2, 6)));
+        }
+
+        [Test]
+        public void MoveProblem_RefusesTakingTheLastTreasureOutOfTheHoard()
+        {
+            VaultDraft d = Halls();
+            int pile = d.Objects[0].Id;
+            Assert.IsNotNull(d.MoveProblem(pile, new TilePos(4, 6)));
+            Assert.IsNull(d.MoveProblem(pile, new TilePos(5, 2)));
+            Assert.AreEqual(new TilePos(4, 2), d.Find(pile).Pos, "checks never change the draft");
+        }
+
+        [Test]
+        public void NewProblem_IgnoresProblemsThatWereAlreadyThere()
+        {
+            VaultDraft d = Halls();
+            d.Place(ObjectType.DripPipe, new TilePos(0, 6)); // already on a wall
+            Assert.IsNull(d.PlaceProblem(ObjectType.Crate, new TilePos(2, 6)));
+        }
+
         // ---- Undo -----------------------------------------------------------------------
 
         [Test]
