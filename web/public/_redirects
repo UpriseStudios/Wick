@@ -1,0 +1,2 @@
+# Every vault link serves the same page; vault.js reads the code from the path.
+/v/*  /vault.html  200

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.uprisestudios.wick",
+      "sha256_cert_fingerprints": [
+        "2C:57:1C:B3:B0:5B:B7:F7:E8:C2:0A:38:72:07:4A:64:C4:B2:5D:57:3E:9D:DC:E0:2C:D9:F2:13:1E:4B:6F:0C"
+      ]
+    }
+  }
+]

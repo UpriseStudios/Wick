@@ -145,6 +145,21 @@ your machine only).
 account key files). Without them, pushes are batched but not sent and
 integrity verdicts read "not configured". App Attest (iOS) isn't wired yet.
 
+## Sharing (M7)
+
+After a raid or replay, **Share clip** renders the best 10-15 s (highlight
+window, cinematic camera, 0.3x slow motion on the key moment, vault link burnt
+in) and opens the share sheet; **Share link** and Home's **Share my vault** share
+`https://wick.uprisestudios.co.uk/v/CODE`. Clips encode with hardware H.264 on
+Android (`Assets/Plugins/Android/WickClipEncoder.java`); iOS isn't wired yet.
+**Wick > Preview Share Clip** renders a golden in the Editor and writes sample
+frames to `Builds/Screenshots/clip-preview-frames`.
+
+Links open the app through Android App Links (custom main manifest) and are
+routed by the `Boot` scene; a first launch reads the Play install referrer
+(Android) or offers a copied code (iOS). The site lives in `web/` (Cloudflare
+Pages); see `web/README.md`.
+
 ## Building for Android
 
 **Wick > Build Android Dev APK** writes `unity/Builds/Wick-dev.apk` (development

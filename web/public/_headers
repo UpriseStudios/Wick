@@ -1,0 +1,6 @@
+# iOS fetches this without an extension and needs it served as JSON, with no redirect.
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+
+/.well-known/assetlinks.json
+  Content-Type: application/json

@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.uprisestudios.wick"],
+        "components": [{ "/": "/v/*", "comment": "Vault share links" }]
+      }
+    ]
+  }
+}
