@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Wick.Sim;
@@ -90,6 +91,27 @@ namespace Wick.CloudCode.Tests
             RaidStartResult r = await _w.Raids.GetRaidTargetAsync("p1");
 
             Assert.AreEqual("v_bot_crypt", r.VaultId, "not main-pool players");
+        }
+
+        /// <summary>The committed seed vaults (Data/SeedVaults) all pass the server's checks.</summary>
+        [Test]
+        public async Task TheTwentySeedVaults_AllSeed_AndServeMatchmaking()
+        {
+            string dir = Path.Combine(TestContext.CurrentContext.TestDirectory, "Data", "SeedVaults");
+            Newtonsoft.Json.Linq.JArray manifest = Newtonsoft.Json.Linq.JArray.Parse(File.ReadAllText(Path.Combine(dir, "seeds.json")));
+            Assert.AreEqual(20, manifest.Count);
+            foreach (var seed in manifest)
+            {
+                string name = (string)seed["name"];
+                SeedResult r = await _w.Defence.SeedVaultAsync(name, File.ReadAllText(Path.Combine(dir, name + ".json")), (int)seed["crowns"]);
+                Assert.IsTrue(r.Ok, name + ": " + r.Reason + " " + string.Join("; ", r.Issues ?? new System.Collections.Generic.List<string>()));
+            }
+
+            for (int crowns = 0; crowns <= 2000; crowns += 250)
+            {
+                await _w.Set("p" + crowns, Keys.Profile, new Profile { Crowns = crowns });
+                Assert.IsTrue((await _w.Raids.GetRaidTargetAsync("p" + crowns)).Ok, "a player at " + crowns + " Crowns finds a vault");
+            }
         }
 
         [Test]
