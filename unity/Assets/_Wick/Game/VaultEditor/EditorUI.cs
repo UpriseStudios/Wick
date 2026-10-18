@@ -174,6 +174,13 @@ namespace Wick.Game
             Show(_issuesPanel, false);
         }
 
+        /// <summary>Hides the whole editor UI (during a Test raid) without rebuilding it.</summary>
+        public void SetHidden(bool hidden)
+        {
+            EnsureReady();
+            Show(_root, !hidden);
+        }
+
         public void Toast(string text, float seconds = 2.5f)
         {
             EnsureReady();
@@ -443,6 +450,7 @@ namespace Wick.Game
             {
                 case ObjectType.Treasure: return "Treasure: drag into the hoard room";
                 case ObjectType.Brazier: return "Brazier: drag onto a wall next to floor";
+                case ObjectType.Bellows: return "Bellows: drag onto a wall; it blows into the room";
                 case ObjectType.Crate: return "Crate: blocks the way and gives cover";
                 default: return Name(type) + ": drag it onto the vault";
             }

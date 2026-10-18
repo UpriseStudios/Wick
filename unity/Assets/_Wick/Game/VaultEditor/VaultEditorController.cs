@@ -682,9 +682,15 @@ namespace Wick.Game
         private void SetEditorVisible(bool visible)
         {
             _input.enabled = visible;
+            _ui.SetHidden(!visible);
             foreach (GameObject go in _hideDuringTest)
             {
-                go.SetActive(visible);
+                // Never deactivate the UI: re-enabling a UIDocument rebuilds its tree and drops every
+                // button callback EditorUI registered, which left the editor dead after a Test.
+                if (go != _ui.gameObject)
+                {
+                    go.SetActive(visible);
+                }
             }
         }
 
