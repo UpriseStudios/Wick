@@ -27,6 +27,7 @@
         <ui:VisualElement name="picker" class="panel blocks-input">
             <ui:Label text="WICK" class="title" />
             <ui:Label text="Choose a dev vault" class="subtitle" />
+            <ui:Label name="picker-message" class="server-verdict bad hidden" />
             <ui:VisualElement name="picker-list" class="list" />
         </ui:VisualElement>
 
@@ -39,6 +40,8 @@
                 <ui:VisualElement class="star" />
             </ui:VisualElement>
             <ui:Label name="result-loot" text="Loot 0" class="subtitle" />
+            <ui:Label name="result-server" class="server-verdict hidden" />
+            <ui:Label name="result-server-detail" class="mono hidden" />
             <ui:VisualElement name="result-dev" class="dev-block">
                 <ui:Label name="result-live-hash" class="mono" />
                 <ui:Label name="result-replay-hash" class="mono" />

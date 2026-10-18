@@ -96,12 +96,36 @@ From the Raid scene's vault picker choose **Vault editor** (or open
 The top bar shows Vault Level, build points and a **Ready / N problems** pill;
 tap it and then a problem to jump to it. Undo and Redo cover every change and
 drafts save automatically. **Test** plays the vault: escaping with at least 1
-star records the clear-check, and **Publish** re-verifies it and saves the
-vault locally (Cloud Save comes in M5). Any edit after a test needs a new test.
+star records the clear-check, and **Publish** sends the vault to the server,
+which runs the building rules and replays the clear-check before the vault goes
+live. Any edit after a test needs a new test.
 
 Build rules (costs, budgets, unlock levels, treasure) are in
 `Assets/_Wick/Sim/Vault/VaultRules.cs`; the checks are in `VaultValidator.cs`.
 Templates come from `tools/golden/make_vault_templates.py`.
+
+## Backend (Unity Gaming Services)
+
+The Cloud Code module is `server/Wick.CloudCode` (module name `WickModule`). It
+compiles the Sim source as linked files and exposes `PublishVault`,
+`StartFriendRaid` and `SubmitRaid`.
+
+```
+ugs config set project-id 7fcd9f17-6a70-4cd3-a2cd-8e193cac9dea
+ugs deploy server/Wick.CloudCode/Wick.CloudCode.sln -e development
+dotnet test server/Wick.CloudCode/WickModule.Tests
+```
+
+A new version takes up to a minute to replace the old one after a deploy.
+Development builds use the `development` environment, where you may raid your
+own vault: in the Raid scene pick **My live vault (server)**. The results
+screen then shows the server's verdict. Loot is paid only when the server's
+re-simulation of your input log reproduces your result. That shows the raid is
+possible under the rules, not that a person played it.
+
+Player data the server owns (`wallet`, `stats`, `vault_live`, `raid_tokens`,
+`idempotency`) is in Cloud Save's Protected class: the player can read it, only
+Cloud Code writes it, always under write locks.
 
 ## Building for Android
 

@@ -42,6 +42,7 @@ namespace Wick.Game
         public event Action RetryPressed;
         public event Action MenuPressed;
         public event Action EditorPressed;
+        public event Action ServerRaidPressed;
 
         public static bool DevBuild => Debug.isDebugBuild;
 
@@ -133,12 +134,44 @@ namespace Wick.Game
                 list.Add(b);
             }
 
+            var server = new Button(() => ServerRaidPressed?.Invoke()) { text = "My live vault (server)" };
+            server.AddToClassList("wide-button");
+            server.AddToClassList("editor-button");
+            list.Add(server);
+
             var editor = new Button(() => EditorPressed?.Invoke()) { text = "Vault editor" };
             editor.AddToClassList("wide-button");
             editor.AddToClassList("editor-button");
             list.Add(editor);
 
+            ShowPickerMessage(null);
             ShowOnly(_picker);
+        }
+
+        /// <summary>A line above the vault list, e.g. why a live raid couldn't start. Null hides it.</summary>
+        public void ShowPickerMessage(string text)
+        {
+            EnsureReady();
+            var label = _picker.Q<Label>("picker-message");
+            label.text = text ?? "";
+            Show(label, !string.IsNullOrEmpty(text));
+        }
+
+        /// <summary>
+        /// The server's verdict on a live raid, under the results. ok: true = verified and paid,
+        /// false = not verified (nothing paid), null = still waiting. detail shows in dev builds.
+        /// </summary>
+        public void SetServerVerdict(string text, bool? ok, string detail = null)
+        {
+            EnsureReady();
+            var label = _results.Q<Label>("result-server");
+            label.text = text ?? "";
+            label.EnableInClassList("good", ok == true);
+            label.EnableInClassList("bad", ok == false);
+            Show(label, !string.IsNullOrEmpty(text));
+            var dev = _results.Q<Label>("result-server-detail");
+            dev.text = detail ?? "";
+            Show(dev, DevBuild && !string.IsNullOrEmpty(detail));
         }
 
         /// <summary>Renames the results screen's second button ("Vaults", or "Back to editor").</summary>
@@ -192,6 +225,7 @@ namespace Wick.Game
             }
 
             _results.Q<Label>("result-loot").text = "Loot " + result.Loot;
+            SetServerVerdict(null, null);
             VisualElement dev = _results.Q("result-dev");
             Show(dev, DevBuild);
             _results.Q<Label>("result-live-hash").text = "live   " + liveHash;

@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Wick.Services;
 using Wick.Sim;
 
 namespace Wick.Game
@@ -42,6 +44,7 @@ namespace Wick.Game
         [Tooltip("Scene objects hidden while a Test raid runs on top (camera, UI, light, view).")]
         [SerializeField] private GameObject[] _hideDuringTest;
 
+        private readonly WickBackend _backend = new WickBackend();
         private readonly UndoStack<VaultDraft> _undo = new UndoStack<VaultDraft>(d => d.Clone());
         private DraftStore _store;
         private VaultDraft _strokeBefore;
@@ -75,7 +78,10 @@ namespace Wick.Game
         public bool ClearCheckCurrent =>
             Draft != null && Draft.ClearCheck != null && Draft.ClearCheck.MatchesLayout(Draft.ToVaultDef());
 
-        public bool CanPublish => Draft != null && Issues.Count == 0 && ClearCheckCurrent;
+        public bool CanPublish => Draft != null && Issues.Count == 0 && ClearCheckCurrent && !Publishing;
+
+        /// <summary>A PublishVault call is in flight.</summary>
+        public bool Publishing { get; private set; }
 
         /// <summary>Only Bellows (gust) and Night Owl (gaze) care which way they face.</summary>
         public static bool CanRotate(ObjectType type)
@@ -653,9 +659,42 @@ namespace Wick.Game
                 return;
             }
 
-            _store.Publish(Draft);
-            _ui.Toast("Published " + Draft.PublishedVaultId + " v" + Draft.PublishedVersion + " (local)");
+            PublishToServer(Draft, VaultJson.WriteDocument(vault, Draft.ClearCheck));
+        }
+
+        /// <summary>
+        /// The vault goes live only if the server's own checks pass: building rules, then a
+        /// re-simulation of the clear-check run. Until it answers, nothing is published.
+        /// </summary>
+        private async void PublishToServer(VaultDraft draft, string document)
+        {
+            Publishing = true;
+            _ui.Toast("Publishing: the server is replaying your clear-check...", 30f);
             Refresh();
+            try
+            {
+                PublishReply reply = await _backend.PublishVaultAsync(document);
+                if (reply.Ok)
+                {
+                    _store.MarkPublished(draft, reply.VaultId, reply.Version);
+                    _ui.Toast("Your vault is live (version " + reply.Version + ")");
+                }
+                else
+                {
+                    string why = reply.Issues != null && reply.Issues.Count > 0 ? reply.Issues[0] : reply.Reason;
+                    _ui.Toast("Not published: " + why, 5f);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                _ui.Toast("Couldn't reach the server, so your vault wasn't published. Try again.", 5f);
+            }
+            finally
+            {
+                Publishing = false;
+                Refresh();
+            }
         }
 
         /// <summary>Dev check: re-simulate the stored clear-check and compare hashes.</summary>

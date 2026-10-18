@@ -252,3 +252,21 @@
     font-size: 34px;
     margin: 8px 0;
 }
+
+/* Server verdict on a live raid (and server messages on the picker). */
+.server-verdict {
+    font-size: 40px;
+    -unity-font-style: bold;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    margin: 0 40px 30px 40px;
+    color: rgb(225, 220, 205);
+}
+
+.server-verdict.good {
+    color: rgb(120, 230, 120);
+}
+
+.server-verdict.bad {
+    color: rgb(255, 120, 90);
+}

@@ -317,7 +317,7 @@ namespace Wick.Game.Tests
         }
 
         [Test]
-        public void Store_SavesListsLoadsDeletesAndPublishes()
+        public void Store_SavesListsLoadsDeletes_AndRemembersThePublishedVersion()
         {
             string root = Path.Combine(Path.GetTempPath(), "wick-store-" + System.Guid.NewGuid().ToString("N"));
             try
@@ -336,14 +336,12 @@ namespace Wick.Game.Tests
                 VaultDef vault = d.ToVaultDef();
                 (RaidResult result, InputLog log, int seed) = EscapeHalls(vault);
                 d.ClearCheck = ClearCheck.FromRun(vault, seed, log, result);
-                string path = store.Publish(d);
-                Assert.AreEqual(1, d.PublishedVersion);
-                JsonNode doc = JsonReader.Parse(File.ReadAllText(path));
-                Assert.AreEqual(1, doc.GetInt("version"));
-                Assert.IsTrue(ClearCheck.Verify(VaultJson.FromNode(doc), VaultJson.ReadClearCheck(doc)).Ok);
-
-                store.Publish(d);
-                Assert.AreEqual(2, d.PublishedVersion, "republishing bumps the version");
+                store.MarkPublished(d, "v_player123", 2);
+                VaultDraft reloaded = store.Load(d.DraftId);
+                Assert.AreEqual("v_player123", reloaded.PublishedVaultId);
+                Assert.AreEqual(2, reloaded.PublishedVersion);
+                Assert.IsTrue(ClearCheck.Verify(reloaded.ToVaultDef(), reloaded.ClearCheck).Ok,
+                    "the server's id and version don't make the clear-check stale");
 
                 store.Delete(d.DraftId);
                 Assert.AreEqual(0, store.List().Count);

@@ -3,6 +3,7 @@
     "rootNamespace": "Wick.Game",
     "references": [
         "Wick.Sim",
+        "Wick.Services",
         "Unity.InputSystem"
     ],
     "includePlatforms": [],

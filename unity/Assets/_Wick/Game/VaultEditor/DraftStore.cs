@@ -6,21 +6,18 @@ using Wick.Sim;
 namespace Wick.Game
 {
     /// <summary>
-    /// Drafts and locally "published" vaults as JSON files (Cloud Save replaces this in M5).
-    /// drafts/&lt;draftId&gt;.json holds a VaultDraft; published/&lt;vaultId&gt;.json the vault document.
+    /// Drafts as JSON files on the device: drafts/&lt;draftId&gt;.json holds a VaultDraft. Publishing
+    /// goes through the server (PublishVault); the draft only remembers the id and version it got.
     /// </summary>
     public sealed class DraftStore
     {
         private readonly string _drafts;
-        private readonly string _published;
         private readonly Random _ids = new Random();
 
         public DraftStore(string root)
         {
             _drafts = Path.Combine(root, "drafts");
-            _published = Path.Combine(root, "published");
             Directory.CreateDirectory(_drafts);
-            Directory.CreateDirectory(_published);
         }
 
         public readonly struct Entry
@@ -90,28 +87,12 @@ namespace Wick.Game
             }
         }
 
-        /// <summary>
-        /// Writes the vault as published (next version, with its clear-check) and records that on the
-        /// draft. The caller must have validated it and verified the clear-check first.
-        /// </summary>
-        public string Publish(VaultDraft draft)
+        /// <summary>Records the live vault id and version the server published this draft as.</summary>
+        public void MarkPublished(VaultDraft draft, string vaultId, int version)
         {
-            if (string.IsNullOrEmpty(draft.PublishedVaultId))
-            {
-                draft.PublishedVaultId = "v_" + NewId();
-            }
-
-            draft.PublishedVersion++;
-            string doc = VaultJson.WriteDocument(draft.ToVaultDef(), draft.ClearCheck);
-            string path = Path.Combine(_published, draft.PublishedVaultId + ".json");
-            File.WriteAllText(path, doc);
+            draft.PublishedVaultId = vaultId;
+            draft.PublishedVersion = version;
             Save(draft);
-            return path;
-        }
-
-        public string PublishedPath(string vaultId)
-        {
-            return Path.Combine(_published, vaultId + ".json");
         }
 
         private string NewId()
