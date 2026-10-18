@@ -20,6 +20,9 @@ namespace Wick.CloudCode
     {
         int NextSeed();
         string NextId();
+
+        /// <summary>A uniform index in [0, count).</summary>
+        int NextIndex(int count);
     }
 
     public sealed class CryptoRandom : IRandomSource
@@ -32,6 +35,11 @@ namespace Wick.CloudCode
         public string NextId()
         {
             return Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+        }
+
+        public int NextIndex(int count)
+        {
+            return RandomNumberGenerator.GetInt32(0, count);
         }
     }
 

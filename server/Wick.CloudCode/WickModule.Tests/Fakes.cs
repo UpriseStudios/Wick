@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Wick.Sim;
 
@@ -85,6 +87,88 @@ namespace Wick.CloudCode.Tests
             return Task.CompletedTask;
         }
 
+        public int CustomWrites;
+        public int Queries;
+
+        public Task SetPrivateCustomBatchAsync(string customId, IReadOnlyList<ItemWrite> writes)
+        {
+            lock (_gate)
+            {
+                foreach (ItemWrite w in writes)
+                {
+                    Custom[customId + "/" + w.Key] = w.Json;
+                }
+
+                CustomWrites++;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<Dictionary<string, StoredItem>> GetPrivateCustomAsync(string customId, IReadOnlyList<string> keys)
+        {
+            var found = new Dictionary<string, StoredItem>();
+            lock (_gate)
+            {
+                foreach (string key in keys)
+                {
+                    if (Custom.TryGetValue(customId + "/" + key, out string json))
+                    {
+                        found[key] = new StoredItem(key, json, null);
+                    }
+                }
+            }
+
+            return Task.FromResult(found);
+        }
+
+        /// <summary>Like an index query: every filter must hold; results in id order, up to sampleSize.</summary>
+        public Task<List<QueryHit>> QueryPrivateCustomAsync(IReadOnlyList<QueryFilter> filters, IReadOnlyList<string> returnKeys, int sampleSize)
+        {
+            var hits = new List<QueryHit>();
+            lock (_gate)
+            {
+                Queries++;
+                var ids = Custom.Keys.Select(k => k.Substring(0, k.IndexOf('/'))).Distinct().OrderBy(id => id, System.StringComparer.Ordinal);
+                foreach (string id in ids)
+                {
+                    if (hits.Count < sampleSize && filters.All(f => Matches(id, f)))
+                    {
+                        var values = new Dictionary<string, string>();
+                        foreach (string key in returnKeys)
+                        {
+                            if (Custom.TryGetValue(id + "/" + key, out string json))
+                            {
+                                values[key] = json;
+                            }
+                        }
+
+                        hits.Add(new QueryHit(id, values));
+                    }
+                }
+            }
+
+            return Task.FromResult(hits);
+        }
+
+        private bool Matches(string id, QueryFilter f)
+        {
+            if (!Custom.TryGetValue(id + "/" + f.Key, out string json))
+            {
+                return false;
+            }
+
+            JToken stored = JToken.Parse(json);
+            if (f.Op == QueryOp.Eq)
+            {
+                return stored.ToString() == f.Value.ToString();
+            }
+
+            long a = stored.Value<long>();
+            long b = System.Convert.ToInt64(f.Value);
+            return f.Op == QueryOp.Ge ? a >= b : a <= b;
+        }
+
         public string Read(string playerId, string key)
         {
             lock (_gate)
@@ -135,6 +219,11 @@ namespace Wick.CloudCode.Tests
         {
             return "tok" + (++_ids).ToString("D5");
         }
+
+        public int NextIndex(int count)
+        {
+            return 0;
+        }
     }
 
     /// <summary>Vaults and runs built from the Three Halls template.</summary>
@@ -180,6 +269,43 @@ namespace Wick.CloudCode.Tests
         public static ObjectDef Drip(int id, int x, int y)
         {
             return new ObjectDef(id, ObjectType.DripPipe, new TilePos(x, y), 0, 45, 0, 0, new TilePos[0]);
+        }
+    }
+
+    public sealed class FakeIntegrity : IIntegrityVerifier
+    {
+        public IntegrityVerdict Verdict = IntegrityVerdict.Unchecked("fake");
+
+        public Task<IntegrityVerdict> VerifyAsync(string playerId, string platform, string token)
+        {
+            return Task.FromResult(Verdict);
+        }
+    }
+
+    public sealed class FakePush : IPushSender
+    {
+        public readonly List<(string Token, string Title, string Body)> Sent = new List<(string, string, string)>();
+
+        public Task SendAsync(string deviceToken, string title, string body)
+        {
+            lock (Sent)
+            {
+                Sent.Add((deviceToken, title, body));
+            }
+
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class FakeHttp : IHttp
+    {
+        public readonly List<(string Url, string Body, string Bearer)> Calls = new List<(string, string, string)>();
+        public System.Func<string, (int, string)> Respond = url => (200, "{}");
+
+        public Task<(int Status, string Body)> PostAsync(string url, string contentType, string body, string bearerToken)
+        {
+            Calls.Add((url, body, bearerToken));
+            return Task.FromResult(Respond(url));
         }
     }
 }

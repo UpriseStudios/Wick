@@ -63,5 +63,51 @@ namespace Wick.CloudCode
 
         /// <summary>Server-only custom item, for records no player needs to write (raid records).</summary>
         Task SetPrivateCustomAsync(string customId, string key, string json);
+
+        /// <summary>Writes several keys of one server-only custom item together (no write locks).</summary>
+        Task SetPrivateCustomBatchAsync(string customId, IReadOnlyList<ItemWrite> writes);
+
+        Task<Dictionary<string, StoredItem>> GetPrivateCustomAsync(string customId, IReadOnlyList<string> keys);
+
+        /// <summary>
+        /// Indexed query over server-only custom items: every filter must hold. Returns up to
+        /// sampleSize random matches, each with the requested keys.
+        /// </summary>
+        Task<List<QueryHit>> QueryPrivateCustomAsync(IReadOnlyList<QueryFilter> filters, IReadOnlyList<string> returnKeys, int sampleSize);
+    }
+
+    public enum QueryOp
+    {
+        Eq,
+        Ge,
+        Le,
+    }
+
+    public sealed class QueryFilter
+    {
+        public QueryFilter(string key, QueryOp op, object value)
+        {
+            Key = key;
+            Op = op;
+            Value = value;
+        }
+
+        public string Key { get; }
+        public QueryOp Op { get; }
+        public object Value { get; }
+    }
+
+    public sealed class QueryHit
+    {
+        public QueryHit(string customId, Dictionary<string, string> values)
+        {
+            CustomId = customId;
+            Values = values;
+        }
+
+        public string CustomId { get; }
+
+        /// <summary>Requested key to JSON.</summary>
+        public Dictionary<string, string> Values { get; }
     }
 }

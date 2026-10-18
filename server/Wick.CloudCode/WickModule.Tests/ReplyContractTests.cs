@@ -16,6 +16,9 @@ namespace Wick.CloudCode.Tests
         [TestCase(typeof(PublishResult), "PublishReply")]
         [TestCase(typeof(RaidStartResult), "RaidStartReply")]
         [TestCase(typeof(SubmitResult), "SubmitReply")]
+        [TestCase(typeof(DefenceLogResult), "DefenceLogReply")]
+        [TestCase(typeof(DefenceEntry), "DefenceEntryReply")]
+        [TestCase(typeof(ReplayResult), "ReplayReply")]
         public void ClientReplyDeclaresEveryServerField(Type server, string clientClass)
         {
             HashSet<string> client = ClientFields(clientClass);

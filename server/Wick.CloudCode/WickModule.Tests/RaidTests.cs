@@ -170,7 +170,7 @@ namespace Wick.CloudCode.Tests
         {
             RaidStartResult start = await Start();
             RaidClaim claim = Honest(start, TestVaults.Escape);
-            _clock.Advance(RaidService.TokenLifetimeMs + 1);
+            _clock.Advance(Rules.TokenLifetimeMs + 1);
 
             SubmitResult r = await _raids.SubmitRaidAsync(Raider, "req-submit-1", start.Token, TestVaults.Escape.ToBase64(), claim);
 

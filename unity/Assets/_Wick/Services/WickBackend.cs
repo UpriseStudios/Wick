@@ -27,6 +27,7 @@ namespace Wick.Services
         public bool Ok;
         public string Reason;
         public string Token;
+        public string Kind;
         public int Seed;
         public string VaultId;
         public int VaultVersion;
@@ -50,6 +51,55 @@ namespace Wick.Services
         public int Ticks;
         public long Paid;
         public long Gold;
+        public int CrownsDelta;
+        public int Crowns;
+    }
+
+    [Preserve]
+    public sealed class DefenceEntryReply
+    {
+        public string RaidId;
+        public string RaiderId;
+        public long AtMs;
+        public string Outcome;
+        public int Stars;
+        public long GoldLost;
+        public long Bonus;
+        public int CrownsDelta;
+        public string RevengeVaultId;
+    }
+
+    /// <summary>How the player's vault is doing, and its recent raids (newest first).</summary>
+    [Preserve]
+    public sealed class DefenceLogReply
+    {
+        public int Raids;
+        public int Snuffs;
+        public string DeadliestTrap;
+        public long BonusEarned;
+        public long GoldLost;
+        public long ShieldUntilMs;
+        public List<DefenceEntryReply> Entries;
+    }
+
+    /// <summary>Everything needed to re-simulate one raid, and the hash the server verified.</summary>
+    [Preserve]
+    public sealed class ReplayReply
+    {
+        public bool Ok;
+        public string Reason;
+        public string RaidId;
+        public string OwnerId;
+        public string RaiderId;
+        public int SimVersion;
+        public string Vault;
+        public int Seed;
+        public string Log;
+        public string Hash;
+        public string Outcome;
+        public int Stars;
+        public int Ticks;
+        public long AtMs;
     }
 
     /// <summary>The game's backend calls. Each player action gets one request id, reused across retries.</summary>
@@ -75,12 +125,44 @@ namespace Wick.Services
             });
         }
 
-        public Task<RaidStartReply> StartFriendRaidAsync(string vaultId)
+        /// <summary>Matchmaking: a vault near the player's Crowns, with a single-use raid token.</summary>
+        public async Task<RaidStartReply> GetRaidTargetAsync()
         {
-            return _cloudCode.CallAsync<RaidStartReply>("StartFriendRaid", new Dictionary<string, object>
+            string integrity = await PlatformIntegrity.TokenAsync();
+            return await _cloudCode.CallAsync<RaidStartReply>("GetRaidTarget", new Dictionary<string, object>
+            {
+                { "platform", PlatformIntegrity.Platform },
+                { "integrityToken", integrity },
+            });
+        }
+
+        /// <param name="kind">"friend" (a vault link or id) or "revenge" (from the defence log).</param>
+        public async Task<RaidStartReply> StartFriendRaidAsync(string vaultId, string kind = "friend")
+        {
+            string integrity = await PlatformIntegrity.TokenAsync();
+            return await _cloudCode.CallAsync<RaidStartReply>("StartFriendRaid", new Dictionary<string, object>
             {
                 { "vaultId", vaultId },
+                { "kind", kind },
+                { "platform", PlatformIntegrity.Platform },
+                { "integrityToken", integrity },
             });
+        }
+
+        public Task<DefenceLogReply> GetDefenceLogAsync()
+        {
+            return _cloudCode.CallAsync<DefenceLogReply>("GetDefenceLog", new Dictionary<string, object>());
+        }
+
+        public Task<ReplayReply> GetReplayAsync(string raidId)
+        {
+            return _cloudCode.CallAsync<ReplayReply>("GetReplay", new Dictionary<string, object> { { "raidId", raidId } });
+        }
+
+        /// <summary>Sends the device's FCM token so the server can push defence news.</summary>
+        public Task<bool> RegisterPushTokenAsync(string token)
+        {
+            return _cloudCode.CallAsync<bool>("RegisterPushToken", new Dictionary<string, object> { { "token", token } });
         }
 
         public Task<SubmitReply> SubmitRaidAsync(string token, InputLog log, RaidResult result)

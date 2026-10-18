@@ -57,5 +57,57 @@ namespace Wick.CloudCode
             await _api.CloudSaveData.SetPrivateCustomItemAsync(
                 _ctx, _ctx.ServiceToken, _ctx.ProjectId, customId, new SetItemBody(key, JToken.Parse(json)));
         }
+
+        public async Task SetPrivateCustomBatchAsync(string customId, IReadOnlyList<ItemWrite> writes)
+        {
+            var body = new SetItemBatchBody(writes.Select(w => new SetItemBody(w.Key, JToken.Parse(w.Json), w.WriteLock)).ToList());
+            await _api.CloudSaveData.SetPrivateCustomItemBatchAsync(_ctx, _ctx.ServiceToken, _ctx.ProjectId, customId, body);
+        }
+
+        public async Task<Dictionary<string, StoredItem>> GetPrivateCustomAsync(string customId, IReadOnlyList<string> keys)
+        {
+            ApiResponse<GetItemsResponse> response = await _api.CloudSaveData.GetPrivateCustomItemsAsync(
+                _ctx, _ctx.ServiceToken, _ctx.ProjectId, customId, keys.ToList());
+            var items = new Dictionary<string, StoredItem>();
+            foreach (Item item in response.Data.Results)
+            {
+                items[item.Key] = new StoredItem(item.Key, JsonConvert.SerializeObject(item.Value), item.WriteLock);
+            }
+
+            return items;
+        }
+
+        public async Task<List<QueryHit>> QueryPrivateCustomAsync(IReadOnlyList<QueryFilter> filters, IReadOnlyList<string> returnKeys,
+            int sampleSize)
+        {
+            var fields = filters.Select(f => new FieldFilter(f.Key, f.Value, Op(f.Op), true)).ToList();
+            var body = new QueryIndexBody(fields, returnKeys.ToList(), 0, 0, sampleSize);
+            ApiResponse<QueryIndexResponse> response = await _api.CloudSaveData.QueryPrivateCustomDataAsync(
+                _ctx, _ctx.ServiceToken, _ctx.ProjectId, body);
+
+            var hits = new List<QueryHit>();
+            foreach (QueryIndexResponseResultsInner r in response.Data.Results)
+            {
+                var values = new Dictionary<string, string>();
+                foreach (Item item in r.Data)
+                {
+                    values[item.Key] = JsonConvert.SerializeObject(item.Value);
+                }
+
+                hits.Add(new QueryHit(r.Id.GetString(), values));
+            }
+
+            return hits;
+        }
+
+        private static FieldFilter.OpEnum Op(QueryOp op)
+        {
+            switch (op)
+            {
+                case QueryOp.Ge: return FieldFilter.OpEnum.GE;
+                case QueryOp.Le: return FieldFilter.OpEnum.LE;
+                default: return FieldFilter.OpEnum.EQ;
+            }
+        }
     }
 }
