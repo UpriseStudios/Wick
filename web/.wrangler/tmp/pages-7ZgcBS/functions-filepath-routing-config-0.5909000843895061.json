@@ -1,0 +1,13 @@
+{
+  "routes": [
+    {
+      "routePath": "/api/vault/:code",
+      "mountPath": "/api/vault",
+      "method": "GET",
+      "module": [
+        "api/vault/[code].js:onRequestGet"
+      ]
+    }
+  ],
+  "baseURL": "/"
+}

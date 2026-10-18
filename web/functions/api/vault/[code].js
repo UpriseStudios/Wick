@@ -11,6 +11,12 @@ export async function onRequestGet({ params, env }) {
     return json({ ok: false, reason: "Not a vault code" }, 400, 3600);
   }
 
+  const missing = ["UGS_PROJECT_ID", "UGS_ENVIRONMENT_ID", "UGS_KEY_ID", "UGS_SECRET"].filter(k => !env[k]);
+  if (missing.length > 0) {
+    // Names only, never values: says which settings this deployment's environment lacks.
+    return json({ ok: false, reason: "Vault service unavailable", detail: "not configured: " + missing.join(", ") }, 500, 0);
+  }
+
   try {
     const token = await serviceToken(env);
     const response = await fetch(
@@ -21,13 +27,13 @@ export async function onRequestGet({ params, env }) {
         body: JSON.stringify({ params: { code } }),
       });
     if (!response.ok) {
-      return json({ ok: false, reason: "Vault service unavailable" }, 502, 0);
+      return json({ ok: false, reason: "Vault service unavailable", detail: "cloud code " + response.status }, 502, 0);
     }
 
     const card = (await response.json()).output;
     return json(card, card && card.ok ? 200 : 404, 60);
   } catch (e) {
-    return json({ ok: false, reason: "Vault service unavailable" }, 502, 0);
+    return json({ ok: false, reason: "Vault service unavailable", detail: String(e.message || e) }, 502, 0);
   }
 }
 

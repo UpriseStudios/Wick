@@ -1,2 +1,3 @@
-# Every vault link serves the same page; vault.js reads the code from the path.
-/v/*  /vault.html  200
+# Every vault link serves the vault page (a rewrite, so the URL keeps the code). Pages serves
+# vault.html at /vault; rewriting to /vault.html would turn into a redirect that drops the code.
+/v/*  /vault  200
