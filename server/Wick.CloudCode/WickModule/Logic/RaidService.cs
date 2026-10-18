@@ -108,6 +108,12 @@ namespace Wick.CloudCode
         public async Task<RaidStartResult> StartFriendRaidAsync(string playerId, string vaultId, bool allowOwnVault,
             string kind = KindFriend, string platform = null, string integrityToken = null)
         {
+            string code = VaultCodes.Normalize(vaultId);
+            if (code != null)
+            {
+                vaultId = await VaultCodes.ResolveAsync(_store, code); // a share link's short code
+            }
+
             string owner = VaultIds.OwnerOf(vaultId);
             if (owner == null)
             {

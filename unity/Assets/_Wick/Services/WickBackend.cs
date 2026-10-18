@@ -19,6 +19,7 @@ namespace Wick.Services
         public string VaultId;
         public int Version;
         public int Stars;
+        public string Code;
     }
 
     [Preserve]

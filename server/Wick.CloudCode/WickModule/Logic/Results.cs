@@ -11,6 +11,9 @@ namespace Wick.CloudCode
         public int Version { get; set; }
         public int Stars { get; set; }
 
+        /// <summary>Short code for the vault's share link.</summary>
+        public string Code { get; set; }
+
         public static PublishResult Fail(string reason, List<string> issues = null)
         {
             return new PublishResult { Ok = false, Reason = reason, Issues = issues };
@@ -111,6 +114,7 @@ namespace Wick.CloudCode
         public bool Ok { get; set; }
         public string Reason { get; set; }
         public string VaultId { get; set; }
+        public string Code { get; set; }
         public List<string> Issues { get; set; }
     }
 }

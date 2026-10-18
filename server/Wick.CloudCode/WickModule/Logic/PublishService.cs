@@ -35,6 +35,7 @@ namespace Wick.CloudCode
                 return fail;
             }
 
+            string code = await VaultCodes.AssignAsync(_store, VaultIds.ForOwner(playerId));
             PublishResult result = await Locked.UpdateAsync(_store, playerId, new[] { Keys.VaultLive, Keys.Idempotency }, s =>
             {
                 if (Idempotency.TryGet(s, requestId, out PublishResult prior))
@@ -54,11 +55,12 @@ namespace Wick.CloudCode
                     Version = version,
                     PublishedAtMs = _clock.NowMs,
                     ClearTicks = passed.Replay.Ticks,
+                    Code = code,
                     Document = VaultJson.WriteDocument(stamped, passed.ClearCheck),
                 };
                 var published = new PublishResult
                 {
-                    Ok = true, Reason = "Published", VaultId = vaultId, Version = version, Stars = passed.Replay.Stars,
+                    Ok = true, Reason = "Published", VaultId = vaultId, Version = version, Stars = passed.Replay.Stars, Code = code,
                 };
                 return new Plan<PublishResult>(published)
                     .Write(Keys.VaultLive, Json.Write(live))

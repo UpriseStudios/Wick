@@ -232,10 +232,12 @@ namespace Wick.CloudCode
             }
 
             string vaultId = "v_bot_" + name;
+            string code = await VaultCodes.AssignAsync(_store, vaultId);
             VaultDef stamped = VaultIds.Stamp(passed.Vault, vaultId, 1);
             await new Directory(_store).WriteAsync(new MatchEntry
             {
                 VaultId = vaultId,
+                Code = code,
                 OwnerId = "bot_" + name,
                 Version = 1,
                 Bot = true,
@@ -245,7 +247,44 @@ namespace Wick.CloudCode
                 ClearTicks = passed.Replay.Ticks,
                 Vault = VaultJson.Write(stamped),
             });
-            return new SeedResult { Ok = true, Reason = "Seeded", VaultId = vaultId };
+            return new SeedResult { Ok = true, Reason = "Seeded", VaultId = vaultId, Code = code };
+        }
+
+        /// <summary>The public card a share link's web page shows: level, rating and how deadly it is.</summary>
+        public async Task<VaultCard> GetVaultCardAsync(string code)
+        {
+            string normal = VaultCodes.Normalize(code);
+            string vaultId = normal == null ? null : await VaultCodes.ResolveAsync(_store, normal);
+            MatchEntry e = vaultId == null ? null : await new Directory(_store).GetAsync(vaultId);
+            if (e == null)
+            {
+                return new VaultCard { Ok = false, Reason = "No such vault" };
+            }
+
+            return new VaultCard
+            {
+                Ok = true,
+                Code = normal,
+                VaultLevel = e.VaultLevel,
+                Crowns = e.Crowns,
+                Raids = e.Raids,
+                Snuffs = e.Snuffs,
+                Traps = TrapCount(e.Vault),
+                Shielded = e.ShieldUntilMs > _clock.NowMs,
+            };
+        }
+
+        private static int TrapCount(string vault)
+        {
+            VaultDef v = VaultJson.Parse(vault);
+            int n = 0;
+            for (int i = 0; i < v.ObjectCount; i++)
+            {
+                ObjectType t = v.GetObject(i).Type;
+                n += ObjectTypes.IsTrap(t) || ObjectTypes.IsGuardian(t) ? 1 : 0;
+            }
+
+            return n;
         }
 
         private static void Trim<T>(List<T> list, int max)

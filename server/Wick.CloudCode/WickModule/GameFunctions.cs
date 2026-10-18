@@ -89,6 +89,13 @@ namespace Wick.CloudCode
             return new DefenceService(Store(context), _clock).GetReplayAsync(context.PlayerId, raidId);
         }
 
+        /// <summary>Public vault card for a share link (the web page calls it through its proxy).</summary>
+        [CloudCodeFunction("GetVaultCard")]
+        public Task<VaultCard> GetVaultCard(IExecutionContext context, string code)
+        {
+            return new DefenceService(Store(context), _clock).GetVaultCardAsync(code);
+        }
+
         [CloudCodeFunction("RegisterPushToken")]
         public Task<bool> RegisterPushToken(IExecutionContext context, string token)
         {

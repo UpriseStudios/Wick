@@ -59,6 +59,7 @@ namespace Wick.CloudCode
             await WriteAsync(new MatchEntry
             {
                 VaultId = live.VaultId,
+                Code = live.Code,
                 OwnerId = playerId,
                 Version = live.Version,
                 Bot = false,

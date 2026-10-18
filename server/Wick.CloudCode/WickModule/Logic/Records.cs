@@ -151,6 +151,9 @@ namespace Wick.CloudCode
         public int Version { get; set; }
         public long PublishedAtMs { get; set; }
 
+        /// <summary>Short code for share links.</summary>
+        public string Code { get; set; }
+
         /// <summary>Ticks the owner's clear-check run took, a yardstick for raid durations.</summary>
         public int ClearTicks { get; set; }
 
@@ -165,6 +168,7 @@ namespace Wick.CloudCode
     public sealed class MatchEntry
     {
         public string VaultId { get; set; }
+        public string Code { get; set; }
         public string OwnerId { get; set; }
         public int Version { get; set; }
         public bool Bot { get; set; }
