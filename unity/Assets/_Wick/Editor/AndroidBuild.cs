@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -22,7 +23,8 @@ namespace Wick.Editor
 
             var options = new BuildPlayerOptions
             {
-                scenes = new[] { "Assets/_Wick/Scenes/Raid.unity" },
+                // Every enabled scene in Build Settings; Raid and Editor load each other by name.
+                scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
                 locationPathName = OutputPath,
                 target = BuildTarget.Android,
                 targetGroup = BuildTargetGroup.Android,

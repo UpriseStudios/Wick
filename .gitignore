@@ -80,3 +80,7 @@ Thumbs.db
 __pycache__/
 *.pyc
 /unity/.utmp/
+
+# Written by the Performance Testing package during test runs
+/unity/Assets/Resources/PerformanceTestRun*
+/unity/Assets/Resources.meta
