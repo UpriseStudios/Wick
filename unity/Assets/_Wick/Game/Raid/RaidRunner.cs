@@ -58,6 +58,9 @@ namespace Wick.Game
         /// <summary>Replays only: holds the clock without unloading.</summary>
         public bool Paused { get; set; }
 
+        /// <summary>Frame time doesn't advance the sim; the owner calls Advance itself (clip rendering).</summary>
+        public bool ManualClock { get; set; }
+
         /// <summary>Loads a raid for the player, paused for the scout flyover.</summary>
         public void LoadLive(VaultDef vault, int seed)
         {
@@ -130,7 +133,10 @@ namespace Wick.Game
 
         private void Update()
         {
-            Advance(Time.deltaTime);
+            if (!ManualClock)
+            {
+                Advance(Time.deltaTime);
+            }
         }
 
         /// <summary>Feeds frame time; steps the sim when the clock is running.</summary>
