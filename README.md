@@ -123,9 +123,27 @@ screen then shows the server's verdict. Loot is paid only when the server's
 re-simulation of your input log reproduces your result. That shows the raid is
 possible under the rules, not that a person played it.
 
-Player data the server owns (`wallet`, `stats`, `vault_live`, `raid_tokens`,
-`idempotency`) is in Cloud Save's Protected class: the player can read it, only
-Cloud Code writes it, always under write locks.
+Player data the server owns (`wallet`, `stats`, `profile`, `defence`, `push`,
+`vault_live`, `raid_tokens`, `idempotency`) is in Cloud Save's Protected class:
+the player can read it, only Cloud Code writes it, always under write locks.
+
+**Async raiding (M6).** Home has **Raid** (matchmaking by Crowns), **Raids on
+your vault** (the defence log, with Watch replay and Revenge) and the editor.
+Live vaults are listed in a server-only matchmaking directory (custom items
+`mm_<vaultId>`, compound index `mmPool_1_mmCrowns_1`, which must exist before
+anything is listed). Economy and matchmaking numbers are in
+`WickModule/Logic/Rules.cs`; Crown deltas are `Sim/Rating/CrownRules.cs`.
+
+**Seed vaults.** 20 bot-owned vaults keep matchmaking from coming up empty.
+Regenerate them with `dotnet run --project tools/seedgen` (writes
+`Assets/_Wick/Data/SeedVaults`), then upload with **Wick > Upload Seed
+Vaults** in the Editor, using a service account key (kept in EditorPrefs on
+your machine only).
+
+**Push and integrity** are off until their Secret Manager keys exist:
+`FCM_SERVICE_ACCOUNT` and `PLAY_INTEGRITY_SERVICE_ACCOUNT` (Google service
+account key files). Without them, pushes are batched but not sent and
+integrity verdicts read "not configured". App Attest (iOS) isn't wired yet.
 
 ## Building for Android
 
