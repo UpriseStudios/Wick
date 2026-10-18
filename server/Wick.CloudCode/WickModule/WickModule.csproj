@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The Wick Cloud Code module. Deployed as "WickModule" (the archive name must match this project).
+    Deploy: ugs deploy server/Wick.CloudCode/Wick.CloudCode.sln
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Wick.CloudCode</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Sim is linked, never copied or forked: the server re-simulates with the client's exact source. -->
+    <Compile Include="../../../unity/Assets/_Wick/Sim/**/*.cs" LinkBase="Sim" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Used only by the TimeResim spike function. -->
+    <EmbeddedResource Include="../../../tests/golden/full-heist.json" LogicalName="golden.full-heist.json" />
+    <EmbeddedResource Include="../../../tests/golden/timeout-wander.json" LogicalName="golden.timeout-wander.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Com.Unity.Services.CloudCode.Core" Version="0.0.9" />
+    <PackageReference Include="Com.Unity.Services.CloudCode.Apis" Version="0.0.27" />
+  </ItemGroup>
+
+</Project>
