@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Wick.Services;
@@ -8,11 +9,11 @@ using Wick.Sim;
 namespace Wick.Game
 {
     /// <summary>
-    /// The raid scene's flow: pick a dev vault, 5 s scout flyover (camera only, clock stopped),
-    /// live raid, results with Retry. Dev builds can also replay golden raids, and every results
-    /// screen compares the live hash with a headless replay of the recorded log. "My live vault"
-    /// raids the player's published vault through the server (StartFriendRaid, then SubmitRaid),
-    /// and loot counts only if the server's re-simulation verifies it.
+    /// The raid scene's flow. Home offers Raid (matchmaking), Raids on your vault (the defence log
+    /// with Watch replay and Revenge) and the editor. A server raid gets a single-use token, plays
+    /// with a 5 s scout flyover, and its loot counts only if the server's re-simulation verifies it.
+    /// Dev builds add offline dev vaults, golden replays, your own live vault and raid-by-id, and
+    /// every results screen compares the live hash with a headless replay of the recorded log.
     /// </summary>
     public sealed class RaidFlow : MonoBehaviour
     {
@@ -23,14 +24,20 @@ namespace Wick.Game
 
         private readonly List<TextAsset> _vaults = new List<TextAsset>();
         private readonly List<TextAsset> _goldens = new List<TextAsset>();
+        private readonly WickBackend _backend = new WickBackend();
+        private readonly CloudSaveClient _cloudSave = new CloudSaveClient();
         private int _vaultIndex = -1;
         private float _scoutLeft;
         private RaidFile _replaying;
         private System.Random _seeds;
         private RaidLaunch.Request _launched;
-        private readonly WickBackend _backend = new WickBackend();
-        private bool _serverMode;
+
+        /// <summary>How the current server raid got its token, so Retry can get another (they're single use).</summary>
+        private Func<Task<RaidStartReply>> _serverStart;
+
+        private string _serverBanner;
         private RaidStartReply _serverRaid;
+        private ReplayReply _serverReplay;
 
         public void Bind(RaidRunner runner, RaidUI ui, RaidCamera camera, RaidTuning tuning)
         {
@@ -54,7 +61,16 @@ namespace Wick.Game
             _ui.RetryPressed += Retry;
             _ui.MenuPressed += OnMenu;
             _ui.EditorPressed += OpenEditor;
-            _ui.ServerRaidPressed += StartServerRaid;
+            _ui.ServerRaidPressed += RaidOwnVault;
+            _ui.RaidPressed += RaidMatch;
+            _ui.RaidByIdPressed += RaidById;
+            _ui.RevengePressed += Revenge;
+            _ui.DefencePressed += ShowDefence;
+            _ui.DefenceBackPressed += ShowPicker;
+            _ui.WatchPressed += Watch;
+            _ui.ReplayPausePressed += TogglePause;
+            _ui.ReplayScrubbed += Scrub;
+            _ui.ReplayBackPressed += LeaveReplay;
         }
 
         private void OnDisable()
@@ -65,7 +81,16 @@ namespace Wick.Game
             _ui.RetryPressed -= Retry;
             _ui.MenuPressed -= OnMenu;
             _ui.EditorPressed -= OpenEditor;
-            _ui.ServerRaidPressed -= StartServerRaid;
+            _ui.ServerRaidPressed -= RaidOwnVault;
+            _ui.RaidPressed -= RaidMatch;
+            _ui.RaidByIdPressed -= RaidById;
+            _ui.RevengePressed -= Revenge;
+            _ui.DefencePressed -= ShowDefence;
+            _ui.DefenceBackPressed -= ShowPicker;
+            _ui.WatchPressed -= Watch;
+            _ui.ReplayPausePressed -= TogglePause;
+            _ui.ReplayScrubbed -= Scrub;
+            _ui.ReplayBackPressed -= LeaveReplay;
         }
 
         private void Start()
@@ -108,37 +133,53 @@ namespace Wick.Game
             }
         }
 
+        // ---- Home -------------------------------------------------------------------------
+
         private void ShowPicker()
         {
             _runner.Unload();
+            ClearModes();
             var names = new List<string>();
             foreach (TextAsset v in _vaults)
             {
                 names.Add(v.name);
             }
 
+            _ui.SetMenuLabel("Home");
             _ui.ShowPicker(names);
+            RefreshHome();
         }
 
-        private void StartVault(int index)
+        /// <summary>Gold and Crowns, read from the player's server-written data.</summary>
+        private async void RefreshHome()
         {
-            _vaultIndex = index;
-            _replaying = null;
-            _serverMode = false;
-            VaultDef vault = VaultJson.Parse(_vaults[index].text);
-            _runner.LoadLive(vault, _seeds.Next());
-            _camera.BeginScout();
-            _scoutLeft = _tuning.ScoutSeconds;
-            _ui.ShowHud("SCOUTING");
+            _ui.SetHomeStats("Connecting...");
+            try
+            {
+                Dictionary<string, string> data = await _cloudSave.LoadProtectedAsync("wallet", "profile");
+                long gold = data.TryGetValue("wallet", out string w) ? JsonReader.Parse(w).Find("gold")?.AsLong() ?? 0 : 0;
+                int crowns = data.TryGetValue("profile", out string p) ? JsonReader.Parse(p).Find("crowns")?.AsInt() ?? 0 : 0;
+                _ui.SetHomeStats(gold + " gold  |  " + crowns + " Crowns");
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Home stats: " + e.Message);
+                _ui.SetHomeStats("Offline");
+            }
         }
 
-        private void StartLaunched()
+        private void ClearModes()
         {
             _replaying = null;
-            _runner.LoadLive(_launched.Vault, _seeds.Next());
-            _camera.BeginScout();
-            _scoutLeft = _tuning.ScoutSeconds;
-            _ui.ShowHud("TEST RAID");
+            _vaultIndex = -1;
+            _serverStart = null;
+            _serverRaid = null;
+            _serverReplay = null;
+        }
+
+        private void OpenEditor()
+        {
+            SceneManager.LoadScene("Editor");
         }
 
         private void OnMenu()
@@ -150,38 +191,92 @@ namespace Wick.Game
                 return;
             }
 
+            if (_serverReplay != null)
+            {
+                ShowDefence();
+                return;
+            }
+
             ShowPicker();
         }
 
-        private void OpenEditor()
+        // ---- Offline raids (dev vaults, editor Test) -----------------------------------------
+
+        private void StartVault(int index)
         {
-            SceneManager.LoadScene("Editor");
+            ClearModes();
+            _vaultIndex = index;
+            VaultDef vault = VaultJson.Parse(_vaults[index].text);
+            _runner.LoadLive(vault, _seeds.Next());
+            BeginScout("SCOUTING");
         }
 
-        /// <summary>Gets a single-use raid token for the player's own live vault (development only).</summary>
-        private async void StartServerRaid()
+        private void StartLaunched()
         {
             _replaying = null;
-            _vaultIndex = -1;
-            _serverMode = true;
+            _runner.LoadLive(_launched.Vault, _seeds.Next());
+            BeginScout("TEST RAID");
+        }
+
+        private void BeginScout(string banner)
+        {
+            _camera.BeginScout();
+            _scoutLeft = _tuning.ScoutSeconds;
+            _ui.ShowHud(banner);
+        }
+
+        // ---- Server raids ------------------------------------------------------------------
+
+        private void RaidMatch()
+        {
+            StartServerRaid(() => _backend.GetRaidTargetAsync(), "RAID");
+        }
+
+        private void RaidOwnVault()
+        {
+            StartServerRaid(() => _backend.StartFriendRaidAsync(WickBackend.MyVaultId), "YOUR VAULT");
+        }
+
+        private void RaidById(string vaultId)
+        {
+            if (string.IsNullOrEmpty(vaultId))
+            {
+                _ui.ShowPickerMessage("Type a vault id first");
+                return;
+            }
+
+            StartServerRaid(() => _backend.StartFriendRaidAsync(vaultId), "FRIEND RAID");
+        }
+
+        private void Revenge(string vaultId)
+        {
+            StartServerRaid(() => _backend.StartFriendRaidAsync(vaultId, "revenge"), "REVENGE");
+        }
+
+        private async void StartServerRaid(Func<Task<RaidStartReply>> start, string banner)
+        {
+            ClearModes();
+            _serverStart = start;
+            _serverBanner = banner;
             _runner.Unload();
             _ui.ShowHud("CONNECTING");
             try
             {
                 await _backend.SignInAsync();
-                RaidStartReply start = await _backend.StartFriendRaidAsync(WickBackend.MyVaultId);
-                if (!start.Ok)
+                RaidStartReply reply = await start();
+                if (!reply.Ok)
                 {
                     ShowPicker();
-                    _ui.ShowPickerMessage(start.Reason);
+                    _ui.ShowPickerMessage(reply.Reason);
                     return;
                 }
 
-                _serverRaid = start;
-                _runner.LoadLive(VaultJson.Parse(start.Vault), start.Seed);
-                _camera.BeginScout();
-                _scoutLeft = _tuning.ScoutSeconds;
-                _ui.ShowHud("LIVE RAID");
+                _serverStart = start;
+                _serverBanner = banner;
+                _serverRaid = reply;
+                _ui.SetMenuLabel("Home");
+                _runner.LoadLive(VaultJson.Parse(reply.Vault), reply.Seed);
+                BeginScout(banner);
             }
             catch (Exception e)
             {
@@ -200,7 +295,8 @@ namespace Wick.Game
                 SubmitReply reply = await _backend.SubmitRaidAsync(raid.Token, log, result);
                 if (reply.Verified)
                 {
-                    _ui.SetServerVerdict("Server check passed: +" + reply.Paid + " gold (" + reply.Gold + " total)", true);
+                    string crowns = reply.CrownsDelta == 0 ? "" : "  " + (reply.CrownsDelta > 0 ? "+" : "") + reply.CrownsDelta + " Crowns";
+                    _ui.SetServerVerdict("Server check passed: +" + reply.Paid + " gold (" + reply.Gold + " total)" + crowns, true);
                 }
                 else
                 {
@@ -214,14 +310,86 @@ namespace Wick.Game
             }
         }
 
+        // ---- Defence log and replays ----------------------------------------------------------
+
+        private async void ShowDefence()
+        {
+            _runner.Unload();
+            ClearModes();
+            _ui.ShowPickerMessage("Loading raids on your vault...");
+            try
+            {
+                await _backend.SignInAsync();
+                DefenceLogReply log = await _backend.GetDefenceLogAsync();
+                _ui.ShowDefenceLog(log, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                _ui.ShowPickerMessage("Couldn't load the defence log. Check your connection.");
+            }
+        }
+
+        private async void Watch(string raidId)
+        {
+            try
+            {
+                ReplayReply replay = await _backend.GetReplayAsync(raidId);
+                if (!replay.Ok)
+                {
+                    ShowPicker();
+                    _ui.ShowPickerMessage(replay.Reason);
+                    return;
+                }
+
+                ClearModes();
+                _serverReplay = replay;
+                _ui.SetMenuLabel("Raids on your vault");
+                _runner.LoadReplay(VaultJson.Parse(replay.Vault), replay.Seed, InputLog.FromBase64(replay.Log));
+                _camera.EndScout();
+                _ui.ShowReplayHud("REPLAY", replay.Ticks);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                ShowPicker();
+                _ui.ShowPickerMessage("Couldn't load that replay.");
+            }
+        }
+
         private void StartGolden(int index)
         {
-            _serverMode = false;
+            ClearModes();
             _replaying = RaidFile.Parse(_goldens[index].text);
             _runner.LoadReplay(_replaying.Vault, _replaying.Seed, _replaying.Log);
             _camera.EndScout();
-            _ui.ShowHud("REPLAY " + _goldens[index].name);
+            _ui.ShowReplayHud("REPLAY " + _goldens[index].name, _replaying.ExpectedTicks);
         }
+
+        private void TogglePause()
+        {
+            _runner.Paused = !_runner.Paused;
+            _ui.SetReplayPaused(_runner.Paused);
+        }
+
+        private void Scrub(int tick)
+        {
+            _runner.SeekReplay(tick);
+        }
+
+        private void LeaveReplay()
+        {
+            if (_serverReplay != null)
+            {
+                ShowDefence();
+            }
+            else
+            {
+                ShowPicker();
+            }
+        }
+
+        // ---- Results ------------------------------------------------------------------------
 
         private void Retry()
         {
@@ -229,9 +397,15 @@ namespace Wick.Game
             {
                 StartLaunched();
             }
-            else if (_serverMode)
+            else if (_serverReplay != null)
             {
-                StartServerRaid(); // a fresh token: each one is single use
+                ReplayReply replay = _serverReplay;
+                _runner.SeekReplay(0);
+                _ui.ShowReplayHud("REPLAY", replay.Ticks);
+            }
+            else if (_serverStart != null)
+            {
+                StartServerRaid(_serverStart, _serverBanner); // a fresh token: each one is single use
             }
             else if (_replaying != null)
             {
@@ -250,6 +424,16 @@ namespace Wick.Game
             {
                 bool matches = _replaying.Matches(result);
                 _ui.ShowResults(result, live, _replaying.ExpectedHash + " (golden)", matches);
+                return;
+            }
+
+            if (_serverReplay != null)
+            {
+                // The replay re-ran the raid on this device: it must end in the hash the server verified.
+                bool matches = _serverReplay.Hash == live;
+                _ui.ShowResults(result, live, _serverReplay.Hash + " (server)", matches);
+                _ui.SetServerVerdict(matches ? "This replay matches the server's record of the raid" : "This replay doesn't match the server's record",
+                    matches);
                 return;
             }
 

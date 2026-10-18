@@ -17,18 +17,31 @@
             <ui:VisualElement name="stealth-icon" class="stealth-icon" picking-mode="Ignore">
                 <ui:Label text="STEALTH" class="stealth-text" picking-mode="Ignore" />
             </ui:VisualElement>
+            <ui:VisualElement name="replay-bar" class="replay-bar blocks-input hidden">
+                <ui:Button name="replay-pause" text="Pause" class="bar-button" />
+                <ui:Slider name="replay-scrub" low-value="0" high-value="1800" class="scrub" />
+                <ui:Button name="replay-back" text="Back" class="bar-button" />
+            </ui:VisualElement>
             <ui:VisualElement class="bottom-right" picking-mode="Ignore">
                 <ui:Button name="stealth-button" text="Sneak" class="round-button blocks-input" />
                 <ui:Button name="decoy-button" text="Decoy" class="round-button blocks-input" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Vault picker. -->
+        <!-- Home. -->
         <ui:VisualElement name="picker" class="panel blocks-input">
             <ui:Label text="WICK" class="title" />
-            <ui:Label text="Choose a dev vault" class="subtitle" />
+            <ui:Label name="home-stats" class="home-stats" />
             <ui:Label name="picker-message" class="server-verdict bad hidden" />
-            <ui:VisualElement name="picker-list" class="list" />
+            <ui:ScrollView name="picker-list" class="list home-list" />
+        </ui:VisualElement>
+
+        <!-- Raids on your vault. -->
+        <ui:VisualElement name="defence" class="panel blocks-input">
+            <ui:Label text="Raids on your vault" class="section-title" />
+            <ui:Label name="defence-stats" class="home-stats" />
+            <ui:ScrollView name="defence-list" class="defence-list" />
+            <ui:Button name="defence-back" text="Back" class="wide-button secondary" />
         </ui:VisualElement>
 
         <!-- Results. -->

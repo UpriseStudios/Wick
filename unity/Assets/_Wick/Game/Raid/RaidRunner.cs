@@ -29,6 +29,7 @@ namespace Wick.Game
     public sealed class RaidRunner : MonoBehaviour
     {
         private readonly TickAccumulator _accumulator = new TickAccumulator();
+        private InputLog _replayLog;
 
         public RaidMode Mode { get; private set; } = RaidMode.Idle;
         public RaidSim Sim { get; private set; }
@@ -54,16 +55,47 @@ namespace Wick.Game
 
         public bool IsLive => Mode == RaidMode.Live;
 
+        /// <summary>Replays only: holds the clock without unloading.</summary>
+        public bool Paused { get; set; }
+
         /// <summary>Loads a raid for the player, paused for the scout flyover.</summary>
         public void LoadLive(VaultDef vault, int seed)
         {
+            _replayLog = null;
             Load(new RaidSim(vault, seed), vault, seed, RaidMode.Scout);
         }
 
         /// <summary>Loads a recorded raid; it starts playing straight away.</summary>
         public void LoadReplay(VaultDef vault, int seed, InputLog log)
         {
+            _replayLog = log;
+            Paused = false;
             Load(new RaidSim(vault, seed, log), vault, seed, RaidMode.Replay);
+        }
+
+        /// <summary>
+        /// Jumps a replay to a tick by re-simulating from tick 0 without raising events (a whole
+        /// raid takes about a millisecond), then carries on from there. Seeking to the end doesn't
+        /// raise Ended; playing on into it does.
+        /// </summary>
+        public void SeekReplay(int tick)
+        {
+            if (_replayLog == null || Vault == null || (Mode != RaidMode.Replay && Mode != RaidMode.Ended))
+            {
+                return;
+            }
+
+            var sim = new RaidSim(Vault, Seed, _replayLog);
+            while (!sim.IsOver && sim.State.Tick < tick)
+            {
+                sim.Step();
+            }
+
+            Load(sim, Vault, Seed, RaidMode.Replay);
+            if (sim.IsOver)
+            {
+                Mode = RaidMode.Ended;
+            }
         }
 
         /// <summary>Starts the raid clock after the scout.</summary>
@@ -79,6 +111,8 @@ namespace Wick.Game
         public void Unload()
         {
             Sim = null;
+            _replayLog = null;
+            Paused = false;
             Mode = RaidMode.Idle;
         }
 
@@ -102,7 +136,7 @@ namespace Wick.Game
         /// <summary>Feeds frame time; steps the sim when the clock is running.</summary>
         public void Advance(double deltaSeconds)
         {
-            if (Mode != RaidMode.Live && Mode != RaidMode.Replay)
+            if ((Mode != RaidMode.Live && Mode != RaidMode.Replay) || (Mode == RaidMode.Replay && Paused))
             {
                 return;
             }

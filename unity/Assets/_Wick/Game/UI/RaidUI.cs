@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Wick.Services;
 using Wick.Sim;
 
 namespace Wick.Game
@@ -20,6 +21,10 @@ namespace Wick.Game
         private VisualElement _root;
         private VisualElement _hud;
         private VisualElement _picker;
+        private VisualElement _defence;
+        private VisualElement _replayBar;
+        private Slider _scrub;
+        private bool _scrubbing;
         private VisualElement _results;
         private VisualElement _devMenu;
         private Button _devToggle;
@@ -43,6 +48,15 @@ namespace Wick.Game
         public event Action MenuPressed;
         public event Action EditorPressed;
         public event Action ServerRaidPressed;
+        public event Action RaidPressed;
+        public event Action DefencePressed;
+        public event Action DefenceBackPressed;
+        public event Action<string> RaidByIdPressed;
+        public event Action<string> WatchPressed;
+        public event Action<string> RevengePressed;
+        public event Action ReplayPausePressed;
+        public event Action<int> ReplayScrubbed;
+        public event Action ReplayBackPressed;
 
         public static bool DevBuild => Debug.isDebugBuild;
 
@@ -73,6 +87,9 @@ namespace Wick.Game
             _root = GetComponent<UIDocument>().rootVisualElement;
             _hud = _root.Q("hud");
             _picker = _root.Q("picker");
+            _defence = _root.Q("defence");
+            _replayBar = _root.Q("replay-bar");
+            _scrub = _root.Q<Slider>("replay-scrub");
             _results = _root.Q("results");
             _devMenu = _root.Q("dev-menu");
             _devToggle = _root.Q<Button>("dev-toggle");
@@ -96,6 +113,13 @@ namespace Wick.Game
             _root.Q<Button>("menu-button").clicked += () => MenuPressed?.Invoke();
             _root.Q<Button>("dev-vaults").clicked += () => MenuPressed?.Invoke();
             _devToggle.clicked += () => Show(_devMenu, !Visible(_devMenu));
+            _root.Q<Button>("defence-back").clicked += () => DefenceBackPressed?.Invoke();
+            _root.Q<Button>("replay-pause").clicked += () => ReplayPausePressed?.Invoke();
+            _root.Q<Button>("replay-back").clicked += () => ReplayBackPressed?.Invoke();
+            _scrub.RegisterValueChangedCallback(e => ReplayScrubbed?.Invoke(Mathf.RoundToInt(e.newValue)));
+            _scrub.RegisterCallback<PointerDownEvent>(_ => _scrubbing = true, TrickleDown.TrickleDown);
+            _scrub.RegisterCallback<PointerUpEvent>(_ => _scrubbing = false, TrickleDown.TrickleDown);
+            _scrub.RegisterCallback<PointerCaptureOutEvent>(_ => _scrubbing = false, TrickleDown.TrickleDown);
 
             var grid = _root.Q<Toggle>("dev-grid");
             grid.RegisterValueChangedCallback(e => _overlay.ShowGrid = e.newValue);
@@ -121,31 +145,168 @@ namespace Wick.Game
 
         // ---- Screens ----------------------------------------------------------------
 
+        /// <summary>Home: Raid, Raids on your vault, the editor, and (dev builds) test vaults and tools.</summary>
         public void ShowPicker(IReadOnlyList<string> vaultNames)
         {
             EnsureReady();
             VisualElement list = _picker.Q("picker-list");
             list.Clear();
-            for (int i = 0; i < vaultNames.Count; i++)
+            list.Add(WideButton("Raid", () => RaidPressed?.Invoke()));
+            list.Add(WideButton("Raids on your vault", () => DefencePressed?.Invoke(), "secondary"));
+            list.Add(WideButton("Vault editor", () => EditorPressed?.Invoke(), "secondary"));
+
+            if (DevBuild)
             {
-                int index = i;
-                var b = new Button(() => VaultPicked?.Invoke(index)) { text = vaultNames[i] };
-                b.AddToClassList("wide-button");
-                list.Add(b);
+                list.Add(new Label("Development") { name = "dev-section" });
+                list.Q<Label>("dev-section").AddToClassList("section");
+                for (int i = 0; i < vaultNames.Count; i++)
+                {
+                    int index = i;
+                    list.Add(WideButton(vaultNames[i] + " (offline)", () => VaultPicked?.Invoke(index), "small"));
+                }
+
+                list.Add(WideButton("My live vault (server)", () => ServerRaidPressed?.Invoke(), "small"));
+                var row = new VisualElement();
+                row.AddToClassList("id-row");
+                var field = new TextField { name = "raid-id", value = "" };
+                field.AddToClassList("id-field");
+                field.textEdition.placeholder = "Vault id, e.g. v_abc123";
+                row.Add(field);
+                var go = new Button(() => RaidByIdPressed?.Invoke(field.value.Trim())) { text = "Raid" };
+                go.AddToClassList("log-button");
+                row.Add(go);
+                list.Add(row);
+                var mine = new Label("Your vault id: " + (WickBackend.MyVaultId ?? "sign in first")) { name = "my-vault-id" };
+                mine.AddToClassList("mono");
+                mine.selection.isSelectable = true;
+                list.Add(mine);
             }
 
-            var server = new Button(() => ServerRaidPressed?.Invoke()) { text = "My live vault (server)" };
-            server.AddToClassList("wide-button");
-            server.AddToClassList("editor-button");
-            list.Add(server);
-
-            var editor = new Button(() => EditorPressed?.Invoke()) { text = "Vault editor" };
-            editor.AddToClassList("wide-button");
-            editor.AddToClassList("editor-button");
-            list.Add(editor);
 
             ShowPickerMessage(null);
             ShowOnly(_picker);
+        }
+
+        public void SetHomeStats(string text)
+        {
+            EnsureReady();
+            _picker.Q<Label>("home-stats").text = text ?? "";
+            var mine = _picker.Q<Label>("my-vault-id");
+            if (mine != null)
+            {
+                mine.text = "Your vault id: " + (WickBackend.MyVaultId ?? "sign in first");
+            }
+        }
+
+        /// <summary>The defence log: stats, then each raid with Watch replay and Revenge.</summary>
+        public void ShowDefenceLog(DefenceLogReply log, long nowMs)
+        {
+            EnsureReady();
+            ShowOnly(_defence);
+            string shield = log.ShieldUntilMs > nowMs ? "  |  shielded " + ((log.ShieldUntilMs - nowMs) / 60000 + 1) + " min" : "";
+            _defence.Q<Label>("defence-stats").text = log.Raids + " raids, " + log.Snuffs + " snuffed" +
+                (string.IsNullOrEmpty(log.DeadliestTrap) ? "" : ", deadliest: " + Pretty(log.DeadliestTrap)) + shield;
+
+            var list = _defence.Q<ScrollView>("defence-list");
+            list.Clear();
+            if (log.Entries == null || log.Entries.Count == 0)
+            {
+                var none = new Label("No raids yet. Publish a vault and wait for raiders.");
+                none.AddToClassList("log-text");
+                list.Add(none);
+                return;
+            }
+
+            foreach (DefenceEntryReply e in log.Entries)
+            {
+                var row = new VisualElement();
+                row.AddToClassList("log-row");
+                bool robbed = e.GoldLost > 0 || (e.Outcome == "Escaped" && e.Stars > 0);
+                string money = robbed ? "lost " + e.GoldLost + " gold" : "+" + e.Bonus + " gold";
+                string crowns = (e.CrownsDelta >= 0 ? "+" : "") + e.CrownsDelta + " Crowns";
+                var text = new Label(Ago(nowMs - e.AtMs) + "  " + Verb(e.Outcome) + "  " + e.Stars + " star" + (e.Stars == 1 ? "" : "s") +
+                    "\n" + money + ", " + crowns);
+                text.AddToClassList("log-text");
+                text.AddToClassList(robbed ? "robbed" : "held");
+                row.Add(text);
+
+                var buttons = new VisualElement();
+                buttons.AddToClassList("log-buttons");
+                string raidId = e.RaidId;
+                string revenge = e.RevengeVaultId;
+                var watch = new Button(() => WatchPressed?.Invoke(raidId)) { text = "Watch replay" };
+                watch.AddToClassList("log-button");
+                buttons.Add(watch);
+                var hit = new Button(() => RevengePressed?.Invoke(revenge)) { text = "Revenge" };
+                hit.AddToClassList("log-button");
+                hit.AddToClassList("revenge");
+                buttons.Add(hit);
+                row.Add(buttons);
+                list.Add(row);
+            }
+        }
+
+        /// <summary>The HUD for a replay, with a scrub bar over its ticks.</summary>
+        public void ShowReplayHud(string banner, int totalTicks)
+        {
+            ShowHud(banner);
+            _scrub.highValue = Mathf.Max(1, totalTicks);
+            _scrub.SetValueWithoutNotify(0);
+            Show(_replayBar, true);
+            SetReplayPaused(false);
+        }
+
+        public void SetReplayPaused(bool paused)
+        {
+            EnsureReady();
+            _root.Q<Button>("replay-pause").text = paused ? "Play" : "Pause";
+        }
+
+        private Button WideButton(string text, Action onClick, string extraClass = null)
+        {
+            var b = new Button(onClick) { text = text };
+            b.AddToClassList("wide-button");
+            if (extraClass != null)
+            {
+                b.AddToClassList(extraClass);
+            }
+
+            return b;
+        }
+
+        private static string Verb(string outcome)
+        {
+            switch (outcome)
+            {
+                case "Escaped": return "Escaped";
+                case "Snuffed": return "Snuffed";
+                default: return "Ran out of time";
+            }
+        }
+
+        private static string Ago(long ms)
+        {
+            long minutes = Math.Max(0, ms / 60000);
+            if (minutes < 1) return "just now";
+            if (minutes < 60) return minutes + " min ago";
+            if (minutes < 48 * 60) return minutes / 60 + " h ago";
+            return minutes / (24 * 60) + " days ago";
+        }
+
+        private static string Pretty(string typeName)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (char c in typeName)
+            {
+                if (char.IsUpper(c) && sb.Length > 0)
+                {
+                    sb.Append(' ');
+                }
+
+                sb.Append(c);
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>A line above the vault list, e.g. why a live raid couldn't start. Null hides it.</summary>
@@ -249,6 +410,11 @@ namespace Wick.Game
                 return;
             }
 
+            if (Visible(_replayBar) && !_scrubbing)
+            {
+                _scrub.SetValueWithoutNotify(_runner.Sim.State.Tick);
+            }
+
             WickState w = _runner.Current.Wick;
             int ticksLeft = SimTuning.RaidTicks - _runner.Sim.State.Tick;
             int seconds = Mathf.CeilToInt(ticksLeft / (float)SimTuning.TicksPerSecond);
@@ -311,7 +477,9 @@ namespace Wick.Game
         {
             Show(_hud, screen == _hud);
             Show(_picker, screen == _picker);
+            Show(_defence, screen == _defence);
             Show(_results, screen == _results);
+            Show(_replayBar, false);
         }
 
         private static void Show(VisualElement e, bool visible)

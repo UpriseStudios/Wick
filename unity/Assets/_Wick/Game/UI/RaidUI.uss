@@ -270,3 +270,139 @@
 .server-verdict.bad {
     color: rgb(255, 120, 90);
 }
+
+/* ---- Home, defence log, replay bar ------------------------------------------- */
+
+.home-stats {
+    font-size: 44px;
+    color: rgb(255, 225, 160);
+    margin-bottom: 30px;
+    -unity-text-align: middle-center;
+}
+
+.home-list {
+    max-height: 1300px;
+}
+
+.section {
+    font-size: 34px;
+    color: rgb(180, 175, 165);
+    margin: 30px 0 6px 0;
+}
+
+.section-title {
+    font-size: 64px;
+    color: rgb(255, 200, 110);
+    -unity-font-style: bold;
+    margin-bottom: 16px;
+}
+
+.wide-button.secondary {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: rgb(230, 230, 230);
+}
+
+.wide-button.small {
+    height: 100px;
+    font-size: 36px;
+    margin: 8px 0;
+}
+
+.id-row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.id-field {
+    flex-grow: 1;
+    font-size: 34px;
+    height: 100px;
+}
+
+.id-field TextInput {
+    font-size: 34px;
+    -unity-text-align: middle-left;
+}
+
+.defence-list {
+    width: 92%;
+    max-height: 1250px;
+    margin-bottom: 20px;
+}
+
+.log-row {
+    padding: 20px 24px;
+    margin: 8px 0;
+    border-radius: 18px;
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.log-text {
+    font-size: 32px;
+    color: rgb(235, 230, 220);
+    white-space: normal;
+}
+
+.log-text.robbed {
+    color: rgb(255, 150, 120);
+}
+
+.log-text.held {
+    color: rgb(150, 230, 150);
+}
+
+.log-buttons {
+    flex-direction: row;
+    margin-top: 12px;
+}
+
+.log-button {
+    height: 84px;
+    padding: 0 30px;
+    margin-right: 14px;
+    font-size: 32px;
+    border-radius: 16px;
+    border-width: 0;
+    color: rgb(30, 22, 12);
+    background-color: rgb(255, 200, 110);
+}
+
+.log-button.revenge {
+    background-color: rgb(220, 90, 70);
+    color: rgb(255, 255, 255);
+}
+
+.replay-bar {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 60px;
+    flex-direction: row;
+    align-items: center;
+    padding: 16px;
+    border-radius: 24px;
+    background-color: rgba(10, 8, 14, 0.85);
+}
+
+.bar-button {
+    width: 170px;
+    height: 100px;
+    font-size: 34px;
+    border-radius: 18px;
+    border-width: 0;
+    color: rgb(235, 235, 235);
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+.scrub {
+    flex-grow: 1;
+    margin: 0 20px;
+}
+
+.scrub #unity-dragger {
+    width: 56px;
+    height: 56px;
+    margin-top: -24px;
+    border-radius: 28px;
+    background-color: rgb(255, 200, 110);
+}
