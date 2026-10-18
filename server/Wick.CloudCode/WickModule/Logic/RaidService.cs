@@ -79,10 +79,14 @@ namespace Wick.CloudCode
                 bool last = b == Rules.Bands.Length;
                 int min = last ? 0 : Math.Max(0, crowns - Rules.Bands[b]);
                 int? max = last ? (int?)null : crowns + Rules.Bands[b];
-                foreach (string pool in pools)
+
+                // Both pools at once (players are still preferred), so a band costs one round trip.
+                Task<List<MatchEntry>>[] queries = { _directory.QueryAsync(pools[0], min, max), _directory.QueryAsync(pools[1], min, max) };
+                await Task.WhenAll(queries);
+                foreach (Task<List<MatchEntry>> query in queries)
                 {
                     var eligible = new List<MatchEntry>();
-                    foreach (MatchEntry e in await _directory.QueryAsync(pool, min, max))
+                    foreach (MatchEntry e in query.Result)
                     {
                         if (e.OwnerId != playerId && e.ShieldUntilMs <= now && !book.RaidedRecently(e.VaultId, now - Rules.RecentTargetMs))
                         {
