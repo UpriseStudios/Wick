@@ -3,6 +3,7 @@
     "rootNamespace": "Wick.Game.Tests",
     "references": [
         "Wick.Game",
+        "Wick.Services",
         "Wick.Sim",
         "Wick.Sim.Tests",
         "UnityEngine.TestRunner",

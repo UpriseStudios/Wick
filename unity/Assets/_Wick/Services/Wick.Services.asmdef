@@ -2,7 +2,12 @@
     "name": "Wick.Services",
     "rootNamespace": "Wick.Services",
     "references": [
-        "Wick.Sim"
+        "Wick.Sim",
+        "Unity.Services.Core",
+        "Unity.Services.Core.Environments",
+        "Unity.Services.Authentication",
+        "Unity.Services.CloudCode",
+        "Unity.Services.CloudSave"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
