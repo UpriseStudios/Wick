@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WickModule", "WickModule\WickModule.csproj", "{F4C8776A-2B1E-43C3-A837-72B70D1FBBBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WickModule.Tests", "WickModule.Tests\WickModule.Tests.csproj", "{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{F4C8776A-2B1E-43C3-A837-72B70D1FBBBD}.Release|x64.Build.0 = Release|Any CPU
 		{F4C8776A-2B1E-43C3-A837-72B70D1FBBBD}.Release|x86.ActiveCfg = Release|Any CPU
 		{F4C8776A-2B1E-43C3-A837-72B70D1FBBBD}.Release|x86.Build.0 = Release|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Debug|x64.Build.0 = Debug|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Debug|x86.Build.0 = Debug|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Release|x64.ActiveCfg = Release|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Release|x64.Build.0 = Release|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Release|x86.ActiveCfg = Release|Any CPU
+		{6D929906-F1CF-4DC5-AFD7-C6BC4A80D53F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

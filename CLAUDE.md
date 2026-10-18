@@ -13,7 +13,7 @@ docs/tech-design.md. Read the relevant section before starting any task.
 - Any change to sim rules bumps SimVersion and updates golden replays deliberately.
 - Game/Services may reference Sim. Sim references nothing.
 - server/Wick.CloudCode links Sim source files; never fork sim code for the server.
-- Client never writes wallet, inventory or vault.live; only Cloud Code does, and
+- Client never writes wallet, inventory or vault_live; only Cloud Code does, and
   always with Cloud Save write locks (optimistic concurrency).
 - Visibility (which tiles are lit) is decided by Sim. Rendering only visualises it.
 - Server re-simulation proves a raid is possible, not that a human played it.
@@ -30,6 +30,8 @@ docs/tech-design.md. Read the relevant section before starting any task.
 - Unity tests: "C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe" -batchmode -projectPath unity -runTests
   -testPlatform EditMode -testResults results.xml
 - Replay check: dotnet run --project tools/replay-cli -- raid.json
+- Cloud Code tests: dotnet test server/Wick.CloudCode/WickModule.Tests
+- Deploy Cloud Code (development): ugs deploy server/Wick.CloudCode/Wick.CloudCode.sln -e development
 
 ## Definition of done
 - All tests pass in both Unity and .NET.

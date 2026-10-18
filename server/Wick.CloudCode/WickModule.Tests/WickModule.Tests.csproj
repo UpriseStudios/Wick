@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Game logic tests with Cloud Save faked. Not referenced by WickModule, so never deployed. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- Keeps it out of the module the UGS CLI packages (Cloud Code allows 10 MB). -->
+    <IsPublishable>false</IsPublishable>
+    <RootNamespace>Wick.CloudCode.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../WickModule/WickModule.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../../unity/Assets/_Wick/Resources/VaultTemplates/1-three-halls.json" Link="Data/three-halls.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+</Project>
