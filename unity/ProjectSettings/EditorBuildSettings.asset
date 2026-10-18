@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Wick/Scenes/Boot.unity
+    guid: 8828bdd5ade0bb648857b2931f390e32
+  - enabled: 1
     path: Assets/_Wick/Scenes/Raid.unity
     guid: 4613a6ec72766364b9cbf5ac867a2fbb
   - enabled: 1

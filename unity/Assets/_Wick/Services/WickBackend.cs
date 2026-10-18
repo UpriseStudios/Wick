@@ -29,6 +29,7 @@ namespace Wick.Services
         public string Reason;
         public string Token;
         public string Kind;
+        public string Code;
         public int Seed;
         public string VaultId;
         public int VaultVersion;
@@ -92,6 +93,7 @@ namespace Wick.Services
         public string RaidId;
         public string OwnerId;
         public string RaiderId;
+        public string Code;
         public int SimVersion;
         public string Vault;
         public int Seed;

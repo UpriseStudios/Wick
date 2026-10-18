@@ -4,6 +4,7 @@
     "references": [
         "Wick.Sim",
         "Wick.Game",
+        "Wick.Services",
         "UnityEngine.UI",
         "Unity.InputSystem"
     ],

@@ -60,6 +60,11 @@
                 <ui:Label name="result-replay-hash" class="mono" />
                 <ui:Label name="result-match" class="match" />
             </ui:VisualElement>
+            <ui:VisualElement name="share-row" class="share-row">
+                <ui:Button name="share-clip" text="Share clip" class="share-button" />
+                <ui:Button name="share-link" text="Share link" class="share-button" />
+            </ui:VisualElement>
+            <ui:Label name="clip-status" class="mono hidden" />
             <ui:Button name="retry-button" text="Retry" class="wide-button" />
             <ui:Button name="menu-button" text="Vaults" class="wide-button" />
         </ui:VisualElement>

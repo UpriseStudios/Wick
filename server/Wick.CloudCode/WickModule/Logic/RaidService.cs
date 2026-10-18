@@ -150,6 +150,7 @@ namespace Wick.CloudCode
                 Id = _random.NextId(),
                 Kind = kind,
                 VaultId = target.VaultId,
+                Code = target.Code,
                 VaultVersion = target.Version,
                 OwnerId = target.OwnerId,
                 DefenderBot = target.Bot,
@@ -209,6 +210,7 @@ namespace Wick.CloudCode
                 Ok = true,
                 Token = token.Id,
                 Kind = token.Kind,
+                Code = token.Code,
                 Seed = token.Seed,
                 VaultId = token.VaultId,
                 VaultVersion = token.VaultVersion,
@@ -444,6 +446,7 @@ namespace Wick.CloudCode
                 RaidId = RaidIdFor(token),
                 Kind = token.Kind,
                 VaultId = token.VaultId,
+                Code = token.Code,
                 VaultVersion = token.VaultVersion,
                 OwnerId = token.OwnerId,
                 RaiderId = playerId,
@@ -479,6 +482,7 @@ namespace Wick.CloudCode
         public string RaidId { get; set; }
         public string Kind { get; set; }
         public string VaultId { get; set; }
+        public string Code { get; set; }
         public int VaultVersion { get; set; }
         public string OwnerId { get; set; }
         public string RaiderId { get; set; }

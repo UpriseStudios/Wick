@@ -4,7 +4,9 @@
     "references": [
         "Wick.Sim",
         "Wick.Services",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnityEngine.UI",
+        "NativeShare.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

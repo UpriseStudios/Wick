@@ -26,6 +26,7 @@ namespace Wick.CloudCode
         public string Reason { get; set; }
         public string Token { get; set; }
         public string Kind { get; set; }
+        public string Code { get; set; }
         public int Seed { get; set; }
         public string VaultId { get; set; }
         public int VaultVersion { get; set; }
@@ -93,6 +94,7 @@ namespace Wick.CloudCode
         public string RaidId { get; set; }
         public string OwnerId { get; set; }
         public string RaiderId { get; set; }
+        public string Code { get; set; }
         public int SimVersion { get; set; }
         public string Vault { get; set; }
         public int Seed { get; set; }

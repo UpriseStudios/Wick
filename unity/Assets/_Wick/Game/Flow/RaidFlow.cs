@@ -39,6 +39,14 @@ namespace Wick.Game
         private RaidStartReply _serverRaid;
         private ReplayReply _serverReplay;
 
+        // The raid on the results screen, for its share clip and link.
+        private VaultDef _lastVault;
+        private int _lastSeed;
+        private InputLog _lastLog;
+        private string _lastCode;
+        private string _clipPath;
+        private ClipRenderer _clips;
+
         public void Bind(RaidRunner runner, RaidUI ui, RaidCamera camera, RaidTuning tuning)
         {
             _runner = runner;
@@ -71,6 +79,10 @@ namespace Wick.Game
             _ui.ReplayPausePressed += TogglePause;
             _ui.ReplayScrubbed += Scrub;
             _ui.ReplayBackPressed += LeaveReplay;
+            _ui.ShareClipPressed += ShareClip;
+            _ui.ShareLinkPressed += ShareLink;
+            _ui.ShareMyVaultPressed += ShareMyVault;
+            LinkRouter.Arrived += OnLink;
         }
 
         private void OnDisable()
@@ -91,6 +103,10 @@ namespace Wick.Game
             _ui.ReplayPausePressed -= TogglePause;
             _ui.ReplayScrubbed -= Scrub;
             _ui.ReplayBackPressed -= LeaveReplay;
+            _ui.ShareClipPressed -= ShareClip;
+            _ui.ShareLinkPressed -= ShareLink;
+            _ui.ShareMyVaultPressed -= ShareMyVault;
+            LinkRouter.Arrived -= OnLink;
         }
 
         private void Start()
@@ -115,6 +131,12 @@ namespace Wick.Game
             }
 
             ShowPicker();
+            LinkRouter.Init(this); // already done by Boot; this covers starting in the Raid scene
+            IncomingLink link = LinkRouter.Take();
+            if (link != null)
+            {
+                OnLink(link);
+            }
         }
 
         private void Update()
@@ -248,6 +270,26 @@ namespace Wick.Game
             StartServerRaid(() => _backend.StartFriendRaidAsync(vaultId), "FRIEND RAID");
         }
 
+        /// <summary>A vault link, install referrer or pasted code: raid that vault.</summary>
+        private void OnLink(IncomingLink link)
+        {
+            LinkRouter.Take();
+            if (_launched != null || (_clips != null && _clips.Busy))
+            {
+                return;
+            }
+
+            Telemetry.LinkOpened(link.Code, link.Source == "link", link.Source);
+            if (link.NeedsConfirm)
+            {
+                _ui.ShowLinkPrompt(link.Code, () => RaidById(link.Code));
+            }
+            else
+            {
+                RaidById(link.Code);
+            }
+        }
+
         private void Revenge(string vaultId)
         {
             StartServerRaid(() => _backend.StartFriendRaidAsync(vaultId, "revenge"), "REVENGE");
@@ -348,6 +390,7 @@ namespace Wick.Game
                 _runner.LoadReplay(VaultJson.Parse(replay.Vault), replay.Seed, InputLog.FromBase64(replay.Log));
                 _camera.EndScout();
                 _ui.ShowReplayHud("REPLAY", replay.Ticks);
+                _lastCode = replay.Code;
             }
             catch (Exception e)
             {
@@ -419,6 +462,16 @@ namespace Wick.Game
 
         private void OnEnded(RaidRunner runner, RaidResult result)
         {
+            if (_clips != null && _clips.Busy)
+            {
+                return; // the clip renderer is replaying this raid offscreen
+            }
+
+            _lastVault = runner.Vault;
+            _lastSeed = runner.Seed;
+            _lastLog = runner.Sim.RecordedLog;
+            _lastCode = _serverRaid?.Code ?? (_serverReplay != null ? _lastCode : null);
+            _clipPath = null;
             string live = result.HashHex;
             if (_replaying != null)
             {
@@ -434,6 +487,7 @@ namespace Wick.Game
                 _ui.ShowResults(result, live, _serverReplay.Hash + " (server)", matches);
                 _ui.SetServerVerdict(matches ? "This replay matches the server's record of the raid" : "This replay doesn't match the server's record",
                     matches);
+                _ui.SetShare(true, _lastCode != null, null);
                 return;
             }
 
@@ -445,12 +499,91 @@ namespace Wick.Game
             // Replay the recorded log headlessly: it must give the same hash as the live run.
             RaidResult replay = Sim.RaidRunner.RunToEnd(runner.Vault, runner.Seed, runner.Sim.RecordedLog);
             _ui.ShowResults(result, live, replay.HashHex, replay.FinalHash == result.FinalHash);
+            _ui.SetShare(true, _lastCode != null, null);
 
             if (_serverRaid != null)
             {
                 RaidStartReply raid = _serverRaid;
                 _serverRaid = null;
                 SubmitServerRaid(raid, runner.Sim.RecordedLog, result);
+            }
+        }
+
+        // ---- Sharing --------------------------------------------------------------------------
+
+        private void ShareClip()
+        {
+            if (_lastVault == null)
+            {
+                return;
+            }
+
+            if (_clipPath != null)
+            {
+                ClipShare.ShareClip(_clipPath, _lastCode);
+                return;
+            }
+
+            if (_clips == null)
+            {
+                _clips = gameObject.AddComponent<ClipRenderer>();
+                _clips.Bind(_runner, FindAnyObjectByType<VaultView>(), _tuning, Camera.main);
+            }
+
+            if (_clips.Busy)
+            {
+                return;
+            }
+
+            _ui.SetShare(false, _lastCode != null, "Making your clip...");
+            string path = System.IO.Path.Combine(Application.temporaryCachePath, "wick-clip.mp4");
+            string watermark = "Can you crack this vault?\n" + (_lastCode != null ? VaultLink.Build(_lastCode) : VaultLink.Domain);
+            StartCoroutine(_clips.Render(_lastVault, _lastSeed, _lastLog, watermark, path, OnClip));
+        }
+
+        private void OnClip(ClipResult clip)
+        {
+            string timing = clip.Frames + " frames in " + clip.Seconds.ToString("0.0") + " s";
+            Debug.Log("Clip: " + clip.Reason + ", " + timing + ", window " + clip.Window.StartTick + "-" + clip.Window.EndTick +
+                " key " + clip.Window.KeyTick);
+            if (!clip.Ok)
+            {
+                _ui.SetShare(false, _lastCode != null, clip.Reason);
+                return;
+            }
+
+            _clipPath = clip.Path;
+            _ui.SetShare(true, _lastCode != null, RaidUI.DevBuild ? "Clip ready (" + timing + ")" : null);
+            ClipShare.ShareClip(_clipPath, _lastCode);
+        }
+
+        private void ShareLink()
+        {
+            if (_lastCode != null)
+            {
+                ClipShare.ShareLink(_lastCode);
+            }
+        }
+
+        /// <summary>Shares the player's own published vault (its code is in their vault_live).</summary>
+        private async void ShareMyVault()
+        {
+            try
+            {
+                Dictionary<string, string> data = await _cloudSave.LoadProtectedAsync("vault_live");
+                string code = data.TryGetValue("vault_live", out string json) ? JsonReader.Parse(json).Find("code")?.AsString() : null;
+                if (code == null)
+                {
+                    _ui.ShowPickerMessage("Publish a vault from the editor first");
+                    return;
+                }
+
+                ClipShare.ShareLink(code);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                _ui.ShowPickerMessage("Couldn't reach the server. Check your connection and try again.");
             }
         }
 

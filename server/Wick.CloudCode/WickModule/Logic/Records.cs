@@ -193,6 +193,9 @@ namespace Wick.CloudCode
         public string Id { get; set; }
         public string Kind { get; set; }
         public string VaultId { get; set; }
+
+        /// <summary>The vault's share code, for the clip watermark and Share buttons.</summary>
+        public string Code { get; set; }
         public int VaultVersion { get; set; }
         public string OwnerId { get; set; }
         public bool DefenderBot { get; set; }

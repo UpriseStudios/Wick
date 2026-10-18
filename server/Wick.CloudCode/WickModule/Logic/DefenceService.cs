@@ -182,6 +182,7 @@ namespace Wick.CloudCode
                 RaidId = r.RaidId,
                 OwnerId = r.OwnerId,
                 RaiderId = r.RaiderId,
+                Code = r.Code,
                 SimVersion = r.SimVersion,
                 Vault = r.Vault,
                 Seed = r.Seed,

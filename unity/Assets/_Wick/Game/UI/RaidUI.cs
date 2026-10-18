@@ -57,6 +57,9 @@ namespace Wick.Game
         public event Action ReplayPausePressed;
         public event Action<int> ReplayScrubbed;
         public event Action ReplayBackPressed;
+        public event Action ShareClipPressed;
+        public event Action ShareLinkPressed;
+        public event Action ShareMyVaultPressed;
 
         public static bool DevBuild => Debug.isDebugBuild;
 
@@ -116,6 +119,8 @@ namespace Wick.Game
             _root.Q<Button>("defence-back").clicked += () => DefenceBackPressed?.Invoke();
             _root.Q<Button>("replay-pause").clicked += () => ReplayPausePressed?.Invoke();
             _root.Q<Button>("replay-back").clicked += () => ReplayBackPressed?.Invoke();
+            _root.Q<Button>("share-clip").clicked += () => ShareClipPressed?.Invoke();
+            _root.Q<Button>("share-link").clicked += () => ShareLinkPressed?.Invoke();
             _scrub.RegisterValueChangedCallback(e => ReplayScrubbed?.Invoke(Mathf.RoundToInt(e.newValue)));
             _scrub.RegisterCallback<PointerDownEvent>(_ => _scrubbing = true, TrickleDown.TrickleDown);
             _scrub.RegisterCallback<PointerUpEvent>(_ => _scrubbing = false, TrickleDown.TrickleDown);
@@ -154,6 +159,7 @@ namespace Wick.Game
             list.Add(WideButton("Raid", () => RaidPressed?.Invoke()));
             list.Add(WideButton("Raids on your vault", () => DefencePressed?.Invoke(), "secondary"));
             list.Add(WideButton("Vault editor", () => EditorPressed?.Invoke(), "secondary"));
+            list.Add(WideButton("Share my vault", () => ShareMyVaultPressed?.Invoke(), "secondary"));
 
             if (DevBuild)
             {
@@ -185,6 +191,44 @@ namespace Wick.Game
 
             ShowPickerMessage(null);
             ShowOnly(_picker);
+        }
+
+        /// <summary>Asks before raiding a vault code found on the clipboard (iOS first launch).</summary>
+        public void ShowLinkPrompt(string code, Action yes)
+        {
+            EnsureReady();
+            ShowPickerMessage("Open the vault you were sent? (" + code + ")");
+            VisualElement list = _picker.Q("picker-list");
+            var row = new VisualElement { name = "link-prompt" };
+            row.AddToClassList("prompt-row");
+            var go = new Button(() =>
+            {
+                row.RemoveFromHierarchy();
+                ShowPickerMessage(null);
+                yes();
+            }) { text = "Raid it" };
+            go.AddToClassList("log-button");
+            var no = new Button(() =>
+            {
+                row.RemoveFromHierarchy();
+                ShowPickerMessage(null);
+            }) { text = "Not now" };
+            no.AddToClassList("log-button");
+            row.Add(go);
+            row.Add(no);
+            list.Insert(0, row);
+        }
+
+        /// <summary>Which share buttons the results screen offers, and the clip progress line.</summary>
+        public void SetShare(bool clip, bool link, string status)
+        {
+            EnsureReady();
+            _root.Q<Button>("share-clip").SetEnabled(clip);
+            _root.Q<Button>("share-link").SetEnabled(link);
+            Show(_root.Q("share-row"), clip || link);
+            var label = _root.Q<Label>("clip-status");
+            label.text = status ?? "";
+            Show(label, !string.IsNullOrEmpty(status));
         }
 
         public void SetHomeStats(string text)
@@ -387,6 +431,7 @@ namespace Wick.Game
 
             _results.Q<Label>("result-loot").text = "Loot " + result.Loot;
             SetServerVerdict(null, null);
+            SetShare(false, false, null);
             VisualElement dev = _results.Q("result-dev");
             Show(dev, DevBuild);
             _results.Q<Label>("result-live-hash").text = "live   " + liveHash;
