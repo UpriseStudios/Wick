@@ -5,8 +5,10 @@ using Wick.Sim;
 
 namespace Wick.Services
 {
-    // Replies from WickModule (server/Wick.CloudCode/WickModule/Logic/Results.cs). [Preserve]
-    // keeps IL2CPP stripping from removing what Newtonsoft builds by reflection.
+    // Replies from WickModule (server/Wick.CloudCode/WickModule/Logic/Results.cs). They must list
+    // every field the server sends: the Cloud Code client fails on unknown members
+    // (ReplyContractTests checks this). [Preserve] keeps IL2CPP stripping from removing what
+    // Newtonsoft builds by reflection.
 
     [Preserve]
     public sealed class PublishReply
@@ -45,6 +47,7 @@ namespace Wick.Services
         public int Stars;
         public int Loot;
         public string Hash;
+        public int Ticks;
         public long Paid;
         public long Gold;
     }
