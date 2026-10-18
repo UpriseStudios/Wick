@@ -1,11 +1,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEngine.Scripting;
 using Wick.Sim;
 
 namespace Wick.Services
 {
-    // Replies from WickModule (server/Wick.CloudCode/WickModule/Logic/Results.cs).
+    // Replies from WickModule (server/Wick.CloudCode/WickModule/Logic/Results.cs). [Preserve]
+    // keeps IL2CPP stripping from removing what Newtonsoft builds by reflection.
 
+    [Preserve]
     public sealed class PublishReply
     {
         public bool Ok;
@@ -16,6 +19,7 @@ namespace Wick.Services
         public int Stars;
     }
 
+    [Preserve]
     public sealed class RaidStartReply
     {
         public bool Ok;
@@ -32,6 +36,7 @@ namespace Wick.Services
     /// The server's verdict. Verified means its re-simulation reproduced the raid under the rules;
     /// Paid is what it granted from that re-sim, whatever the client claimed.
     /// </summary>
+    [Preserve]
     public sealed class SubmitReply
     {
         public bool Verified;
