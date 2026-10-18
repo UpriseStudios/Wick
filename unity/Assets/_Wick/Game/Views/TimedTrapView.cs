@@ -23,6 +23,10 @@ namespace Wick.Game
         protected override void OnInit()
         {
             transform.rotation = SimPose.Facing(Def.Facing);
+
+            // A bellows is built into a wall: sit it on the wall face it blows from.
+            float face = Ctx.Vault.TileAt(Def.Pos) == TileType.Wall ? 0.5f : 0f;
+            transform.position = SimPose.TileCenter(Def.Pos) + SimPose.DirVector(Def.Facing) * face;
             if (_gust != null)
             {
                 int length = 0;
@@ -39,7 +43,7 @@ namespace Wick.Game
                 }
 
                 _gust.localScale = new Vector3(_gust.localScale.x, _gust.localScale.y, Mathf.Max(length, 0.01f));
-                _gust.localPosition = new Vector3(0f, _gust.localPosition.y, 0.5f + length * 0.5f);
+                _gust.localPosition = new Vector3(0f, _gust.localPosition.y, 0.5f - face + length * 0.5f);
             }
         }
 

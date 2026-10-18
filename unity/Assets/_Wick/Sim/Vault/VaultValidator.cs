@@ -25,6 +25,9 @@ namespace Wick.Sim
         HoardUnreachable,
         PatrolBlocked,
         PatrolUnreachable,
+        BellowsNotOnWall,
+        BellowsFacesWall,
+        CrateInDoorway,
     }
 
     /// <summary>One problem with a vault. ObjectId is 0 when the issue is not about an object.</summary>
@@ -121,6 +124,23 @@ namespace Wick.Sim
                         issues.Add(Issue(VaultIssueCode.BrazierNotNextToFloor, o, "A brazier needs open floor beside it"));
                     }
 
+                    CheckWallShared(vault, i, issues);
+                    continue;
+                }
+
+                // A bellows is built into a wall and blows out into the room, so it can't be walked over.
+                if (o.Type == ObjectType.Bellows)
+                {
+                    if (!onWall)
+                    {
+                        issues.Add(Issue(VaultIssueCode.BellowsNotOnWall, o, "Bellows are built into walls"));
+                    }
+                    else if (vault.TileAt(o.Pos.Step(o.Facing)) == TileType.Wall) // off-grid reads as wall
+                    {
+                        issues.Add(Issue(VaultIssueCode.BellowsFacesWall, o, "A bellows must blow into open floor"));
+                    }
+
+                    CheckWallShared(vault, i, issues);
                     continue;
                 }
 
@@ -134,11 +154,16 @@ namespace Wick.Sim
                     issues.Add(Issue(VaultIssueCode.ObjectOnEntrance, o, o.Type + " cannot be on the entrance"));
                 }
 
+                if (o.Type == ObjectType.Crate && vault.TileAt(o.Pos) == TileType.Door)
+                {
+                    issues.Add(Issue(VaultIssueCode.CrateInDoorway, o, "Crates cannot block a doorway"));
+                }
+
                 // Earlier objects (by id) keep the tile; later ones are reported.
                 for (int j = 0; j < i; j++)
                 {
                     ObjectDef other = vault.GetObject(j);
-                    if (other.Pos != o.Pos || other.Type == ObjectType.Brazier)
+                    if (other.Pos != o.Pos || IsWallMounted(other.Type))
                     {
                         continue;
                     }
@@ -287,6 +312,26 @@ namespace Wick.Sim
         private static bool IsSet(VaultDef vault, bool[] map, TilePos p)
         {
             return vault.InBounds(p) && map[p.Y * vault.Width + p.X];
+        }
+
+        private static bool IsWallMounted(ObjectType type)
+        {
+            return type == ObjectType.Brazier || type == ObjectType.Bellows;
+        }
+
+        /// <summary>One wall fitting per wall tile: earlier objects (by id) keep it.</summary>
+        private static void CheckWallShared(VaultDef vault, int index, List<VaultIssue> issues)
+        {
+            ObjectDef o = vault.GetObject(index);
+            for (int j = 0; j < index; j++)
+            {
+                ObjectDef other = vault.GetObject(j);
+                if (other.Pos == o.Pos && IsWallMounted(other.Type))
+                {
+                    issues.Add(Issue(VaultIssueCode.TileOccupied, o, "Another wall fitting is already here"));
+                    return;
+                }
+            }
         }
 
         private static bool HasWalkableNeighbour(VaultDef vault, TilePos p)

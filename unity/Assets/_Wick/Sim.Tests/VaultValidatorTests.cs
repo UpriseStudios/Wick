@@ -67,6 +67,32 @@ namespace Wick.Sim.Tests
         }
 
         [Test]
+        public void BellowsMustBeInAWallBlowingIntoFloor()
+        {
+            const string gust = ",\"cycle\":75,\"rot\":1"; // rot 1 = east
+            AssertOnly(Vault(1, Obj(2, "bellows", 3, 5, gust)), VaultIssueCode.BellowsNotOnWall, 2);
+            AssertOnly(Vault(1, Obj(2, "bellows", 8, 5, gust)), VaultIssueCode.BellowsFacesWall, 2);
+            CollectionAssert.IsEmpty(VaultValidator.Validate(Vault(1, Obj(2, "bellows", 0, 5, gust))), "west wall blowing east");
+        }
+
+        [Test]
+        public void OneWallFittingPerWallTile()
+        {
+            AssertOnly(Vault(1, Obj(2, "brazier", 0, 5), Obj(3, "bellows", 0, 5, ",\"cycle\":75,\"rot\":1")),
+                VaultIssueCode.TileOccupied, 3);
+        }
+
+        [Test]
+        public void CratesCannotBlockADoorway()
+        {
+            string[] doors = (string[])Rooms.Clone();
+            doors[9] = "###D#####";
+            Assert.That(Codes(VaultJson.Parse(Json(doors, 1, Pile(1, 4, 1, 1), Obj(2, "crate", 3, 9)))),
+                Has.Member(VaultIssueCode.CrateInDoorway));
+            CollectionAssert.IsEmpty(VaultValidator.Validate(VaultJson.Parse(Json(doors, 1, Pile(1, 4, 1, 1)))));
+        }
+
+        [Test]
         public void NothingSharesATileWithACrate()
         {
             AssertOnly(Vault(1, Obj(2, "crate", 5, 5), Drip(3, 5, 5)), VaultIssueCode.ObjectUnderCrate, 3);

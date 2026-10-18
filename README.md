@@ -85,10 +85,11 @@ From the Raid scene's vault picker choose **Vault editor** (or open
 - **Defences** (the default) works like a base builder, with no modes. Drag a
   card from the shop onto the vault to place it; drag an item to move it; drag
   empty floor to look around; pinch to zoom. A drop that would break a rule
-  (on a wall, over budget, blocking the only way to the hoard...) springs back
+  (over budget, a crate in a doorway, blocking the only way to the hoard...) springs back
   and says why. Tap an item for its bar: **Rotate** (Bellows and Night Owl),
   **Patrol** (owl: tap tiles to add points) and **Remove**. Shop cards show the
   cost, or a count for treasure and braziers, and are greyed when blocked.
+  Braziers and Bellows go on walls; a Bellows always faces open floor.
 - **Rooms** paints the layout with one finger: Wall, Floor, Door, Entrance, and
   Hoard room (drag from corner to corner). Two fingers pan and zoom.
 

@@ -41,7 +41,7 @@ VAULTS = {
         {"id": 6, "type": "brazier", "x": 0, "y": 6},
     ], level=1, hoard=[1, 1, 7, 3]),
 
-    # Sneak past a patrolling owl; a bellows sweeps the entry hall, crates give cover.
+    # Sneak past a patrolling owl; a wall bellows sweeps the entry hall, crates give cover.
     "2-owl-gallery": vault("v_dev_owl", [
         "#########",
         "#.......#",
@@ -58,7 +58,7 @@ VAULTS = {
         "####E####",
     ], [
         {"id": 1, "type": "night_owl", "x": 1, "y": 6, "rot": 1, "patrol": [[1, 6], [7, 6], [7, 5], [1, 5]]},
-        {"id": 2, "type": "bellows", "x": 1, "y": 10, "rot": 1, "cycle": 75},
+        {"id": 2, "type": "bellows", "x": 0, "y": 10, "rot": 1, "cycle": 75},  # in the west wall
         {"id": 3, "type": "crate", "x": 5, "y": 10},  # on the gust row: (6,10) and (7,10) are sheltered
         {"id": 4, "type": "crate", "x": 2, "y": 9},
         {"id": 5, "type": "treasure", "x": 2, "y": 2, "value": 200},

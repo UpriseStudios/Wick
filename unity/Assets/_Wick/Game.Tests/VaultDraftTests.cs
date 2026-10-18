@@ -73,7 +73,7 @@ namespace Wick.Game.Tests
             VaultDraft d = Halls();
             Assert.AreEqual(45, d.Place(ObjectType.DripPipe, new TilePos(2, 6)).Cycle);
             Assert.AreEqual(60, d.Place(ObjectType.SpikeFloor, new TilePos(3, 6)).Cycle);
-            Assert.AreEqual(75, d.Place(ObjectType.Bellows, new TilePos(5, 6)).Cycle);
+            Assert.AreEqual(75, d.Place(ObjectType.Bellows, new TilePos(0, 6)).Cycle);
             CollectionAssert.IsEmpty(Codes(d));
         }
 
@@ -81,12 +81,44 @@ namespace Wick.Game.Tests
         public void Rotate_CyclesThroughFourFacings()
         {
             VaultDraft d = Halls();
-            int id = d.Place(ObjectType.Bellows, new TilePos(2, 6)).Id;
+            d.SetLevel(2);
+            int id = d.Place(ObjectType.NightOwl, new TilePos(2, 6)).Id;
             for (int i = 1; i <= 4; i++)
             {
                 d.Rotate(id);
                 Assert.AreEqual(i % 4, d.Find(id).Rot);
             }
+        }
+
+        [Test]
+        public void Bellows_FacesOpenFloor_AndRotatesOnlyThroughOpenSides()
+        {
+            VaultDraft d = Halls();
+            DraftObject west = d.Place(ObjectType.Bellows, new TilePos(0, 6));
+            Assert.AreEqual((int)Dir.E, west.Rot, "a west-wall bellows blows east");
+            Assert.IsFalse(d.Rotate(west.Id), "east is its only open side");
+
+            // Beside the door at (4,4): north and south are rooms, east is the doorway.
+            DraftObject corner = d.Place(ObjectType.Bellows, new TilePos(3, 4));
+            Assert.AreEqual((int)Dir.N, corner.Rot);
+            d.Rotate(corner.Id);
+            Assert.AreEqual((int)Dir.E, corner.Rot);
+            d.Rotate(corner.Id);
+            Assert.AreEqual((int)Dir.S, corner.Rot);
+            d.Rotate(corner.Id);
+            Assert.AreEqual((int)Dir.N, corner.Rot, "skips the wall to the west");
+
+            Assert.IsTrue(d.Move(west.Id, new TilePos(8, 6)));
+            Assert.AreEqual((int)Dir.W, d.Find(west.Id).Rot, "turns to face the room after a move");
+        }
+
+        [Test]
+        public void PlaceProblem_RefusesBellowsOnFloor_AndCratesInDoorways()
+        {
+            VaultDraft d = Halls();
+            Assert.IsNotNull(d.PlaceProblem(ObjectType.Bellows, new TilePos(2, 6)));
+            Assert.IsNull(d.PlaceProblem(ObjectType.Bellows, new TilePos(0, 6)));
+            Assert.AreEqual("Crates cannot block a doorway", d.PlaceProblem(ObjectType.Crate, new TilePos(4, 4)));
         }
 
         [Test]

@@ -244,11 +244,16 @@ namespace Wick.Game
             _markers.Add(lineGo);
         }
 
-        /// <summary>Same placement rules as the raid views (BrazierView faces its open side).</summary>
+        /// <summary>Same placement rules as the raid views (BrazierView, TimedTrapView on walls).</summary>
         private static void Pose(Transform t, VaultDraft draft, ObjectType type, TilePos pos, int rot)
         {
             t.position = SimPose.TileCenter(pos);
             t.rotation = SimPose.Facing((Dir)rot);
+            if (type == ObjectType.Bellows && draft.TileAt(pos) == TileType.Wall)
+            {
+                t.position += SimPose.DirVector((Dir)rot) * 0.5f; // on the wall face it blows from
+            }
+
             if (type == ObjectType.Brazier)
             {
                 for (int d = 0; d < 4; d++)

@@ -57,7 +57,7 @@
     {
       "id": 2,
       "type": "bellows",
-      "x": 1,
+      "x": 0,
       "y": 10,
       "rot": 1,
       "cycle": 75

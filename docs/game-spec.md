@@ -107,7 +107,7 @@ Every trap attacks the flame or the path, and every one has a readable counter, 
 | Name | Type | What it does | Counter | Vault Level |
 | --- | --- | --- | --- | --- |
 | Drip Pipe | Trap | Drops water on a rhythm; a hit costs 1 flicker | Time your dash between drips | 1 |
-| Bellows | Trap | Blasts a gust down a row, shrinking light and costing 1 flicker | Duck behind pillars or crates | 1 |
+| Bellows | Trap | Built into a wall; blasts a gust down the row in front of it, shrinking light and costing 1 flicker | Duck behind pillars or crates | 1 |
 | Spike Floor | Trap | Spikes rise on a cycle; standing on them costs 1 flicker | Read the warning rumble and wait | 1 |
 | Snuffer Bell | Trap | A giant bell drops on a pressure plate; instant snuff | Spot the slightly raised plate | 2 |
 | Night Owl | Guardian | Patrols a route and chases any light it sees | Tiptoe out of its sight cone | 2 |

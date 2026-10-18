@@ -157,6 +157,7 @@ namespace Wick.Game
         public DraftObject Place(ObjectType type, TilePos p)
         {
             var o = new DraftObject { Id = NextId++, Type = type, Pos = p, Cycle = DefaultCycle(type) };
+            FaceOpen(o);
             Objects.Add(o);
             return o;
         }
@@ -170,10 +171,14 @@ namespace Wick.Game
             }
 
             o.Pos = p;
+            FaceOpen(o);
             return true;
         }
 
-        /// <summary>Turns an object a quarter clockwise (its facing; Bellows' gust direction).</summary>
+        /// <summary>
+        /// Turns an object a quarter clockwise (its facing). A bellows turns to its next side
+        /// that opens onto floor, so it always blows into the room.
+        /// </summary>
         public bool Rotate(int id)
         {
             DraftObject o = Find(id);
@@ -182,8 +187,41 @@ namespace Wick.Game
                 return false;
             }
 
-            o.Rot = (o.Rot + 1) % 4;
-            return true;
+            for (int turn = 1; turn <= 4; turn++)
+            {
+                int rot = (o.Rot + turn) % 4;
+                if (o.Type != ObjectType.Bellows || OpenSide(o.Pos, rot))
+                {
+                    bool changed = rot != o.Rot;
+                    o.Rot = rot;
+                    return changed;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>A bellows keeps its facing if that side is open floor, else takes the first open side.</summary>
+        private void FaceOpen(DraftObject o)
+        {
+            if (o.Type != ObjectType.Bellows || OpenSide(o.Pos, o.Rot))
+            {
+                return;
+            }
+
+            for (int rot = 0; rot < 4; rot++)
+            {
+                if (OpenSide(o.Pos, rot))
+                {
+                    o.Rot = rot;
+                    return;
+                }
+            }
+        }
+
+        private bool OpenSide(TilePos p, int rot)
+        {
+            return TileAt(p.Step((Dir)rot)) != TileType.Wall; // off-grid reads as wall
         }
 
         public bool Delete(int id)
