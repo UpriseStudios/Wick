@@ -61,6 +61,15 @@ namespace Wick.Sim
             return new CrownChange(newRaider, newDefender, newRaider - raider, newDefender - defender);
         }
 
+        /// <summary>
+        /// The defender's rating after a raid that moved the raider by raiderDelta, applied to the
+        /// defender's rating now (it may have moved since the raid started). Bots never change.
+        /// </summary>
+        public static int DefenderAfter(int defender, int raiderDelta, bool defenderIsBot)
+        {
+            return defenderIsBot ? defender : Floor(defender - raiderDelta);
+        }
+
         private static int Floor(int crowns)
         {
             return crowns < Start ? Start : crowns;

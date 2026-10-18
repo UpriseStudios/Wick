@@ -72,6 +72,15 @@ namespace Wick.Sim.Tests
         }
 
         [Test]
+        public void DefenderAfter_MirrorsTheRaider_OnTheDefendersCurrentRating()
+        {
+            Assert.AreEqual(476, CrownRules.DefenderAfter(500, 24, false));
+            Assert.AreEqual(514, CrownRules.DefenderAfter(500, -14, false));
+            Assert.AreEqual(0, CrownRules.DefenderAfter(10, 24, false), "floored at zero");
+            Assert.AreEqual(500, CrownRules.DefenderAfter(500, 24, true), "bots don't move");
+        }
+
+        [Test]
         public void BotDefenders_NeverChange()
         {
             CrownChange c = CrownRules.Apply(300, 300, 3, true);
