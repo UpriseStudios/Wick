@@ -80,19 +80,23 @@ in `Assets/_Wick/Data/RaidTuning.asset` and `InputTuning.asset`.
 ## Vault editor
 
 From the Raid scene's vault picker choose **Vault editor** (or open
-`Assets/_Wick/Scenes/Editor.unity`). Start from one of three templates, then:
+`Assets/_Wick/Scenes/Editor.unity`). Start from one of three templates. Two tabs:
 
-- **Paint bar:** Select, Floor, Wall, Door, Pit and Ice (cosmetic for now),
-  Entrance, Treasure, Hoard (tap two corners). Tap or drag to paint.
-- **Tray:** drag traps and guardians onto the grid. Items above the vault's
-  level are locked. In Select mode tap to rotate, drag to move, long-press to
-  delete; tap an owl to rotate it or edit its patrol (tap tiles to add points).
-- **Top bar:** Vault Level, the build budget and an issues list. Anything the
-  validator rejects is tinted red. Pinch to zoom, two fingers (or right mouse)
-  to pan. Undo and Redo cover every change; drafts save automatically.
-- **Test** plays the vault. Escaping with at least 1 star records the
-  clear-check; **Publish** then re-verifies it and saves the vault locally
-  (Cloud Save comes in M5). Any edit after a test needs a new test.
+- **Defences** (the default) works like a base builder, with no modes. Drag a
+  card from the shop onto the vault to place it; drag an item to move it; drag
+  empty floor to look around; pinch to zoom. A drop that would break a rule
+  (on a wall, over budget, blocking the only way to the hoard...) springs back
+  and says why. Tap an item for its bar: **Rotate** (Bellows and Night Owl),
+  **Patrol** (owl: tap tiles to add points) and **Remove**. Shop cards show the
+  cost, or a count for treasure and braziers, and are greyed when blocked.
+- **Rooms** paints the layout with one finger: Wall, Floor, Door, Entrance, and
+  Hoard room (drag from corner to corner). Two fingers pan and zoom.
+
+The top bar shows Vault Level, build points and a **Ready / N problems** pill;
+tap it and then a problem to jump to it. Undo and Redo cover every change and
+drafts save automatically. **Test** plays the vault: escaping with at least 1
+star records the clear-check, and **Publish** re-verifies it and saves the
+vault locally (Cloud Save comes in M5). Any edit after a test needs a new test.
 
 Build rules (costs, budgets, unlock levels, treasure) are in
 `Assets/_Wick/Sim/Vault/VaultRules.cs`; the checks are in `VaultValidator.cs`.

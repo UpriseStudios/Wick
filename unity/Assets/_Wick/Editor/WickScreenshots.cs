@@ -78,7 +78,7 @@ namespace Wick.Editor
             foreach (TextAsset text in Resources.LoadAll<TextAsset>("VaultTemplates"))
             {
                 VaultDraft draft = VaultDraft.FromVault(VaultJson.Parse(text.text), text.name);
-                view.Build(draft, VaultValidator.Validate(draft.ToVaultDef()), -1, null);
+                view.Build(draft, VaultValidator.Validate(draft.ToVaultDef()), EditorView.Marks.None);
                 editorCamera.Frame(draft.Width, draft.Height);
                 Render(camera, Path.Combine(OutputDir, "editor-" + text.name + ".png"));
             }
@@ -92,7 +92,7 @@ namespace Wick.Editor
             broken.AddWaypoint(owl.Id, new TilePos(6, 6));
             broken.AddWaypoint(owl.Id, new TilePos(6, 8));
             broken.Place(ObjectType.Brazier, new TilePos(8, 6));
-            view.Build(broken, VaultValidator.Validate(broken.ToVaultDef()), owl.Id, null);
+            view.Build(broken, VaultValidator.Validate(broken.ToVaultDef()), new EditorView.Marks { Selected = owl.Id, Moving = -1 });
             editorCamera.Frame(broken.Width, broken.Height);
             Render(camera, Path.Combine(OutputDir, "editor-issues.png"));
         }

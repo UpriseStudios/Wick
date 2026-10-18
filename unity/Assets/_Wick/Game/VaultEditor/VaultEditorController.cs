@@ -6,22 +6,27 @@ using Wick.Sim;
 
 namespace Wick.Game
 {
-    public enum EditorTool
+    /// <summary>Rooms shapes the layout; Defences places and moves items like a base builder.</summary>
+    public enum EditorTab
+    {
+        Defences,
+        Rooms,
+    }
+
+    public enum RoomTool
     {
         Floor,
         Wall,
         Door,
-        Pit,
-        Ice,
         Entrance,
-        Treasure,
         Hoard,
-        Select,
     }
 
     /// <summary>
-    /// The vault editor: owns the draft, applies gestures and tray drags as edits (each one an
+    /// The vault editor: owns the draft, applies gestures and shop drags as edits (each one an
     /// undo step, autosaved), re-validates after every change, and runs Test and Publish.
+    /// Defences has no modes: tap selects, dragging an item moves it, dragging empty floor pans,
+    /// and a drop that would add a problem springs back. Rooms paints the layout with one finger.
     /// </summary>
     public sealed class VaultEditorController : MonoBehaviour
     {
@@ -41,24 +46,42 @@ namespace Wick.Game
         private DraftStore _store;
         private VaultDraft _strokeBefore;
         private bool _strokeChanged;
-        private int _movingId = -1;
         private bool _panning;
         private bool _testing;
+        private TilePos _hoardStart;
 
         public VaultDraft Draft { get; private set; }
         public List<VaultIssue> Issues { get; private set; } = new List<VaultIssue>();
-        public EditorTool Tool { get; private set; } = EditorTool.Select;
-        public int SelectedOwl { get; private set; } = -1;
+        public EditorTab Tab { get; private set; } = EditorTab.Defences;
+        public RoomTool RoomTool { get; private set; } = RoomTool.Wall;
+
+        /// <summary>The selected object's id (Defences tab), or -1.</summary>
+        public int Selected { get; private set; } = -1;
+
+        /// <summary>The object being dragged to a new tile, or -1. MoveProblem says why it can't stay there.</summary>
+        public int Moving { get; private set; } = -1;
+
+        public string MoveProblem { get; private set; }
         public bool EditingPatrol { get; private set; }
-        public TilePos? HoardCorner { get; private set; }
+
+        /// <summary>The hoard rectangle being dragged out on the Rooms tab.</summary>
+        public TileRect? HoardPreview { get; private set; }
+
         public bool CanUndo => _undo.CanUndo;
         public bool CanRedo => _undo.CanRedo;
         public DraftStore Store => _store;
+        public DraftObject SelectedObject => Selected >= 0 && Draft != null ? Draft.Find(Selected) : null;
 
         public bool ClearCheckCurrent =>
             Draft != null && Draft.ClearCheck != null && Draft.ClearCheck.MatchesLayout(Draft.ToVaultDef());
 
         public bool CanPublish => Draft != null && Issues.Count == 0 && ClearCheckCurrent;
+
+        /// <summary>Only Bellows (gust) and Night Owl (gaze) care which way they face.</summary>
+        public static bool CanRotate(ObjectType type)
+        {
+            return type == ObjectType.Bellows || type == ObjectType.NightOwl;
+        }
 
         public void Bind(EditorAssets assets, EditorView view, EditorCamera camera, EditorInput input, EditorUI ui,
             GameObject[] hideDuringTest)
@@ -124,27 +147,25 @@ namespace Wick.Game
         {
             Draft = draft;
             _undo.Clear();
-            Tool = EditorTool.Select;
-            SelectedOwl = -1;
-            EditingPatrol = false;
-            HoardCorner = null;
+            Tab = EditorTab.Defences;
+            ClearSelection();
             _camera.Frame(draft.Width, draft.Height);
             _ui.ShowEditor();
             Refresh();
         }
 
-        // ---- Tools and buttons ----------------------------------------------------------------
+        // ---- Tabs, selection and buttons ------------------------------------------------------
 
-        public void SetTool(EditorTool tool)
+        public void SetTab(EditorTab tab)
         {
-            Tool = tool;
-            HoardCorner = null;
-            EditingPatrol = false;
-            if (tool != EditorTool.Select)
-            {
-                SelectedOwl = -1;
-            }
+            Tab = tab;
+            ClearSelection();
+            Refresh();
+        }
 
+        public void SetRoomTool(RoomTool tool)
+        {
+            RoomTool = tool;
             Refresh();
         }
 
@@ -173,40 +194,88 @@ namespace Wick.Game
 
         public void RotateSelected()
         {
-            if (SelectedOwl >= 0)
+            if (SelectedObject != null)
             {
-                Edit(d => d.Rotate(SelectedOwl));
+                Edit(d => d.Rotate(Selected));
+            }
+        }
+
+        public void RemoveSelected()
+        {
+            DraftObject o = SelectedObject;
+            if (o != null)
+            {
+                int id = o.Id;
+                ClearSelection();
+                Edit(d => d.Delete(id));
             }
         }
 
         public void TogglePatrolEditing()
         {
-            EditingPatrol = SelectedOwl >= 0 && !EditingPatrol;
+            EditingPatrol = SelectedObject?.Type == ObjectType.NightOwl && !EditingPatrol;
             Refresh();
         }
 
         public void ClearPatrol()
         {
-            if (SelectedOwl >= 0)
+            if (SelectedObject != null)
             {
-                Edit(d => d.ClearPatrol(SelectedOwl));
+                Edit(d => d.ClearPatrol(Selected));
             }
         }
 
         public void Deselect()
         {
-            SelectedOwl = -1;
-            EditingPatrol = false;
+            ClearSelection();
             Refresh();
         }
 
-        // ---- Tray drag ------------------------------------------------------------------------
+        /// <summary>Moves the camera onto an issue's object (selecting it) or tile.</summary>
+        public void FocusIssue(VaultIssue issue)
+        {
+            DraftObject o = issue.ObjectId != 0 ? Draft.Find(issue.ObjectId) : null;
+            if (o != null)
+            {
+                _camera.FocusOn(o.Pos);
+                if (Tab == EditorTab.Defences)
+                {
+                    Selected = o.Id;
+                    EditingPatrol = false;
+                }
+            }
+            else if (Draft.InBounds(issue.Tile))
+            {
+                _camera.FocusOn(issue.Tile);
+            }
+
+            Refresh();
+        }
+
+        /// <summary>Where the selection bar floats: just above the selected object, in screen pixels.</summary>
+        public bool SelectionScreenPoint(out Vector2 screen)
+        {
+            DraftObject o = Moving < 0 ? SelectedObject : null;
+            screen = default;
+            return o != null && _camera.WorldToScreen(SimPose.TileCenter(o.Pos) + Vector3.up * 1.2f, out screen);
+        }
+
+        private void ClearSelection()
+        {
+            Selected = -1;
+            Moving = -1;
+            MoveProblem = null;
+            EditingPatrol = false;
+            HoardPreview = null;
+        }
+
+        // ---- Shop drag ------------------------------------------------------------------------
 
         public void UpdatePlacement(ObjectType type, Vector2 screen)
         {
             if (_camera.ScreenToTile(screen, Draft, out TilePos tile))
             {
-                _view.ShowGhost(type, Draft, tile, PlacementValid(type, tile));
+                _view.ShowGhost(type, Draft, tile, Draft.PlaceProblem(type, tile) == null);
             }
             else
             {
@@ -217,36 +286,29 @@ namespace Wick.Game
         public void EndPlacement(ObjectType type, Vector2 screen, bool overUi)
         {
             _view.HideGhost();
-            if (!overUi && _camera.ScreenToTile(screen, Draft, out TilePos tile))
+            if (overUi || !_camera.ScreenToTile(screen, Draft, out TilePos tile))
             {
-                // Invalid placements are allowed and shown in red, so the builder can see why.
-                Edit(d =>
-                {
-                    DraftObject o = d.Place(type, tile);
-                    if (type == ObjectType.NightOwl)
-                    {
-                        SelectedOwl = o.Id;
-                    }
-
-                    return true;
-                });
-            }
-        }
-
-        /// <summary>Would placing this object here add a problem about it?</summary>
-        private bool PlacementValid(ObjectType type, TilePos tile)
-        {
-            VaultDraft trial = Draft.Clone();
-            DraftObject o = trial.Place(type, tile);
-            foreach (VaultIssue issue in VaultValidator.Validate(trial.ToVaultDef()))
-            {
-                if (issue.ObjectId == o.Id || issue.Code == VaultIssueCode.OverBudget)
-                {
-                    return false;
-                }
+                return;
             }
 
-            return true;
+            string problem = Draft.PlaceProblem(type, tile);
+            if (problem != null)
+            {
+                _ui.Toast("Can't go there: " + problem);
+                return;
+            }
+
+            Edit(d =>
+            {
+                Selected = d.Place(type, tile).Id;
+                EditingPatrol = false;
+                return true;
+            });
+
+            if (type == ObjectType.NightOwl)
+            {
+                _ui.Toast("Tap Patrol to give the owl a route");
+            }
         }
 
         // ---- Gestures ---------------------------------------------------------------------------
@@ -266,34 +328,52 @@ namespace Wick.Game
             }
 
             bool onGrid = _camera.ScreenToTile(g.Position, Draft, out TilePos tile);
+            if (Tab == EditorTab.Defences)
+            {
+                DefencesGesture(g, onGrid, tile);
+            }
+            else
+            {
+                RoomsGesture(g, onGrid, tile);
+            }
+        }
+
+        private void DefencesGesture(EditorGesture g, bool onGrid, TilePos tile)
+        {
             switch (g.Type)
             {
                 case EditorGestureType.Tap:
-                    if (onGrid)
-                    {
-                        Tap(tile);
-                    }
-
-                    break;
-
                 case EditorGestureType.LongPress:
-                    DraftObject target = onGrid ? Draft.ObjectAt(tile) : null;
-                    if (target != null)
+                    if (EditingPatrol)
                     {
-                        if (target.Id == SelectedOwl)
+                        if (onGrid && g.Type == EditorGestureType.Tap)
                         {
-                            SelectedOwl = -1;
-                            EditingPatrol = false;
+                            Edit(d => d.AddWaypoint(Selected, tile));
                         }
 
-                        Edit(d => d.Delete(target.Id));
-                        _ui.Toast("Deleted " + target.Type);
+                        break;
                     }
 
+                    DraftObject hit = onGrid ? Draft.ObjectAt(tile) : null;
+                    Selected = hit != null ? hit.Id : -1;
+                    Refresh();
                     break;
 
                 case EditorGestureType.DragStart:
-                    StartDrag(onGrid, tile);
+                    BeginStroke();
+                    DraftObject target = onGrid && !EditingPatrol ? Draft.ObjectAt(tile) : null;
+                    if (target != null)
+                    {
+                        Selected = target.Id;
+                        Moving = target.Id;
+                        MoveProblem = null;
+                        Refresh();
+                    }
+                    else
+                    {
+                        _panning = true;
+                    }
+
                     break;
 
                 case EditorGestureType.DragMove:
@@ -301,149 +381,158 @@ namespace Wick.Game
                     {
                         _camera.Pan(g.Delta);
                     }
-                    else if (onGrid)
+                    else if (Moving >= 0 && onGrid && Draft.Move(Moving, tile))
                     {
-                        DragOver(tile);
+                        _strokeChanged = true;
+                        MoveProblem = VaultDraft.NewProblem(_strokeBefore, Draft);
+                        Refresh();
                     }
 
                     break;
 
                 case EditorGestureType.DragEnd:
-                    EndDrag(true);
+                case EditorGestureType.DragCancel:
+                    bool refused = Moving >= 0 && MoveProblem != null;
+                    if (refused)
+                    {
+                        _ui.Toast("Can't go there: " + MoveProblem);
+                    }
+
+                    EndStroke(g.Type == EditorGestureType.DragEnd && !refused); // a refused drop springs back
+                    break;
+            }
+        }
+
+        private void RoomsGesture(EditorGesture g, bool onGrid, TilePos tile)
+        {
+            switch (g.Type)
+            {
+                case EditorGestureType.Tap:
+                    if (!onGrid)
+                    {
+                        break;
+                    }
+
+                    if (RoomTool == RoomTool.Hoard)
+                    {
+                        _ui.Toast("Drag from one corner of the hoard room to the other");
+                    }
+                    else
+                    {
+                        Edit(d => ApplyRoomTool(d, tile));
+                    }
+
+                    break;
+
+                case EditorGestureType.DragStart:
+                    BeginStroke();
+                    if (!onGrid)
+                    {
+                        _panning = true;
+                    }
+                    else if (RoomTool == RoomTool.Hoard)
+                    {
+                        _hoardStart = tile;
+                        HoardPreview = Rect(tile, tile);
+                        Refresh();
+                    }
+                    else
+                    {
+                        StrokeOver(tile);
+                    }
+
+                    break;
+
+                case EditorGestureType.DragMove:
+                    if (_panning)
+                    {
+                        _camera.Pan(g.Delta);
+                    }
+                    else if (onGrid && HoardPreview.HasValue)
+                    {
+                        HoardPreview = Rect(_hoardStart, tile);
+                        Refresh();
+                    }
+                    else if (onGrid)
+                    {
+                        StrokeOver(tile);
+                    }
+
+                    break;
+
+                case EditorGestureType.DragEnd:
+                    if (HoardPreview.HasValue)
+                    {
+                        TileRect r = HoardPreview.Value;
+                        HoardPreview = null;
+                        _strokeChanged |= Draft.SetHoard(new TilePos(r.MinX, r.MinY), new TilePos(r.MaxX, r.MaxY));
+                    }
+
+                    EndStroke(true);
                     break;
 
                 case EditorGestureType.DragCancel:
-                    EndDrag(false);
+                    HoardPreview = null;
+                    EndStroke(false);
                     break;
             }
         }
 
-        private void Tap(TilePos tile)
+        private void StrokeOver(TilePos tile)
         {
-            if (EditingPatrol && SelectedOwl >= 0)
-            {
-                Edit(d => d.AddWaypoint(SelectedOwl, tile));
-                return;
-            }
-
-            switch (Tool)
-            {
-                case EditorTool.Entrance:
-                    Edit(d => d.SetEntrance(tile));
-                    break;
-
-                case EditorTool.Treasure:
-                    Edit(d => d.ToggleTreasure(tile));
-                    break;
-
-                case EditorTool.Hoard:
-                    if (HoardCorner == null)
-                    {
-                        HoardCorner = tile;
-                        _ui.Toast("Now tap the opposite corner");
-                        Refresh();
-                    }
-                    else
-                    {
-                        TilePos first = HoardCorner.Value;
-                        HoardCorner = null;
-                        Edit(d => d.SetHoard(first, tile));
-                    }
-
-                    break;
-
-                case EditorTool.Select:
-                    DraftObject o = Draft.ObjectAt(tile);
-                    if (o == null)
-                    {
-                        Deselect();
-                    }
-                    else if (o.Type == ObjectType.NightOwl && o.Id != SelectedOwl)
-                    {
-                        SelectedOwl = o.Id;
-                        EditingPatrol = false;
-                        Refresh();
-                    }
-                    else
-                    {
-                        Edit(d => d.Rotate(o.Id));
-                    }
-
-                    break;
-
-                default:
-                    Edit(d => d.PaintTile(tile, ToTile(Tool)));
-                    break;
-            }
-        }
-
-        private void StartDrag(bool onGrid, TilePos tile)
-        {
-            _panning = false;
-            _movingId = -1;
-            _strokeBefore = Draft.Clone();
-            _strokeChanged = false;
-
-            if (IsPaintTool(Tool) && onGrid)
-            {
-                _strokeChanged |= Draft.PaintTile(tile, ToTile(Tool));
-                RefreshIfChanged();
-            }
-            else if (Tool == EditorTool.Select && onGrid && Draft.ObjectAt(tile) != null)
-            {
-                _movingId = Draft.ObjectAt(tile).Id;
-            }
-            else
-            {
-                _panning = true;
-            }
-        }
-
-        private void DragOver(TilePos tile)
-        {
-            if (IsPaintTool(Tool))
-            {
-                if (Draft.PaintTile(tile, ToTile(Tool)))
-                {
-                    _strokeChanged = true;
-                    Refresh();
-                }
-            }
-            else if (_movingId >= 0 && Draft.Move(_movingId, tile))
+            if (ApplyRoomTool(Draft, tile))
             {
                 _strokeChanged = true;
                 Refresh();
             }
         }
 
-        private void EndDrag(bool commit)
+        private bool ApplyRoomTool(VaultDraft d, TilePos tile)
+        {
+            switch (RoomTool)
+            {
+                case RoomTool.Entrance: return d.SetEntrance(tile);
+                case RoomTool.Wall: return d.PaintTile(tile, TileType.Wall);
+                case RoomTool.Door: return d.PaintTile(tile, TileType.Door);
+                case RoomTool.Floor: return d.PaintTile(tile, TileType.Floor);
+                default: return false;
+            }
+        }
+
+        private void BeginStroke()
+        {
+            _panning = false;
+            _strokeBefore = Draft.Clone();
+            _strokeChanged = false;
+        }
+
+        /// <summary>A whole drag is one undo step; an abandoned one restores the draft.</summary>
+        private void EndStroke(bool commit)
         {
             if (_strokeBefore != null && _strokeChanged)
             {
                 if (commit)
                 {
-                    _undo.Record(_strokeBefore); // a whole stroke is one undo step
-                    AfterChange();
+                    _undo.Record(_strokeBefore);
+                    _store.Save(Draft);
                 }
                 else
                 {
                     Draft = _strokeBefore;
-                    Refresh();
                 }
             }
 
             _strokeBefore = null;
             _strokeChanged = false;
-            _movingId = -1;
             _panning = false;
+            Moving = -1;
+            MoveProblem = null;
+            Refresh();
         }
 
-        private void RefreshIfChanged()
+        private static TileRect Rect(TilePos a, TilePos b)
         {
-            if (_strokeChanged)
-            {
-                Refresh();
-            }
+            return new TileRect(Mathf.Min(a.X, b.X), Mathf.Min(a.Y, b.Y), Mathf.Max(a.X, b.X), Mathf.Max(a.Y, b.Y));
         }
 
         // ---- Edits ----------------------------------------------------------------------------
@@ -457,6 +546,10 @@ namespace Wick.Game
             {
                 _undo.Record(before);
                 AfterChange();
+            }
+            else
+            {
+                Refresh();
             }
         }
 
@@ -473,14 +566,19 @@ namespace Wick.Game
                 return;
             }
 
-            if (SelectedOwl >= 0 && Draft.Find(SelectedOwl) == null)
+            if (Selected >= 0 && Draft.Find(Selected) == null)
             {
-                SelectedOwl = -1;
-                EditingPatrol = false;
+                ClearSelection();
             }
 
             Issues = VaultValidator.Validate(Draft.ToVaultDef());
-            _view.Build(Draft, Issues, SelectedOwl, HoardCorner);
+            _view.Build(Draft, Issues, new EditorView.Marks
+            {
+                Selected = Selected,
+                Moving = Moving,
+                MovingOk = MoveProblem == null,
+                HoardPreview = HoardPreview,
+            });
             _ui.UpdateEditor(this);
         }
 
@@ -493,6 +591,7 @@ namespace Wick.Game
                 return;
             }
 
+            ClearSelection();
             _store.Save(Draft);
             VaultDef vault = Draft.ToVaultDef();
             RaidLaunch.Begin(new RaidLaunch.Request
@@ -594,23 +693,6 @@ namespace Wick.Game
         {
             Shader.SetGlobalVector(GridId, Vector4.zero);
             Shader.SetGlobalFloat(BoostId, _assets.Tuning.LitBoost);
-        }
-
-        private static bool IsPaintTool(EditorTool tool)
-        {
-            return tool <= EditorTool.Ice;
-        }
-
-        private static TileType ToTile(EditorTool tool)
-        {
-            switch (tool)
-            {
-                case EditorTool.Wall: return TileType.Wall;
-                case EditorTool.Door: return TileType.Door;
-                case EditorTool.Pit: return TileType.Pit;
-                case EditorTool.Ice: return TileType.Ice;
-                default: return TileType.Floor;
-            }
         }
 
         private static TextAsset[] Templates()

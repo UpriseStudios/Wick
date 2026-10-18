@@ -100,7 +100,7 @@
 .topbar {
     flex-direction: row;
     align-items: center;
-    padding: 36px 20px 16px 20px;
+    padding: 36px 20px 8px 20px;
     background-color: rgba(10, 8, 14, 0.88);
 }
 
@@ -119,9 +119,22 @@
     margin: 0 10px;
 }
 
+.infobar {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 24px 14px 24px;
+    background-color: rgba(10, 8, 14, 0.88);
+}
+
 .budget {
-    width: 230px;
-    margin: 0 12px;
+    flex-grow: 1;
+    margin-right: 20px;
+}
+
+.budget-label {
+    font-size: 28px;
+    color: rgb(225, 225, 225);
+    margin-bottom: 6px;
 }
 
 .budget-track {
@@ -141,30 +154,32 @@
     background-color: rgb(255, 80, 60);
 }
 
-.budget-label {
-    font-size: 28px;
-    color: rgb(225, 225, 225);
-    -unity-text-align: middle-center;
+.pill {
+    height: 76px;
+    padding: 0 28px;
+    font-size: 30px;
+    border-radius: 38px;
+    border-width: 0;
+    color: rgb(20, 40, 24);
+    -unity-font-style: bold;
+    background-color: rgb(120, 220, 130);
 }
 
-.issues {
-    background-color: rgba(120, 220, 130, 0.35);
-}
-
-.issues.bad {
+.pill.bad {
+    color: rgb(255, 255, 255);
     background-color: rgb(220, 60, 50);
 }
 
 .status {
-    font-size: 30px;
+    font-size: 28px;
     color: rgb(225, 220, 205);
-    padding: 10px 24px;
+    padding: 8px 24px;
     background-color: rgba(10, 8, 14, 0.6);
 }
 
 .toast {
     position: absolute;
-    top: 260px;
+    top: 300px;
     left: 40px;
     right: 40px;
     padding: 22px;
@@ -178,7 +193,7 @@
 
 .issues-panel {
     position: absolute;
-    top: 220px;
+    top: 260px;
     left: 30px;
     right: 30px;
     padding: 24px;
@@ -191,11 +206,52 @@
     margin-bottom: 16px;
 }
 
-.issue-list Label {
+.issue-row {
     font-size: 32px;
-    color: rgb(255, 150, 130);
+    color: rgb(255, 170, 150);
     white-space: normal;
+    -unity-text-align: middle-left;
     margin: 6px 0;
+    padding: 18px 20px;
+    border-width: 0;
+    border-radius: 14px;
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* ---- Selection bar (floats above the selected item) ----------------------------- */
+
+.selection-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 12px 14px;
+    border-radius: 22px;
+    background-color: rgba(24, 20, 34, 0.96);
+    border-width: 3px;
+    border-color: rgb(255, 200, 110);
+    align-items: center;
+}
+
+.selection-name {
+    font-size: 28px;
+    color: rgb(255, 220, 160);
+    margin-bottom: 8px;
+}
+
+.sel-button {
+    height: 88px;
+    min-width: 150px;
+    padding: 0 22px;
+    margin: 0 6px;
+    font-size: 30px;
+    border-radius: 16px;
+    border-width: 0;
+    color: rgb(235, 235, 235);
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+.sel-button.danger {
+    background-color: rgb(170, 50, 45);
 }
 
 /* ---- Editor bottom ------------------------------------------------------------ */
@@ -213,31 +269,91 @@
     background-color: rgba(10, 8, 14, 0.6);
 }
 
-.owl-panel {
-    padding: 12px 16px;
-    margin: 0 16px 10px 16px;
-    border-radius: 20px;
-    background-color: rgba(30, 40, 70, 0.95);
-}
-
 .row {
     flex-direction: row;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
-.tools {
+.tabs {
+    flex-direction: row;
+    padding: 10px 12px 0 12px;
+    background-color: rgba(10, 8, 14, 0.92);
+}
+
+.tab {
+    flex-grow: 1;
+    height: 84px;
+    margin: 0 6px;
+    font-size: 32px;
+    border-width: 0;
+    border-radius: 18px 18px 0 0;
+    color: rgb(200, 195, 185);
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.tab.selected {
+    color: rgb(30, 22, 12);
+    -unity-font-style: bold;
+    background-color: rgb(255, 200, 110);
+}
+
+.shop {
     flex-direction: row;
     flex-wrap: wrap;
-    padding: 10px 12px 4px 12px;
-    background-color: rgba(10, 8, 14, 0.9);
+    padding: 10px 12px;
+    background-color: rgba(10, 8, 14, 0.92);
+}
+
+.card {
+    width: 196px;
+    height: 128px;
+    margin: 4px;
+    border-radius: 18px;
+    background-color: rgb(70, 60, 90);
+    align-items: center;
+    justify-content: center;
+}
+
+.card Label {
+    font-size: 27px;
+    color: rgb(240, 240, 240);
+    -unity-font-style: bold;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+.card .card-sub {
+    font-size: 24px;
+    -unity-font-style: normal;
+    color: rgb(255, 210, 120);
+}
+
+.card.blocked {
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.card.blocked Label {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.card.dragging {
+    background-color: rgb(120, 100, 160);
+}
+
+.room-tools {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    background-color: rgba(10, 8, 14, 0.92);
 }
 
 .tool {
-    width: 112px;
-    height: 84px;
+    width: 196px;
+    height: 100px;
     margin: 4px;
-    font-size: 26px;
-    border-radius: 14px;
+    font-size: 30px;
+    border-radius: 16px;
     border-width: 0;
     color: rgb(230, 230, 230);
     background-color: rgba(255, 255, 255, 0.12);
@@ -246,51 +362,7 @@
 .tool.selected {
     background-color: rgb(255, 200, 110);
     color: rgb(30, 22, 12);
-}
-
-.tray-scroll {
-    background-color: rgba(10, 8, 14, 0.9);
-    padding: 6px 8px;
-}
-
-.tray {
-    flex-direction: row;
-}
-
-.tray-item {
-    width: 176px;
-    height: 132px;
-    margin: 4px 6px;
-    border-radius: 18px;
-    background-color: rgb(70, 60, 90);
-    align-items: center;
-    justify-content: center;
-}
-
-.tray-item Label {
-    font-size: 28px;
-    color: rgb(240, 240, 240);
     -unity-font-style: bold;
-    white-space: normal;
-    -unity-text-align: middle-center;
-}
-
-.tray-item .tray-cost {
-    font-size: 24px;
-    -unity-font-style: normal;
-    color: rgb(255, 210, 120);
-}
-
-.tray-item.locked {
-    background-color: rgba(255, 255, 255, 0.06);
-}
-
-.tray-item.locked Label {
-    color: rgba(255, 255, 255, 0.35);
-}
-
-.tray-item.dragging {
-    background-color: rgb(120, 100, 160);
 }
 
 .actions {

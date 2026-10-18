@@ -65,6 +65,22 @@ namespace Wick.Game
             _focus.z = Mathf.Clamp(_focus.z, _min.y - _tuning.FrameShiftTiles, _max.y);
         }
 
+        /// <summary>Centres a tile in the view above the bottom bars.</summary>
+        public void FocusOn(TilePos tile)
+        {
+            Vector3 p = SimPose.TileCenter(tile);
+            _focus = new Vector3(Mathf.Clamp(p.x, _min.x, _max.x), 0f,
+                Mathf.Clamp(p.z - _tuning.FrameShiftTiles, _min.y - _tuning.FrameShiftTiles, _max.y));
+        }
+
+        /// <summary>A world point in screen pixels (y up); false when it is behind the camera.</summary>
+        public bool WorldToScreen(Vector3 world, out Vector2 screen)
+        {
+            Vector3 s = _camera.WorldToScreenPoint(world);
+            screen = new Vector2(s.x, s.y);
+            return s.z > 0f;
+        }
+
         private void LateUpdate()
         {
             Place();

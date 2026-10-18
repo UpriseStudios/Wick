@@ -14,43 +14,49 @@
         <!-- Editor. Containers ignore touches so the grid gets them; controls block. -->
         <ui:VisualElement name="editor" class="editor" picking-mode="Ignore">
             <ui:VisualElement class="topbar blocks-input">
-                <ui:Button name="to-drafts" text="Vaults" class="small-button" />
+                <ui:Button name="to-drafts" text="&lt; Vaults" class="small-button" />
                 <ui:Label name="vault-name" class="vault-name" />
                 <ui:Button name="level-down" text="-" class="tiny-button" />
                 <ui:Label name="level-label" text="Lv 1" class="level" />
                 <ui:Button name="level-up" text="+" class="tiny-button" />
+            </ui:VisualElement>
+            <ui:VisualElement class="infobar blocks-input">
                 <ui:VisualElement class="budget">
+                    <ui:Label name="budget-label" text="Build points 0 / 60" class="budget-label" />
                     <ui:VisualElement class="budget-track">
                         <ui:VisualElement name="budget-fill" class="budget-fill" />
                     </ui:VisualElement>
-                    <ui:Label name="budget-label" text="0 / 60" class="budget-label" />
                 </ui:VisualElement>
-                <ui:Button name="issues-button" text="OK" class="small-button issues" />
+                <ui:Button name="issues-button" text="Ready" class="pill" />
             </ui:VisualElement>
             <ui:Label name="status" class="status" picking-mode="Ignore" />
             <ui:Label name="toast" class="toast hidden" picking-mode="Ignore" />
 
             <ui:VisualElement name="issues-panel" class="issues-panel blocks-input">
-                <ui:Label text="Fix these to publish" class="section" />
+                <ui:Label text="Fix these to publish (tap one to find it)" class="section" />
                 <ui:ScrollView name="issue-list" class="issue-list" />
                 <ui:Button name="issues-close" text="Close" class="small-button" />
             </ui:VisualElement>
 
-            <ui:VisualElement class="bottom" picking-mode="Ignore">
-                <ui:VisualElement name="owl-panel" class="owl-panel blocks-input">
-                    <ui:Label name="owl-hint" class="hint" />
-                    <ui:VisualElement class="row">
-                        <ui:Button name="owl-rotate" text="Rotate" class="small-button" />
-                        <ui:Button name="owl-patrol" text="Edit patrol" class="small-button" />
-                        <ui:Button name="owl-clear" text="Clear patrol" class="small-button" />
-                        <ui:Button name="owl-close" text="Done" class="small-button" />
-                    </ui:VisualElement>
+            <!-- Floats above the selected item. -->
+            <ui:VisualElement name="selection-bar" class="selection-bar blocks-input">
+                <ui:Label name="selection-name" class="selection-name" />
+                <ui:VisualElement class="row">
+                    <ui:Button name="sel-rotate" text="Rotate" class="sel-button" />
+                    <ui:Button name="sel-patrol" text="Patrol" class="sel-button" />
+                    <ui:Button name="sel-clear" text="Clear route" class="sel-button" />
+                    <ui:Button name="sel-remove" text="Remove" class="sel-button danger" />
                 </ui:VisualElement>
-                <ui:Label name="tool-hint" class="hint" picking-mode="Ignore" />
-                <ui:VisualElement name="tools" class="tools blocks-input" />
-                <ui:ScrollView name="tray-scroll" mode="Horizontal" class="tray-scroll blocks-input">
-                    <ui:VisualElement name="tray" class="tray" />
-                </ui:ScrollView>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="bottom" picking-mode="Ignore">
+                <ui:Label name="hint" class="hint" picking-mode="Ignore" />
+                <ui:VisualElement class="tabs blocks-input">
+                    <ui:Button name="tab-defences" text="Defences" class="tab" />
+                    <ui:Button name="tab-rooms" text="Rooms" class="tab" />
+                </ui:VisualElement>
+                <ui:VisualElement name="shop" class="shop blocks-input" />
+                <ui:VisualElement name="room-tools" class="room-tools blocks-input" />
                 <ui:VisualElement class="actions blocks-input">
                     <ui:Button name="undo" text="Undo" class="action" />
                     <ui:Button name="redo" text="Redo" class="action" />

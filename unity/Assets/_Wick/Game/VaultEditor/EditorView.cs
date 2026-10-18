@@ -6,11 +6,25 @@ namespace Wick.Game
 {
     /// <summary>
     /// Draws a draft with the same prefabs as a raid (fully lit, no visibility mask), plus editor
-    /// markers: entrance, hoard frame, owl patrols, the first hoard corner and a placement ghost.
-    /// Anything the validator complains about is tinted red.
+    /// markers: entrance, hoard frame, owl patrols and a placement ghost. Anything the validator
+    /// complains about is tinted red; the selection glows, and an item being moved lifts and shows
+    /// green or red for whether it can be dropped there.
     /// </summary>
     public sealed class EditorView : MonoBehaviour
     {
+        /// <summary>Editor state drawn on top of the draft.</summary>
+        public struct Marks
+        {
+            public int Selected;
+            public int Moving;
+            public bool MovingOk;
+            public TileRect? HoardPreview;
+
+            public static Marks None => new Marks { Selected = -1, Moving = -1 };
+        }
+
+        private static readonly Color Ok = new Color(0.4f, 1f, 0.5f);
+
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
 
@@ -51,7 +65,7 @@ namespace Wick.Game
         }
 
         /// <summary>Redraws the draft. Tiles update in place; objects and markers are rebuilt.</summary>
-        public void Build(VaultDraft draft, List<VaultIssue> issues, int selectedOwl, TilePos? hoardCorner)
+        public void Build(VaultDraft draft, List<VaultIssue> issues, Marks marks)
         {
             EnsureRoots();
             var badObjects = new HashSet<int>();
@@ -82,32 +96,40 @@ namespace Wick.Game
                 GameObject go = Instantiate(prefab, _objectRoot);
                 Pose(go.transform, draft, o.Type, o.Pos, o.Rot);
                 HideRaidOnlyParts(go);
-                Tint(go, badObjects.Contains(o.Id) ? Color.red : (Color?)null, o.Id == selectedOwl);
+                if (o.Id == marks.Moving)
+                {
+                    go.transform.position += Vector3.up * 0.3f;
+                    Tint(go, marks.MovingOk ? Ok : Color.red, false);
+                }
+                else
+                {
+                    Tint(go, badObjects.Contains(o.Id) ? Color.red : (Color?)null, o.Id == marks.Selected);
+                }
+
                 _objects.Add(go);
             }
 
             Clear(_markers);
             Marker(_assets.EntranceMarker, SimPose.TileCenter(draft.Entrance), Quaternion.identity);
-            if (draft.HasHoard)
+            if (marks.HoardPreview.HasValue)
+            {
+                BuildHoardFrame(marks.HoardPreview.Value);
+            }
+            else if (draft.HasHoard)
             {
                 BuildHoardFrame(draft.Hoard);
             }
 
-            if (hoardCorner.HasValue)
-            {
-                Marker(_assets.CornerMarker, SimPose.TileCenter(hoardCorner.Value), Quaternion.identity);
-            }
-
             foreach (DraftObject o in draft.Objects)
             {
-                if (o.Type == ObjectType.NightOwl && (o.Patrol.Count > 0 || o.Id == selectedOwl))
+                if (o.Type == ObjectType.NightOwl && (o.Patrol.Count > 0 || o.Id == marks.Selected))
                 {
-                    BuildPatrol(o, o.Id == selectedOwl);
+                    BuildPatrol(o, o.Id == marks.Selected);
                 }
             }
         }
 
-        /// <summary>Shows a translucent preview of an object being dragged from the tray.</summary>
+        /// <summary>Shows a lifted preview of an object being dragged from the shop.</summary>
         public void ShowGhost(ObjectType type, VaultDraft draft, TilePos tile, bool valid)
         {
             if (_ghost == null || _ghostType != type)
@@ -122,8 +144,8 @@ namespace Wick.Game
 
             _ghost.SetActive(true);
             Pose(_ghost.transform, draft, type, tile, 0);
-            _ghost.transform.position += Vector3.up * 0.15f;
-            Tint(_ghost, valid ? new Color(0.4f, 1f, 0.5f) : Color.red, false);
+            _ghost.transform.position += Vector3.up * 0.3f;
+            Tint(_ghost, valid ? Ok : Color.red, false);
         }
 
         public void HideGhost()

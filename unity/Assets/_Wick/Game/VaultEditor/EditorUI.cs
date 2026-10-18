@@ -6,8 +6,9 @@ using Wick.Sim;
 namespace Wick.Game
 {
     /// <summary>
-    /// The editor's UI Toolkit document: drafts list, top bar (level, budget, issues), paint
-    /// tools, the trap tray (drag onto the grid), the owl panel and Undo / Redo / Test / Publish.
+    /// The editor's UI Toolkit document: drafts list, top bar (level, budget, problems), the
+    /// Defences shop (drag cards onto the grid), the Rooms tools, a selection bar that floats
+    /// above the selected item, and Undo / Redo / Test / Publish.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public sealed class EditorUI : MonoBehaviour
@@ -15,35 +16,51 @@ namespace Wick.Game
         [SerializeField] private VaultEditorController _controller;
         [SerializeField] private EditorInput _input;
 
-        private static readonly (EditorTool tool, string label)[] Tools =
+        /// <summary>Panel pixels a finger must move off a shop card before it becomes a drag.</summary>
+        private const float CardDragPx = 18f;
+
+        private static readonly (RoomTool tool, string label)[] RoomTools =
         {
-            (EditorTool.Select, "Select"), (EditorTool.Floor, "Floor"), (EditorTool.Wall, "Wall"),
-            (EditorTool.Door, "Door"), (EditorTool.Pit, "Pit*"), (EditorTool.Ice, "Ice*"),
-            (EditorTool.Entrance, "Entrance"), (EditorTool.Treasure, "Treasure"), (EditorTool.Hoard, "Hoard"),
+            (RoomTool.Wall, "Wall"), (RoomTool.Floor, "Floor"), (RoomTool.Door, "Door"),
+            (RoomTool.Entrance, "Entrance"), (RoomTool.Hoard, "Hoard room"),
         };
 
-        private static readonly (ObjectType type, string label)[] TrayItems =
+        private static readonly ObjectType[] ShopItems =
         {
-            (ObjectType.DripPipe, "Drip Pipe"), (ObjectType.SpikeFloor, "Spikes"), (ObjectType.Bellows, "Bellows"),
-            (ObjectType.Crate, "Crate"), (ObjectType.Brazier, "Brazier"), (ObjectType.SnufferBell, "Snuffer Bell"),
-            (ObjectType.NightOwl, "Night Owl"), (ObjectType.WaxMoths, "Wax Moths"),
+            ObjectType.Treasure, ObjectType.DripPipe, ObjectType.SpikeFloor, ObjectType.Bellows, ObjectType.Crate,
+            ObjectType.Brazier, ObjectType.SnufferBell, ObjectType.NightOwl, ObjectType.WaxMoths,
         };
 
         private VisualElement _root;
         private VisualElement _drafts;
         private VisualElement _editor;
         private VisualElement _issuesPanel;
-        private VisualElement _owlPanel;
+        private VisualElement _selectionBar;
+        private VisualElement _shop;
+        private VisualElement _roomTools;
         private Label _toast;
         private float _toastUntil;
-        private readonly List<Button> _toolButtons = new List<Button>();
-        private readonly List<VisualElement> _trayItems = new List<VisualElement>();
+        private readonly List<Button> _roomButtons = new List<Button>();
+        private readonly List<VisualElement> _cards = new List<VisualElement>();
         private bool _ready;
 
         public void Bind(VaultEditorController controller, EditorInput input)
         {
             _controller = controller;
             _input = input;
+        }
+
+        public static string Name(ObjectType type)
+        {
+            switch (type)
+            {
+                case ObjectType.DripPipe: return "Drip Pipe";
+                case ObjectType.SpikeFloor: return "Spikes";
+                case ObjectType.SnufferBell: return "Snuffer Bell";
+                case ObjectType.NightOwl: return "Night Owl";
+                case ObjectType.WaxMoths: return "Wax Moths";
+                default: return type.ToString();
+            }
         }
 
         private void Start()
@@ -63,7 +80,9 @@ namespace Wick.Game
             _drafts = _root.Q("drafts");
             _editor = _root.Q("editor");
             _issuesPanel = _root.Q("issues-panel");
-            _owlPanel = _root.Q("owl-panel");
+            _selectionBar = _root.Q("selection-bar");
+            _shop = _root.Q("shop");
+            _roomTools = _root.Q("room-tools");
             _toast = _root.Q<Label>("toast");
 
             _root.Q<Button>("back-raids").clicked += () => _controller.BackToRaids();
@@ -72,40 +91,39 @@ namespace Wick.Game
             _root.Q<Button>("level-up").clicked += () => _controller.ChangeLevel(1);
             _root.Q<Button>("issues-button").clicked += () => Show(_issuesPanel, !Visible(_issuesPanel));
             _root.Q<Button>("issues-close").clicked += () => Show(_issuesPanel, false);
+            _root.Q<Button>("tab-defences").clicked += () => _controller.SetTab(EditorTab.Defences);
+            _root.Q<Button>("tab-rooms").clicked += () => _controller.SetTab(EditorTab.Rooms);
             _root.Q<Button>("undo").clicked += () => _controller.Undo();
             _root.Q<Button>("redo").clicked += () => _controller.Redo();
             _root.Q<Button>("test").clicked += () => _controller.Test();
             _root.Q<Button>("publish").clicked += () => _controller.Publish();
-            _root.Q<Button>("owl-rotate").clicked += () => _controller.RotateSelected();
-            _root.Q<Button>("owl-patrol").clicked += () => _controller.TogglePatrolEditing();
-            _root.Q<Button>("owl-clear").clicked += () => _controller.ClearPatrol();
-            _root.Q<Button>("owl-close").clicked += () => _controller.Deselect();
+            _root.Q<Button>("sel-rotate").clicked += () => _controller.RotateSelected();
+            _root.Q<Button>("sel-patrol").clicked += () => _controller.TogglePatrolEditing();
+            _root.Q<Button>("sel-clear").clicked += () => _controller.ClearPatrol();
+            _root.Q<Button>("sel-remove").clicked += () => _controller.RemoveSelected();
             Button verify = _root.Q<Button>("verify");
             verify.clicked += () => Toast(_controller.VerifyClearCheck(), 6f);
             Show(verify, Debug.isDebugBuild);
 
-            VisualElement tools = _root.Q("tools");
-            foreach ((EditorTool tool, string label) in Tools)
+            foreach ((RoomTool tool, string label) in RoomTools)
             {
-                EditorTool t = tool;
-                var b = new Button(() => _controller.SetTool(t)) { text = label };
+                RoomTool t = tool;
+                var b = new Button(() => _controller.SetRoomTool(t)) { text = label, userData = tool };
                 b.AddToClassList("tool");
-                b.AddToClassList("blocks-input");
-                b.userData = tool;
-                tools.Add(b);
-                _toolButtons.Add(b);
+                _roomTools.Add(b);
+                _roomButtons.Add(b);
             }
 
-            VisualElement tray = _root.Q("tray");
-            foreach ((ObjectType type, string label) in TrayItems)
+            foreach (ObjectType type in ShopItems)
             {
-                tray.Add(TrayItem(type, label));
+                _shop.Add(Card(type));
             }
 
             _input.IsOverUi = IsOverUi;
             Show(_drafts, false);
             Show(_editor, false);
             Show(_issuesPanel, false);
+            Show(_selectionBar, false);
         }
 
         // ---- Screens ------------------------------------------------------------------------
@@ -166,10 +184,42 @@ namespace Wick.Game
 
         private void Update()
         {
-            if (_ready && Visible(_toast) && Time.unscaledTime > _toastUntil)
+            if (!_ready)
+            {
+                return;
+            }
+
+            if (Visible(_toast) && Time.unscaledTime > _toastUntil)
             {
                 Show(_toast, false);
             }
+
+            PlaceSelectionBar();
+        }
+
+        /// <summary>Keeps the selection bar just above the selected item as the camera moves.</summary>
+        private void PlaceSelectionBar()
+        {
+            Vector2 screen = default;
+            bool show = Visible(_editor) && _controller.Draft != null && _root.panel != null &&
+                _controller.SelectionScreenPoint(out screen);
+            Show(_selectionBar, show);
+            if (!show)
+            {
+                return;
+            }
+
+            Vector2 p = RuntimePanelUtils.ScreenToPanel(_root.panel, new Vector2(screen.x, Screen.height - screen.y));
+            float w = _selectionBar.resolvedStyle.width;
+            float h = _selectionBar.resolvedStyle.height;
+            if (float.IsNaN(w) || float.IsNaN(h))
+            {
+                w = h = 0f; // first frame after showing: laid out next frame
+            }
+
+            float maxX = Mathf.Max(0f, _root.layout.width - w - 12f);
+            _selectionBar.style.left = Mathf.Clamp(p.x - w * 0.5f, 12f, maxX);
+            _selectionBar.style.top = Mathf.Max(260f, p.y - h);
         }
 
         /// <summary>Refreshes everything that depends on the draft.</summary>
@@ -177,43 +227,55 @@ namespace Wick.Game
         {
             EnsureReady();
             VaultDraft d = c.Draft;
+            bool defences = c.Tab == EditorTab.Defences;
             _root.Q<Label>("vault-name").text = d.Name;
             _root.Q<Label>("level-label").text = "Lv " + d.Level;
 
             int points = d.BuildPoints;
             int budget = VaultRules.Budget(d.Level);
-            _root.Q<Label>("budget-label").text = points + " / " + budget;
+            _root.Q<Label>("budget-label").text = "Build points " + points + " / " + budget;
             VisualElement fill = _root.Q("budget-fill");
             fill.style.width = Length.Percent(Mathf.Clamp01(points / (float)budget) * 100f);
             fill.EnableInClassList("over", points > budget);
 
             var issuesButton = _root.Q<Button>("issues-button");
-            issuesButton.text = c.Issues.Count == 0 ? "OK" : "Issues " + c.Issues.Count;
-            issuesButton.EnableInClassList("bad", c.Issues.Count > 0);
+            int n = c.Issues.Count;
+            issuesButton.text = n == 0 ? "Ready" : n + (n == 1 ? " problem" : " problems");
+            issuesButton.EnableInClassList("bad", n > 0);
             VisualElement issueList = _root.Q("issue-list");
             issueList.Clear();
             foreach (VaultIssue issue in c.Issues)
             {
-                issueList.Add(new Label(issue.Message));
+                VaultIssue i = issue;
+                var row = new Button(() =>
+                {
+                    Show(_issuesPanel, false);
+                    _controller.FocusIssue(i);
+                }) { text = issue.Message };
+                row.AddToClassList("issue-row");
+                issueList.Add(row);
             }
 
-            foreach (Button b in _toolButtons)
+            if (n == 0)
             {
-                b.EnableInClassList("selected", (EditorTool)b.userData == c.Tool);
+                Show(_issuesPanel, false);
             }
 
-            foreach (VisualElement item in _trayItems)
+            _root.Q("tab-defences").EnableInClassList("selected", defences);
+            _root.Q("tab-rooms").EnableInClassList("selected", !defences);
+            Show(_shop, defences);
+            Show(_roomTools, !defences);
+            foreach (Button b in _roomButtons)
             {
-                var type = (ObjectType)item.userData;
-                item.EnableInClassList("locked", VaultRules.RequiredLevel(type) > d.Level);
+                b.EnableInClassList("selected", (RoomTool)b.userData == c.RoomTool);
             }
 
-            bool owl = c.SelectedOwl >= 0;
-            Show(_owlPanel, owl);
-            _root.Q<Button>("owl-patrol").text = c.EditingPatrol ? "Done patrol" : "Edit patrol";
-            _root.Q<Label>("owl-hint").text = c.EditingPatrol
-                ? "Tap tiles to add patrol points; tap the last one to remove it."
-                : "Night Owl selected.";
+            foreach (VisualElement card in _cards)
+            {
+                UpdateCard(card, d);
+            }
+
+            UpdateSelectionBar(c);
 
             _root.Q<Button>("undo").SetEnabled(c.CanUndo);
             _root.Q<Button>("redo").SetEnabled(c.CanRedo);
@@ -222,7 +284,7 @@ namespace Wick.Game
             string status;
             if (d.ClearCheck == null)
             {
-                status = "Not tested: escape it with 1+ star to publish";
+                status = "Not tested yet: escape your vault with 1+ star to publish";
             }
             else if (!c.ClearCheckCurrent)
             {
@@ -239,69 +301,151 @@ namespace Wick.Game
             }
 
             _root.Q<Label>("status").text = status;
-            _root.Q<Label>("tool-hint").text = Hint(c);
+            _root.Q<Label>("hint").text = Hint(c);
         }
 
-        // ---- Tray drag --------------------------------------------------------------------------
-
-        private VisualElement TrayItem(ObjectType type, string label)
+        private void UpdateSelectionBar(VaultEditorController c)
         {
-            var item = new VisualElement { userData = type };
-            item.AddToClassList("tray-item");
-            item.AddToClassList("blocks-input");
-            item.Add(new Label(label) { pickingMode = PickingMode.Ignore });
-            int cost = VaultRules.Cost(type);
-            string sub = (cost == 0 ? "free" : cost + " pts") +
-                (VaultRules.RequiredLevel(type) > 1 ? "  Lv " + VaultRules.RequiredLevel(type) : "");
-            var costLabel = new Label(sub) { pickingMode = PickingMode.Ignore };
-            costLabel.AddToClassList("tray-cost");
-            item.Add(costLabel);
-
-            bool dragging = false;
-            item.RegisterCallback<PointerDownEvent>(e =>
+            DraftObject o = c.SelectedObject;
+            if (o == null)
             {
-                if (item.ClassListContains("locked"))
+                return;
+            }
+
+            bool owl = o.Type == ObjectType.NightOwl;
+            _root.Q<Label>("selection-name").text = c.EditingPatrol
+                ? "Tap tiles to add patrol points"
+                : Name(o.Type) + (VaultRules.Cost(o.Type) > 0 ? ", " + VaultRules.Cost(o.Type) + " pts" : "");
+            Show(_root.Q("sel-rotate"), !c.EditingPatrol && VaultEditorController.CanRotate(o.Type));
+            Show(_root.Q("sel-patrol"), owl);
+            _root.Q<Button>("sel-patrol").text = c.EditingPatrol ? "Done" : "Patrol";
+            Show(_root.Q("sel-clear"), owl && c.EditingPatrol);
+            Show(_root.Q("sel-remove"), !c.EditingPatrol);
+        }
+
+        // ---- Shop ---------------------------------------------------------------------------
+
+        private VisualElement Card(ObjectType type)
+        {
+            var card = new VisualElement { userData = type };
+            card.AddToClassList("card");
+            card.Add(new Label(Name(type)) { name = "card-name", pickingMode = PickingMode.Ignore });
+            var sub = new Label { name = "card-sub", pickingMode = PickingMode.Ignore };
+            sub.AddToClassList("card-sub");
+            card.Add(sub);
+
+            bool down = false;
+            bool dragging = false;
+            Vector2 start = default;
+            card.RegisterCallback<PointerDownEvent>(e =>
+            {
+                down = true;
+                dragging = false;
+                start = e.position;
+                card.CapturePointer(e.pointerId);
+            });
+            card.RegisterCallback<PointerMoveEvent>(e =>
+            {
+                if (!down)
                 {
-                    Toast(label + " unlocks at Vault Level " + VaultRules.RequiredLevel(type));
                     return;
                 }
 
-                dragging = true;
-                item.CapturePointer(e.pointerId);
-                item.AddToClassList("dragging");
-            });
-            item.RegisterCallback<PointerMoveEvent>(e =>
-            {
+                if (!dragging && Vector2.Distance(e.position, start) >= CardDragPx)
+                {
+                    string block = _controller.Draft.ShopBlock(type);
+                    if (block != null)
+                    {
+                        down = false;
+                        card.ReleasePointer(e.pointerId);
+                        Toast(Name(type) + ": " + block);
+                        return;
+                    }
+
+                    dragging = true;
+                    _controller.Deselect();
+                    card.AddToClassList("dragging");
+                }
+
                 if (dragging)
                 {
                     _controller.UpdatePlacement(type, PanelToScreen(e.position));
                 }
             });
-            item.RegisterCallback<PointerUpEvent>(e =>
+            card.RegisterCallback<PointerUpEvent>(e =>
             {
-                if (!dragging)
+                if (!down)
                 {
                     return;
                 }
 
-                dragging = false;
-                item.ReleasePointer(e.pointerId);
-                item.RemoveFromClassList("dragging");
-                Vector2 screen = PanelToScreen(e.position);
-                _controller.EndPlacement(type, screen, IsOverUi(screen));
-            });
-            item.RegisterCallback<PointerCaptureOutEvent>(_ =>
-            {
+                down = false;
+                card.ReleasePointer(e.pointerId);
+                card.RemoveFromClassList("dragging");
                 if (dragging)
                 {
                     dragging = false;
-                    item.RemoveFromClassList("dragging");
+                    Vector2 screen = PanelToScreen(e.position);
+                    _controller.EndPlacement(type, screen, IsOverUi(screen));
+                }
+                else
+                {
+                    string block = _controller.Draft.ShopBlock(type);
+                    Toast(block != null ? Name(type) + ": " + block : Describe(type));
+                }
+            });
+            card.RegisterCallback<PointerCaptureOutEvent>(_ =>
+            {
+                down = false;
+                card.RemoveFromClassList("dragging");
+                if (dragging)
+                {
+                    dragging = false;
                     _controller.EndPlacement(type, Vector2.zero, true);
                 }
             });
 
-            _trayItems.Add(item);
-            return item;
+            _cards.Add(card);
+            return card;
+        }
+
+        private static void UpdateCard(VisualElement card, VaultDraft d)
+        {
+            var type = (ObjectType)card.userData;
+            int cost = VaultRules.Cost(type);
+            int required = VaultRules.RequiredLevel(type);
+            string sub;
+            if (required > d.Level)
+            {
+                sub = "Lv " + required;
+            }
+            else if (type == ObjectType.Treasure)
+            {
+                sub = d.Count(type) + " / " + VaultRules.MaxTreasurePiles(d.Level);
+            }
+            else if (type == ObjectType.Brazier)
+            {
+                sub = d.Count(type) + " / " + VaultRules.BrazierLimit(d.Level);
+            }
+            else
+            {
+                sub = cost + " pts";
+            }
+
+            card.Q<Label>("card-sub").text = sub;
+            card.EnableInClassList("locked", required > d.Level);
+            card.EnableInClassList("blocked", d.ShopBlock(type) != null);
+        }
+
+        private static string Describe(ObjectType type)
+        {
+            switch (type)
+            {
+                case ObjectType.Treasure: return "Treasure: drag into the hoard room";
+                case ObjectType.Brazier: return "Brazier: drag onto a wall next to floor";
+                case ObjectType.Crate: return "Crate: blocks the way and gives cover";
+                default: return Name(type) + ": drag it onto the vault";
+            }
         }
 
         /// <summary>Panel coordinates (y down) to screen pixels (y up).</summary>
@@ -336,15 +480,23 @@ namespace Wick.Game
 
         private static string Hint(VaultEditorController c)
         {
-            switch (c.Tool)
+            if (c.Tab == EditorTab.Defences)
             {
-                case EditorTool.Select: return "Tap: rotate (owl: select). Drag: move. Hold: delete. Drag traps up from the tray.";
-                case EditorTool.Pit:
-                case EditorTool.Ice: return "Cosmetic for now: pits and ice have no effect yet.";
-                case EditorTool.Entrance: return "Tap a tile to move the entrance.";
-                case EditorTool.Treasure: return "Tap to add or remove a treasure pile.";
-                case EditorTool.Hoard: return c.HoardCorner == null ? "Tap one corner of the hoard room." : "Now tap the opposite corner.";
-                default: return "Tap or drag to paint. Hold an object to delete it.";
+                if (c.EditingPatrol)
+                {
+                    return "Tap tiles to add patrol points; tap the last one again to remove it. Done when finished.";
+                }
+
+                return c.SelectedObject != null
+                    ? "Drag it to move. Tap empty floor to deselect."
+                    : "Drag from the shop to place. Drag an item to move it. Drag the floor to look around.";
+            }
+
+            switch (c.RoomTool)
+            {
+                case RoomTool.Entrance: return "Tap a tile to move the entrance. Two fingers to pan.";
+                case RoomTool.Hoard: return "Drag from one corner of the hoard room to the other. Two fingers to pan.";
+                default: return "Tap or drag to paint. Two fingers to pan and zoom.";
             }
         }
 
