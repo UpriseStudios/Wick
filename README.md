@@ -111,7 +111,7 @@ compiles the Sim source as linked files and exposes `PublishVault`,
 `StartFriendRaid` and `SubmitRaid`.
 
 ```
-ugs config set project-id 7fcd9f17-6a70-4cd3-a2cd-8e193cac9dea
+ugs config set project-id 71e95e2b-a983-4b74-96f4-16d2974b9c78
 ugs deploy server/Wick.CloudCode/Wick.CloudCode.sln -e development
 dotnet test server/Wick.CloudCode/WickModule.Tests
 ```
