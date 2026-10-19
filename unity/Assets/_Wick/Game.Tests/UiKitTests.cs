@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 
 namespace Wick.Game.Tests
 {
@@ -22,10 +23,26 @@ namespace Wick.Game.Tests
         }
 
         [Test]
+        public void TheFontsRenderLatinExtended()
+        {
+            string uss = File.ReadAllText("Assets/_Wick/Game/UI/UiKit.uss");
+            MatchCollection fonts = Regex.Matches(uss, @"-unity-font-definition: url\(""project://database/([^?]+)\?");
+            Assert.GreaterOrEqual(fonts.Count, 2, "body and display fonts");
+            foreach (Match m in fonts)
+            {
+                var font = AssetDatabase.LoadAssetAtPath<FontAsset>(m.Groups[1].Value);
+                Assert.IsNotNull(font, m.Groups[1].Value);
+                // Polish, Czech, Turkish, Hungarian, Nordic, German, Spanish, plus the tagline's en dash.
+                bool all = font.HasCharacters("ŁłŚśŻźĆćŘřŠšŽžĞğİıŐőŰűØøÆæßÑñ–€", out uint[] missing, false, true);
+                Assert.IsTrue(all, m.Groups[1].Value + " can't draw: " + string.Join(" ", System.Array.ConvertAll(missing ?? new uint[0], c => "U+" + c.ToString("X4"))));
+            }
+        }
+
+        [Test]
         public void EveryKitSpriteExistsAndIsNineSliced()
         {
             string uss = File.ReadAllText("Assets/_Wick/Game/UI/UiKit.uss");
-            MatchCollection urls = Regex.Matches(uss, "guid=([0-9a-f]{32})");
+            MatchCollection urls = Regex.Matches(uss, "guid=([0-9a-f]{32})&type=3"); // sprites; the fonts are type 2
             Assert.Greater(urls.Count, 3, "UiKit.uss styles the buttons, rows and panels");
             foreach (Match m in urls)
             {
