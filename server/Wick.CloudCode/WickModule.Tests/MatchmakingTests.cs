@@ -5,6 +5,8 @@ using Wick.Sim;
 
 namespace Wick.CloudCode.Tests
 {
+    using static TestEconomy;
+
     public class MatchmakingTests
     {
         private World _w;
@@ -73,7 +75,7 @@ namespace Wick.CloudCode.Tests
             Assert.IsFalse(friend.Ok);
             StringAssert.Contains("shielded", friend.Reason);
 
-            _w.Clock.Advance(Rules.ShieldMs + 1);
+            _w.Clock.Advance(Rules.ShieldMs(Loot) + 1);
             Assert.IsTrue((await _w.Raids.GetRaidTargetAsync("p3")).Ok, "shield over");
             Assert.IsFalse((await _w.Raids.GetRaidTargetAsync("p1")).Ok, "p1 raided it in the last 24 h");
 

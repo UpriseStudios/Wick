@@ -10,9 +10,6 @@ namespace Wick.CloudCode
     /// </summary>
     public sealed class PublishService
     {
-        /// <summary>Highest Vault Level a player may publish until Vault Level progression exists (M8).</summary>
-        public const int MaxPublishLevel = 3;
-
         private readonly IGameStore _store;
         private readonly IClock _clock;
 
@@ -29,7 +26,10 @@ namespace Wick.CloudCode
                 return PublishResult.Fail("Bad request id");
             }
 
-            VaultCheck.Passed passed = VaultCheck.Check(document, MaxPublishLevel, out PublishResult fail);
+            // A vault can be built up to the level the player has raised (upgrades, star-gated).
+            var levels = await _store.GetProtectedAsync(playerId, new[] { EconomyKeys.Upgrades });
+            int vaultLevel = Json.Read<Upgrades>(levels.TryGetValue(EconomyKeys.Upgrades, out StoredItem u) ? u.Json : null).Levels.VaultLevel;
+            VaultCheck.Passed passed = VaultCheck.Check(document, vaultLevel, out PublishResult fail);
             if (passed == null)
             {
                 return fail;

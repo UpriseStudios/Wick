@@ -61,6 +61,8 @@ namespace Wick.CloudCode
     public sealed class Wallet
     {
         public long Gold { get; set; }
+        public long Wax { get; set; }
+        public long Gems { get; set; }
     }
 
     /// <summary>The player's raids as the raider.</summary>

@@ -15,10 +15,14 @@
   <ItemGroup>
     <!-- Sim is linked, never copied or forked: the server re-simulates with the client's exact source. -->
     <Compile Include="../../../unity/Assets/_Wick/Sim/**/*.cs" LinkBase="Sim" />
+    <!-- Economy types, shared with the game the same way. -->
+    <Compile Include="../../../unity/Assets/_Wick/Economy/**/*.cs" LinkBase="Economy" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Used only by the TimeResim spike function. -->
+    <!-- Fallback economy when Remote Config is unreachable or not deployed. -->
+    <EmbeddedResource Include="../../../unity/Assets/_Wick/Resources/Economy/economy-default.json" LogicalName="economy-default.json" />
     <EmbeddedResource Include="../../../tests/golden/full-heist.json" LogicalName="golden.full-heist.json" />
     <EmbeddedResource Include="../../../tests/golden/timeout-wander.json" LogicalName="golden.timeout-wander.json" />
   </ItemGroup>

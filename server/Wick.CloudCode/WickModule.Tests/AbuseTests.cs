@@ -4,6 +4,8 @@ using Wick.Sim;
 
 namespace Wick.CloudCode.Tests
 {
+    using static TestEconomy;
+
     public class AbuseTests
     {
         private World _w;
@@ -67,7 +69,7 @@ namespace Wick.CloudCode.Tests
                 SubmitResult r = await _w.Raid("bot", start, Players.UpAndBack(VaultJson.Parse(start.Vault), start.Seed, true));
                 Assert.IsTrue(start.Ok, start.Reason);
                 Assert.IsTrue(r.Verified, "flagging never refuses a verified raid: " + r.Reason);
-                _w.Clock.Advance(Rules.ShieldMs + 1); // each robbery shields the vault
+                _w.Clock.Advance(Rules.ShieldMs(Loot) + 1); // each robbery shields the vault
             }
 
             Profile p = _w.Get<Profile>("bot", Keys.Profile);

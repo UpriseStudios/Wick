@@ -307,5 +307,11 @@ namespace Wick.CloudCode.Tests
             Calls.Add((url, body, bearerToken));
             return Task.FromResult(Respond(url));
         }
+
+        public Task<(int Status, string Body)> GetAsync(string url, string bearerToken)
+        {
+            Calls.Add((url, null, bearerToken));
+            return Task.FromResult(Respond(url));
+        }
     }
 }

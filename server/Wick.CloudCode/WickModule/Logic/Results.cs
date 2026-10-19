@@ -67,6 +67,8 @@ namespace Wick.CloudCode
         public long Gold { get; set; }
         public int CrownsDelta { get; set; }
         public int Crowns { get; set; }
+        public long WaxEarned { get; set; }
+        public long PassXp { get; set; }
 
         public static SubmitResult Rejected(string reason)
         {

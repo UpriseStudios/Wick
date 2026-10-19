@@ -5,6 +5,8 @@ using Wick.Sim;
 
 namespace Wick.CloudCode.Tests
 {
+    using static TestEconomy;
+
     public class DefenceTests
     {
         private World _w;
@@ -26,12 +28,12 @@ namespace Wick.CloudCode.Tests
 
             Assert.IsTrue(r.Verified, r.Reason);
             Assert.AreEqual(-14, r.CrownsDelta);
-            Assert.AreEqual(1000 + Rules.DefenceBonus(1), _w.Get<Wallet>("def", Keys.Wallet).Gold);
+            Assert.AreEqual(1000 + Rules.DefenceBonus(Loot, 1), _w.Get<Wallet>("def", Keys.Wallet).Gold);
             Assert.AreEqual(514, _w.Get<Profile>("def", Keys.Profile).Crowns);
             DefenceState d = _w.Get<DefenceState>("def", Keys.Defence);
             Assert.AreEqual(1, d.Raids);
             Assert.AreEqual(0, d.ShieldUntilMs, "no shield after a failed raid");
-            Assert.AreEqual(Rules.DefenceBonus(1), d.Log[0].Bonus);
+            Assert.AreEqual(Rules.DefenceBonus(Loot, 1), d.Log[0].Bonus);
             Assert.AreEqual(14, d.Log[0].CrownsDelta);
         }
 
@@ -47,7 +49,7 @@ namespace Wick.CloudCode.Tests
             Assert.AreEqual(900, _w.Get<Wallet>("def", Keys.Wallet).Gold);
             Assert.AreEqual(476, _w.Get<Profile>("def", Keys.Profile).Crowns);
             DefenceState d = _w.Get<DefenceState>("def", Keys.Defence);
-            Assert.Greater(d.ShieldUntilMs, before + Rules.ShieldMs - 1);
+            Assert.Greater(d.ShieldUntilMs, before + Rules.ShieldMs(Loot) - 1);
             Assert.AreEqual(100, d.Log[0].GoldLost);
             Assert.AreEqual("v_raider", d.Log[0].RevengeVaultId);
         }
@@ -75,7 +77,7 @@ namespace Wick.CloudCode.Tests
             SubmitResult r = await _w.RaidVault("raider", "v_rich", TestVaults.Escape);
 
             Assert.AreEqual(300, r.Loot);
-            Assert.AreEqual(Rules.LootCap(1), r.Paid);
+            Assert.AreEqual(Rules.LootCap(Loot, 1), r.Paid);
         }
 
         [Test]
@@ -90,7 +92,7 @@ namespace Wick.CloudCode.Tests
             DefenceState d = _w.Get<DefenceState>("def", Keys.Defence);
             Assert.AreEqual(1, d.Raids);
             Assert.AreEqual(1, d.Log.Count);
-            Assert.AreEqual(1000 + Rules.DefenceBonus(1), _w.Get<Wallet>("def", Keys.Wallet).Gold);
+            Assert.AreEqual(1000 + Rules.DefenceBonus(Loot, 1), _w.Get<Wallet>("def", Keys.Wallet).Gold);
         }
 
         [Test]

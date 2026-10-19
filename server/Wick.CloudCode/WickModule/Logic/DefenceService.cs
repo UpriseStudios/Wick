@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Wick.Economy;
 using Wick.Sim;
 
 namespace Wick.CloudCode
@@ -13,12 +14,14 @@ namespace Wick.CloudCode
         private readonly IGameStore _store;
         private readonly IClock _clock;
         private readonly IPushSender _push;
+        private readonly IEconomySource _economy;
 
-        public DefenceService(IGameStore store, IClock clock, IPushSender push = null)
+        public DefenceService(IGameStore store, IClock clock, IPushSender push = null, IEconomySource economy = null)
         {
             _store = store;
             _clock = clock;
             _push = push ?? new NoPush();
+            _economy = economy ?? new FixedEconomy();
         }
 
         /// <summary>
@@ -28,8 +31,10 @@ namespace Wick.CloudCode
         /// </summary>
         public async Task ApplyAsync(DefenceEvent ev)
         {
+            EconomyConfig cfg = await _economy.GetAsync();
             PushMessage push = null;
-            bool applied = await Locked.UpdateAsync(_store, ev.OwnerId, new[] { Keys.Wallet, Keys.Profile, Keys.Defence, Keys.Push }, s =>
+            bool applied = await Locked.UpdateAsync(_store, ev.OwnerId,
+                new[] { Keys.Wallet, Keys.Profile, Keys.Defence, Keys.Push, EconomyKeys.Pass, EconomyKeys.Progress }, s =>
             {
                 push = null;
                 DefenceState defence = Json.Read<DefenceState>(s.Json(Keys.Defence));
@@ -45,15 +50,24 @@ namespace Wick.CloudCode
                 long bonus = 0;
                 if (ev.Robbed)
                 {
-                    lost = Rules.DefenderLoss(ev.Paid, wallet.Gold);
+                    lost = Rules.DefenderLoss(cfg.Loot, ev.Paid, wallet.Gold);
                     wallet.Gold -= lost;
-                    defence.ShieldUntilMs = now + Rules.ShieldMs;
+                    defence.ShieldUntilMs = now + Rules.ShieldMs(cfg.Loot);
                 }
                 else
                 {
-                    bonus = Rules.DefenceBonus(ev.DefenderLevel);
+                    bonus = Rules.DefenceBonus(cfg.Loot, ev.DefenderLevel);
                     wallet.Gold += bonus;
                 }
+
+                PassState pass = Json.Read<PassState>(s.Json(EconomyKeys.Pass));
+                Progress progress = Json.Read<Progress>(s.Json(EconomyKeys.Progress));
+                if (!ev.Robbed)
+                {
+                    PassSeason.AddXp(pass, cfg, cfg.Pass.Xp.Defence, now); // a successful defence
+                }
+
+                progress.Snuffs += ev.Outcome == Outcome.Snuffed.ToString() ? 1 : 0;
 
                 int crownsBefore = profile.Crowns;
                 profile.Crowns = CrownRules.DefenderAfter(profile.Crowns, ev.RaiderCrownsDelta, false);
@@ -98,7 +112,9 @@ namespace Wick.CloudCode
                     .Write(Keys.Wallet, Json.Write(wallet))
                     .Write(Keys.Profile, Json.Write(profile))
                     .Write(Keys.Defence, Json.Write(defence))
-                    .Write(Keys.Push, Json.Write(pushState));
+                    .Write(Keys.Push, Json.Write(pushState))
+                    .Write(EconomyKeys.Pass, Json.Write(pass))
+                    .Write(EconomyKeys.Progress, Json.Write(progress));
             });
 
             if (!applied)

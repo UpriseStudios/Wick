@@ -13,6 +13,8 @@ namespace Wick.CloudCode
     {
         /// <returns>Status code and response body.</returns>
         Task<(int Status, string Body)> PostAsync(string url, string contentType, string body, string bearerToken);
+
+        Task<(int Status, string Body)> GetAsync(string url, string bearerToken);
     }
 
     public sealed class HttpClientHttp : IHttp
@@ -30,6 +32,14 @@ namespace Wick.CloudCode
                 request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
             }
 
+            using HttpResponseMessage response = await Client.SendAsync(request);
+            return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
+        }
+
+        public async Task<(int Status, string Body)> GetAsync(string url, string bearerToken)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
             using HttpResponseMessage response = await Client.SendAsync(request);
             return ((int)response.StatusCode, await response.Content.ReadAsStringAsync());
         }

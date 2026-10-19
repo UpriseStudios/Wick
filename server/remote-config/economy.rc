@@ -1,0 +1,752 @@
+{
+  "$schema": "https://ugs-config-schemas.unity3d.com/v1/remote-config.schema.json",
+  "entries": {
+    "economy": {
+      "version": 1,
+      "loot": {
+        "capPerLevel": 200,
+        "defenceBonusPerLevel": 10,
+        "maxLossPercent": 20,
+        "consolationPerLevel": 10,
+        "waxPerStar": 10,
+        "shieldMinutes": 120
+      },
+      "vaultLevels": [
+        {
+          "level": 2,
+          "gold": 400,
+          "minutes": 2,
+          "stars": 5
+        },
+        {
+          "level": 3,
+          "gold": 1200,
+          "minutes": 15,
+          "stars": 15
+        },
+        {
+          "level": 4,
+          "gold": 3000,
+          "minutes": 60,
+          "stars": 35
+        },
+        {
+          "level": 5,
+          "gold": 6000,
+          "minutes": 180,
+          "stars": 65
+        },
+        {
+          "level": 6,
+          "gold": 10000,
+          "minutes": 360,
+          "stars": 105
+        },
+        {
+          "level": 7,
+          "gold": 16000,
+          "minutes": 600,
+          "stars": 155
+        },
+        {
+          "level": 8,
+          "gold": 24000,
+          "minutes": 960,
+          "stars": 215
+        },
+        {
+          "level": 9,
+          "gold": 35000,
+          "minutes": 1440,
+          "stars": 285
+        },
+        {
+          "level": 10,
+          "gold": 50000,
+          "minutes": 2160,
+          "stars": 365
+        }
+      ],
+      "lantern": [
+        {
+          "level": 1,
+          "wax": 100,
+          "minutes": 10,
+          "minVaultLevel": 2,
+          "lightBonus": 150
+        },
+        {
+          "level": 2,
+          "wax": 300,
+          "minutes": 60,
+          "minVaultLevel": 4,
+          "lightBonus": 300
+        },
+        {
+          "level": 3,
+          "wax": 700,
+          "minutes": 180,
+          "minVaultLevel": 6,
+          "lightBonus": 450
+        },
+        {
+          "level": 4,
+          "wax": 1500,
+          "minutes": 480,
+          "minVaultLevel": 8,
+          "lightBonus": 600
+        },
+        {
+          "level": 5,
+          "wax": 3000,
+          "minutes": 960,
+          "minVaultLevel": 10,
+          "lightBonus": 750
+        }
+      ],
+      "workshops": {
+        "base": 1,
+        "max": 3
+      },
+      "speedUp": {
+        "gemsPerHour": 20,
+        "minGems": 1
+      },
+      "ads": {
+        "dailyTotal": 9,
+        "placements": [
+          {
+            "id": "raid_double_loot",
+            "daily": 3,
+            "windowMinutes": 10
+          },
+          {
+            "id": "upgrade_speedup",
+            "daily": 3,
+            "minutes": 30
+          },
+          {
+            "id": "daily_vault_retry",
+            "daily": 1
+          },
+          {
+            "id": "shop_chest",
+            "daily": 2,
+            "grant": {
+              "gold": 120,
+              "wax": 25,
+              "gems": 3
+            }
+          }
+        ]
+      },
+      "products": [
+        {
+          "id": "starter_pack",
+          "kind": "nonConsumable",
+          "price": "1.99",
+          "grant": {
+            "gems": 500,
+            "workshops": 1,
+            "cosmetics": [
+              "skin_pip"
+            ]
+          }
+        },
+        {
+          "id": "heist_pass_s1",
+          "kind": "nonConsumable",
+          "price": "4.99",
+          "grant": {
+            "passPremium": "s1"
+          }
+        },
+        {
+          "id": "wick_club",
+          "kind": "subscription",
+          "price": "3.99",
+          "grant": {
+            "club": true
+          }
+        },
+        {
+          "id": "skin_drippy",
+          "kind": "nonConsumable",
+          "price": "2.99",
+          "grant": {
+            "cosmetics": [
+              "skin_drippy"
+            ]
+          }
+        },
+        {
+          "id": "skin_cinder",
+          "kind": "nonConsumable",
+          "price": "4.99",
+          "grant": {
+            "cosmetics": [
+              "skin_cinder"
+            ]
+          }
+        },
+        {
+          "id": "skin_ember",
+          "kind": "nonConsumable",
+          "price": "7.99",
+          "grant": {
+            "cosmetics": [
+              "skin_ember"
+            ]
+          }
+        },
+        {
+          "id": "gems_80",
+          "kind": "consumable",
+          "price": "0.99",
+          "grant": {
+            "gems": 80
+          }
+        },
+        {
+          "id": "gems_500",
+          "kind": "consumable",
+          "price": "4.99",
+          "grant": {
+            "gems": 500
+          }
+        },
+        {
+          "id": "gems_1200",
+          "kind": "consumable",
+          "price": "9.99",
+          "grant": {
+            "gems": 1200
+          }
+        },
+        {
+          "id": "gems_2600",
+          "kind": "consumable",
+          "price": "19.99",
+          "grant": {
+            "gems": 2600
+          }
+        },
+        {
+          "id": "gems_7000",
+          "kind": "consumable",
+          "price": "49.99",
+          "grant": {
+            "gems": 7000
+          }
+        }
+      ],
+      "club": {
+        "dailyGems": 15,
+        "workshops": 1,
+        "cosmetics": [
+          "flame_trim_gold"
+        ]
+      },
+      "pass": {
+        "season": "s1",
+        "startsUtc": "2026-10-01T00:00:00Z",
+        "endsUtc": "2026-11-15T00:00:00Z",
+        "tiers": 40,
+        "xpPerTier": 1000,
+        "xp": {
+          "raid": 40,
+          "threeStarBonus": 40,
+          "defence": 15,
+          "dailyFirstWin": 150
+        },
+        "rewards": [
+          {
+            "tier": 1,
+            "free": {},
+            "premium": {
+              "cosmetics": [
+                "skin_twist"
+              ]
+            }
+          },
+          {
+            "tier": 2,
+            "free": {},
+            "premium": {
+              "gold": 116,
+              "wax": 19
+            }
+          },
+          {
+            "tier": 3,
+            "free": {
+              "gold": 180,
+              "wax": 26
+            },
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 4,
+            "free": {},
+            "premium": {
+              "gold": 132,
+              "wax": 23
+            }
+          },
+          {
+            "tier": 5,
+            "free": {},
+            "premium": {
+              "cosmetics": [
+                "emote_bow"
+              ],
+              "gems": 20
+            }
+          },
+          {
+            "tier": 6,
+            "free": {
+              "gold": 210,
+              "wax": 32
+            },
+            "premium": {
+              "gold": 148,
+              "wax": 27
+            }
+          },
+          {
+            "tier": 7,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 8,
+            "free": {},
+            "premium": {
+              "gold": 164,
+              "wax": 31
+            }
+          },
+          {
+            "tier": 9,
+            "free": {
+              "gold": 240,
+              "wax": 38
+            },
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 10,
+            "free": {},
+            "premium": {
+              "cosmetics": [
+                "theme_frozen_crypt"
+              ],
+              "gems": 20
+            }
+          },
+          {
+            "tier": 11,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 12,
+            "free": {
+              "gold": 270,
+              "wax": 44,
+              "gems": 40
+            },
+            "premium": {
+              "gold": 196,
+              "wax": 39
+            }
+          },
+          {
+            "tier": 13,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 14,
+            "free": {},
+            "premium": {
+              "gold": 212,
+              "wax": 43
+            }
+          },
+          {
+            "tier": 15,
+            "free": {
+              "gold": 300,
+              "wax": 50
+            },
+            "premium": {
+              "cosmetics": [
+                "trapskin_dragon_bellows"
+              ],
+              "gems": 20
+            }
+          },
+          {
+            "tier": 16,
+            "free": {},
+            "premium": {
+              "gold": 228,
+              "wax": 47
+            }
+          },
+          {
+            "tier": 17,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 18,
+            "free": {
+              "gold": 330,
+              "wax": 56
+            },
+            "premium": {
+              "gold": 244,
+              "wax": 51
+            }
+          },
+          {
+            "tier": 19,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 20,
+            "free": {},
+            "premium": {
+              "cosmetics": [
+                "skin_twist_gilded"
+              ]
+            }
+          },
+          {
+            "tier": 21,
+            "free": {
+              "gold": 360,
+              "wax": 62
+            },
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 22,
+            "free": {},
+            "premium": {
+              "gold": 276,
+              "wax": 59
+            }
+          },
+          {
+            "tier": 23,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 24,
+            "free": {
+              "gold": 390,
+              "wax": 68,
+              "gems": 40
+            },
+            "premium": {
+              "gold": 292,
+              "wax": 63
+            }
+          },
+          {
+            "tier": 25,
+            "free": {},
+            "premium": {
+              "cosmetics": [
+                "taunt_wax_laugh"
+              ],
+              "gems": 20
+            }
+          },
+          {
+            "tier": 26,
+            "free": {},
+            "premium": {
+              "gold": 308,
+              "wax": 67
+            }
+          },
+          {
+            "tier": 27,
+            "free": {
+              "gold": 420,
+              "wax": 74
+            },
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 28,
+            "free": {},
+            "premium": {
+              "gold": 324,
+              "wax": 71
+            }
+          },
+          {
+            "tier": 29,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 30,
+            "free": {
+              "gold": 450,
+              "wax": 80
+            },
+            "premium": {
+              "cosmetics": [
+                "trapskin_skull_bell"
+              ],
+              "gems": 20
+            }
+          },
+          {
+            "tier": 31,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 32,
+            "free": {},
+            "premium": {
+              "gold": 356,
+              "wax": 79
+            }
+          },
+          {
+            "tier": 33,
+            "free": {
+              "gold": 480,
+              "wax": 86
+            },
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 34,
+            "free": {},
+            "premium": {
+              "gold": 372,
+              "wax": 83
+            }
+          },
+          {
+            "tier": 35,
+            "free": {},
+            "premium": {
+              "cosmetics": [
+                "snuff_effect_spiral"
+              ],
+              "gems": 20
+            }
+          },
+          {
+            "tier": 36,
+            "free": {
+              "gold": 510,
+              "wax": 92,
+              "gems": 40
+            },
+            "premium": {
+              "gold": 388,
+              "wax": 87
+            }
+          },
+          {
+            "tier": 37,
+            "free": {},
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 38,
+            "free": {},
+            "premium": {
+              "gold": 404,
+              "wax": 91
+            }
+          },
+          {
+            "tier": 39,
+            "free": {
+              "gold": 540,
+              "wax": 98
+            },
+            "premium": {
+              "gems": 30
+            }
+          },
+          {
+            "tier": 40,
+            "free": {
+              "cosmetics": [
+                "trapskin_rusty_pipe"
+              ],
+              "gems": 30
+            },
+            "premium": {
+              "cosmetics": [
+                "skin_twist_flame"
+              ]
+            }
+          }
+        ]
+      },
+      "achievements": [
+        {
+          "id": "vault_snuffer",
+          "stat": "snuffs",
+          "title": "Snuff raiders with your vault",
+          "tiers": [
+            10,
+            50,
+            100
+          ],
+          "grants": [
+            {
+              "gems": 10
+            },
+            {
+              "gems": 30
+            },
+            {
+              "gems": 60,
+              "cosmetics": [
+                "trophy_snuffer"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "flawless",
+          "stat": "perfectEscapes",
+          "title": "Escape with all 3 flickers",
+          "tiers": [
+            5,
+            20,
+            50
+          ],
+          "grants": [
+            {
+              "wax": 50
+            },
+            {
+              "gems": 25
+            },
+            {
+              "gems": 50,
+              "cosmetics": [
+                "title_flawless"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "raider",
+          "stat": "raids",
+          "title": "Raid vaults",
+          "tiers": [
+            50,
+            200,
+            500
+          ],
+          "grants": [
+            {
+              "gold": 500
+            },
+            {
+              "gems": 40
+            },
+            {
+              "cosmetics": [
+                "skin_ember"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "builder",
+          "stat": "vaultLevel",
+          "title": "Raise your Vault Level",
+          "tiers": [
+            2,
+            3,
+            4
+          ],
+          "grants": [
+            {
+              "gold": 300
+            },
+            {
+              "wax": 100
+            },
+            {
+              "workshops": 1
+            }
+          ]
+        },
+        {
+          "id": "word_of_mouth",
+          "stat": "linkOpens",
+          "title": "Have your vault link opened by friends",
+          "tiers": [
+            3,
+            10,
+            25
+          ],
+          "grants": [
+            {
+              "gems": 15
+            },
+            {
+              "gems": 40,
+              "cosmetics": [
+                "clip_frame_gold"
+              ]
+            },
+            {
+              "gems": 80
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

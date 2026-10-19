@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Wick.Economy;
 using Wick.Sim;
 
 namespace Wick.CloudCode
@@ -29,10 +30,12 @@ namespace Wick.CloudCode
         private readonly IPushSender _push;
         private readonly bool _production;
         private readonly Directory _directory;
+        private readonly IEconomySource _economy;
 
         public RaidService(IGameStore store, IClock clock, IRandomSource random, IIntegrityVerifier integrity = null,
-            IPushSender push = null, bool production = false)
+            IPushSender push = null, bool production = false, IEconomySource economy = null)
         {
+            _economy = economy ?? new FixedEconomy();
             _store = store;
             _clock = clock;
             _random = random;
@@ -113,6 +116,20 @@ namespace Wick.CloudCode
             {
                 vaultId = await VaultCodes.ResolveAsync(_store, code); // a share link's short code
             }
+
+            RaidStartResult started = await StartAsync(playerId, vaultId, allowOwnVault, kind, platform, integrityToken);
+            if (started.Ok && code != null && VaultIds.OwnerOf(vaultId) != playerId)
+            {
+                // Counts toward the owner's "vault link opened by friends" achievement.
+                await new EconomyService(_store, _clock, _economy).RecordLinkOpenAsync(VaultIds.OwnerOf(vaultId), playerId);
+            }
+
+            return started;
+        }
+
+        private async Task<RaidStartResult> StartAsync(string playerId, string vaultId, bool allowOwnVault, string kind, string platform,
+            string integrityToken)
+        {
 
             string owner = VaultIds.OwnerOf(vaultId);
             if (owner == null)
@@ -248,6 +265,7 @@ namespace Wick.CloudCode
                 return SubmitResult.Rejected("Bad request id");
             }
 
+            EconomyConfig cfg = await _economy.GetAsync();
             RaidToken spent = null;
             RaidAnalysis analysis = null;
             int score = 0;
@@ -255,7 +273,7 @@ namespace Wick.CloudCode
             bool raiderListingChanged = false;
 
             SubmitResult verdict = await Locked.UpdateAsync(_store, playerId,
-                new[] { Keys.RaidTokens, Keys.Wallet, Keys.Stats, Keys.Profile, Keys.Idempotency }, s =>
+                new[] { Keys.RaidTokens, Keys.Wallet, Keys.Stats, Keys.Profile, Keys.Idempotency, EconomyKeys.Pass, EconomyKeys.Progress }, s =>
                 {
                     spent = null;
                     analysis = null;
@@ -297,7 +315,10 @@ namespace Wick.CloudCode
                     if (result.Verified)
                     {
                         bool self = token.OwnerId == playerId;
-                        result.Paid = Math.Min(analysis.Result.Loot, Rules.LootCap(token.DefenderLevel));
+                        bool escaped = analysis.Result.Outcome == Outcome.Escaped;
+                        result.Paid = escaped
+                            ? Math.Min(analysis.Result.Loot, Rules.LootCap(cfg.Loot, token.DefenderLevel))
+                            : Rules.Consolation(cfg.Loot, token.DefenderLevel);
                         if (!self)
                         {
                             CrownChange crowns = CrownRules.Apply(profile.Crowns, token.DefenderCrowns, analysis.Result.Stars, token.DefenderBot);
@@ -324,7 +345,28 @@ namespace Wick.CloudCode
                         }
 
                         wallet.Gold += result.Paid;
+                        result.WaxEarned = (long)result.Stars * cfg.Loot.WaxPerStar;
+                        wallet.Wax += result.WaxEarned;
                         plan.Write(Keys.Wallet, Json.Write(wallet));
+
+                        // Heist Pass XP: every raid, more for 3 stars, and the day's first win.
+                        PassState pass = Json.Read<PassState>(s.Json(EconomyKeys.Pass));
+                        long xp = cfg.Pass.Xp.Raid + (result.Stars == 3 ? cfg.Pass.Xp.ThreeStarBonus : 0);
+                        if (escaped && result.Stars >= 1 && pass.FirstWinDay != Days.Of(now))
+                        {
+                            pass.FirstWinDay = Days.Of(now);
+                            xp += cfg.Pass.Xp.DailyFirstWin;
+                        }
+
+                        long before = pass.Xp;
+                        PassSeason.AddXp(pass, cfg, xp, now);
+                        result.PassXp = pass.Xp - before;
+                        plan.Write(EconomyKeys.Pass, Json.Write(pass));
+
+                        Progress progress = Json.Read<Progress>(s.Json(EconomyKeys.Progress));
+                        progress.Raids++;
+                        progress.PerfectEscapes += result.Stars == 3 ? 1 : 0;
+                        plan.Write(EconomyKeys.Progress, Json.Write(progress));
 
                         RaidStats stats = Json.Read<RaidStats>(s.Json(Keys.Stats));
                         stats.Raids++;
@@ -370,7 +412,7 @@ namespace Wick.CloudCode
                 if (spent.Defence != null)
                 {
                     // Applied once per raid id, so a retried request can safely run this again.
-                    await new DefenceService(_store, _clock, _push).ApplyAsync(spent.Defence);
+                    await new DefenceService(_store, _clock, _push, _economy).ApplyAsync(spent.Defence);
                 }
 
                 if (raiderListingChanged || repeat)

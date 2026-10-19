@@ -55,6 +55,8 @@ namespace Wick.Services
         public long Gold;
         public int CrownsDelta;
         public int Crowns;
+        public long WaxEarned;
+        public long PassXp;
     }
 
     [Preserve]

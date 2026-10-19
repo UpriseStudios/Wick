@@ -8,6 +8,8 @@ using Wick.Sim;
 
 namespace Wick.CloudCode.Tests
 {
+    using static TestEconomy;
+
     /// <summary>Push batching, Play Integrity verdicts and Google service-account auth, with HTTP faked.</summary>
     public class GoogleTests
     {
@@ -59,7 +61,7 @@ namespace Wick.CloudCode.Tests
             await w.RaidVault("raider", "v_def", InputLog.Empty);
             Assert.AreEqual(0, w.Push.Sent.Count, "a timed-out raid is neither a snuff nor a robbery");
 
-            w.Clock.Advance(Rules.ShieldMs);
+            w.Clock.Advance(Rules.ShieldMs(Loot));
             await w.RaidVault("raider2", "v_def", TestVaults.Escape);
             Assert.AreEqual(1, w.Push.Sent.Count);
             Assert.AreEqual("device-def", w.Push.Sent[0].Token);

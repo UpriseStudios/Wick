@@ -29,30 +29,37 @@ namespace Wick.CloudCode
         /// <summary>Random candidates fetched per query.</summary>
         public const int SampleSize = 25;
 
-        // ---- Loot and defence ----------------------------------------------------------
+        // ---- Loot and defence (numbers from the economy config's "loot" section) --------
 
         /// <summary>Most gold one raid can pay out, by the defender's Vault Level.</summary>
-        public static long LootCap(int defenderLevel)
+        public static long LootCap(Wick.Economy.LootConfig loot, int defenderLevel)
         {
-            return 200L * Math.Max(1, defenderLevel);
+            return (long)loot.CapPerLevel * Math.Max(1, defenderLevel);
         }
 
         /// <summary>Gold a defender earns each time a raid on their vault fails.</summary>
-        public static long DefenceBonus(int defenderLevel)
+        public static long DefenceBonus(Wick.Economy.LootConfig loot, int defenderLevel)
         {
-            return 10L * Math.Max(1, defenderLevel);
+            return (long)loot.DefenceBonusPerLevel * Math.Max(1, defenderLevel);
+        }
+
+        /// <summary>Gold for a verified raid that didn't escape, so a bad run never feels wasted.</summary>
+        public static long Consolation(Wick.Economy.LootConfig loot, int defenderLevel)
+        {
+            return (long)loot.ConsolationPerLevel * Math.Max(1, defenderLevel);
         }
 
         /// <summary>A robbed defender loses the raider's payout, but never more than this share of their gold.</summary>
-        public const int MaxLossPercent = 20;
-
-        public static long DefenderLoss(long payout, long defenderGold)
+        public static long DefenderLoss(Wick.Economy.LootConfig loot, long payout, long defenderGold)
         {
-            return Math.Max(0, Math.Min(payout, defenderGold * MaxLossPercent / 100));
+            return Math.Max(0, Math.Min(payout, defenderGold * loot.MaxLossPercent / 100));
         }
 
         /// <summary>After a successful raid the vault can't be raided for this long.</summary>
-        public const long ShieldMs = 2 * HourMs;
+        public static long ShieldMs(Wick.Economy.LootConfig loot)
+        {
+            return loot.ShieldMinutes * MinuteMs;
+        }
 
         // ---- Push ----------------------------------------------------------------------
 
