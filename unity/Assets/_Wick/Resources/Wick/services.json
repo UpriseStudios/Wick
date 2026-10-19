@@ -1,6 +1,6 @@
 {
-  "levelPlayAppKeyAndroid": "",
-  "rewardedAdUnitAndroid": "",
-  "umpEnabled": false,
+  "levelPlayAppKeyAndroid": "28d76f115",
+  "rewardedAdUnitAndroid": "rbl9a5jngkhl47aj",
+  "umpEnabled": true,
   "umpTestDeviceHash": ""
 }
