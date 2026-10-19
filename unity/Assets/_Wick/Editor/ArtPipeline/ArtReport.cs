@@ -78,6 +78,19 @@ namespace Wick.Editor.ArtPipeline
                 }
             }
 
+            // Asset Production checklist: generated sources and tool licences are noted in each asset's folder.
+            foreach (string category in AssetDatabase.GetSubFolders(ArtBudgets.IncomingRoot))
+            {
+                foreach (string asset in AssetDatabase.GetSubFolders(category))
+                {
+                    bool notes = Directory.GetFiles(asset, "*.md").Length + Directory.GetFiles(asset, "*.txt").Length > 0;
+                    if (!notes)
+                    {
+                        violations.Add(new Violation { Path = asset, Rule = "Sources", Detail = "add a SOURCES.md noting how it was made and each tool's licence" });
+                    }
+                }
+            }
+
             Write(violations, fileCount);
             return violations;
         }
