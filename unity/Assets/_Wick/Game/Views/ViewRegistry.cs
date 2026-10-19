@@ -3,7 +3,10 @@ using Wick.Sim;
 
 namespace Wick.Game
 {
-    /// <summary>Which prefab shows each sim entity and tile type. Swap prefabs here for real art.</summary>
+    /// <summary>
+    /// Which prefab shows each sim entity, and the vault themes that build the tiles (ThemeKit).
+    /// Swap prefabs here for real art.
+    /// </summary>
     [CreateAssetMenu(menuName = "Wick/View Registry", fileName = "ViewRegistry")]
     public sealed class ViewRegistry : ScriptableObject
     {
@@ -12,11 +15,7 @@ namespace Wick.Game
         public GameObject Decoy;
 
         [Header("Tiles")]
-        public GameObject Floor;
-        public GameObject Wall;
-        public GameObject Door;
-        public GameObject Pit;
-        public GameObject Ice;
+        public ThemeCatalog Themes;
 
         [Header("Objects")]
         public GameObject DripPipe;
@@ -46,16 +45,6 @@ namespace Wick.Game
             }
         }
 
-        public GameObject ForTile(TileType type)
-        {
-            switch (type)
-            {
-                case TileType.Wall: return Wall;
-                case TileType.Door: return Door != null ? Door : Floor;
-                case TileType.Pit: return Pit != null ? Pit : Floor;
-                case TileType.Ice: return Ice != null ? Ice : Floor;
-                default: return Floor;
-            }
-        }
+        public ThemeDefinition Theme => Themes != null ? Themes.Current : null;
     }
 }

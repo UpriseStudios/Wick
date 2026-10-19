@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8199e346372b4da498b0ba42d27bc268, type: 3}
+  m_Name: theme_treasury
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.ThemeDefinition
+  Id: theme_treasury
+  DisplayName: Classic Treasury
+  Floor: {fileID: 7994799835713424281, guid: 3da4b951126c4ab45ae462a62a6cac7a, type: 3}
+  FloorVariants:
+  - {fileID: 8768528538091777799, guid: 50b41463aae45c04896f8a211f67ce0b, type: 3}
+  - {fileID: 7316436951376392003, guid: c0c687d9fd49bd648919148dda345651, type: 3}
+  WallStraight: {fileID: 1322841672923092453, guid: ca5d2222bbc81894689d606cd069ef66, type: 3}
+  WallCorner: {fileID: 8697473646805896728, guid: fb64b404fe62a474fbda6b83205d5299, type: 3}
+  WallFill: {fileID: 5875553624795495644, guid: e302dbaa527cb734d8de46ed23a122d6, type: 3}
+  Door: {fileID: 2790039952329762700, guid: afd6a6033786e604ca00d54d708ca6d8, type: 3}
+  Pit: {fileID: 9118177770379579636, guid: 61535b06b8b34b34494cb02bd2c0cff3, type: 3}
+  Ice: {fileID: 662604246714435549, guid: df56634cc2a47a44d9c000f00f1814e9, type: 3}
+  EntranceArch: {fileID: 6556796128905281262, guid: a404c8082e6a97b46b19cb5c3eea77f4, type: 3}
+  AmbientSky: {r: 0.12, g: 0.11, b: 0.2, a: 1}
+  AmbientEquator: {r: 0.07, g: 0.06, b: 0.11, a: 1}
+  AmbientGround: {r: 0.03, g: 0.03, b: 0.05, a: 1}
+  Icon: {fileID: 0}
+  StandIn: 1

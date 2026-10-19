@@ -86,16 +86,15 @@ namespace Wick.Game
 
             var tiles = new GameObject("Tiles").transform;
             tiles.SetParent(_root, false);
+            ThemeDefinition theme = _registry.Theme;
+            theme.ApplyAmbient();
+            Func<TilePos, TileType> tileAt = vault.TileAt;
             for (int y = 0; y < vault.Height; y++)
             {
                 for (int x = 0; x < vault.Width; x++)
                 {
                     var p = new TilePos(x, y);
-                    GameObject prefab = _registry.ForTile(vault.TileAt(p));
-                    if (prefab != null)
-                    {
-                        Instantiate(prefab, SimPose.TileCenter(p), Quaternion.identity, tiles);
-                    }
+                    theme.Spawn(ThemeKit.Choose(vault.Width, vault.Height, tileAt, vault.Entrance, p), SimPose.TileCenter(p), tiles);
                 }
             }
 

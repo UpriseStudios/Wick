@@ -17,6 +17,7 @@ namespace Wick.Game
     {
         private RaidUI _ui;
         private SkinCatalog _skins;
+        private ThemeCatalog _themes;
         private readonly EconomyClient _economy = new EconomyClient();
         private readonly RewardedAds _ads = new RewardedAds();
         private string _screen;
@@ -25,10 +26,11 @@ namespace Wick.Game
         private bool _busy;
         private bool _settling;
 
-        public void Bind(RaidUI ui, SkinCatalog skins)
+        public void Bind(RaidUI ui, SkinCatalog skins, ThemeCatalog themes)
         {
             _ui = ui;
             _skins = skins;
+            _themes = themes;
         }
 
         public bool Showing => _screen != null;
@@ -148,7 +150,7 @@ namespace Wick.Game
                     _ui.ShowSheet("Shop", wallet, ShopRows(cfg));
                     break;
                 case "skins":
-                    _ui.ShowSheet("Skins", "Every skin shares Wick's size and moves: looks only.", SkinRows());
+                    _ui.ShowSheet("Skins and themes", "Looks only: every skin has Wick's size and moves, every theme the same vault.", SkinRows());
                     break;
             }
         }
@@ -472,6 +474,26 @@ namespace Wick.Game
                     .Button(s == equipped ? "Equipped" : "Equip", () => Equip(s.Id), owned && s != equipped));
             }
 
+            if (_themes != null)
+            {
+                ThemeDefinition current = _themes.Current;
+                foreach (ThemeDefinition t in _themes.Themes)
+                {
+                    // Themes are on sale later; development builds can try them all now.
+                    bool owned = t.Id == ThemeCatalog.DefaultId || Debug.isDebugBuild || _state.Cosmetics?.Contains(t.Id) == true;
+                    rows.Add(new RaidUI.SheetRow
+                    {
+                        Text = "Vault theme: " + t.DisplayName + (t.StandIn ? "  (placeholder kit)" : "") + "\n" + (t == current ? "In use" : owned ? "Owned" : "Coming soon"),
+                        Style = t == current ? "held" : null,
+                    }.Button(t == current ? "In use" : "Use", () =>
+                    {
+                        ThemeCatalog.Choose(t.Id);
+                        _ui.SetSheetMessage("Vaults now show as " + t.DisplayName + ".", true);
+                        Draw();
+                    }, owned && t != current));
+                }
+            }
+
             return rows;
         }
 
@@ -537,7 +559,7 @@ namespace Wick.Game
                 case "achievements": return "Achievements";
                 case "shop": return "Shop";
                 case "privacy": return "Privacy";
-                case "skins": return "Skins";
+                case "skins": return "Skins and themes";
                 default: return "Upgrades";
             }
         }

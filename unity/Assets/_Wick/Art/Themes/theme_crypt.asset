@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8199e346372b4da498b0ba42d27bc268, type: 3}
+  m_Name: theme_crypt
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.ThemeDefinition
+  Id: theme_crypt
+  DisplayName: Crypt
+  Floor: {fileID: 8134531276283564577, guid: a28313b8714d48e49b47f103e0f5ad4d, type: 3}
+  FloorVariants:
+  - {fileID: 7934753426631846713, guid: ce9ff0ecba8572b428b6e4d2ccb2f201, type: 3}
+  - {fileID: 8901707263696438907, guid: e294b7a4baa51504cad2fac65dda667b, type: 3}
+  WallStraight: {fileID: 7234335643271311172, guid: f0d1e182c5ddab74f9af58d9b4226d52, type: 3}
+  WallCorner: {fileID: 8323141487856156608, guid: 9e152cea144722049b852cf89e81e7d6, type: 3}
+  WallFill: {fileID: 3194530898347577603, guid: 58d81e11d5666354e87a7519fa241c58, type: 3}
+  Door: {fileID: 6226974175240347103, guid: 85e99a48a90028d4cb5323643693d4e9, type: 3}
+  Pit: {fileID: 3451636729953982610, guid: a3c24a20f5d191f468204063d6dd1ebc, type: 3}
+  Ice: {fileID: 6323806137873285743, guid: 5e07409464d438f429d35654fe4934cc, type: 3}
+  EntranceArch: {fileID: 5022137055091890043, guid: 2ff6542c867d6fd48922bd13afdf52f9, type: 3}
+  AmbientSky: {r: 0.13, g: 0.1, b: 0.18, a: 1}
+  AmbientEquator: {r: 0.07, g: 0.05, b: 0.1, a: 1}
+  AmbientGround: {r: 0.03, g: 0.02, b: 0.05, a: 1}
+  Icon: {fileID: 0}
+  StandIn: 1

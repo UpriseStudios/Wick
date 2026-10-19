@@ -33,7 +33,7 @@ namespace Wick.Game
         private readonly List<GameObject> _objects = new List<GameObject>();
         private readonly List<GameObject> _markers = new List<GameObject>();
         private GameObject[] _tiles;
-        private TileType[] _shownTiles;
+        private PieceChoice[] _shownTiles;
         private Transform _tileRoot;
         private Transform _objectRoot;
         private Transform _markerRoot;
@@ -173,25 +173,28 @@ namespace Wick.Game
                 }
 
                 _tiles = new GameObject[count];
-                _shownTiles = new TileType[count];
+                _shownTiles = new PieceChoice[count];
             }
 
+            // A tile's piece depends on its neighbours (walls turn corners), so compare pieces, not types.
+            ThemeDefinition theme = _assets.Registry.Theme;
+            System.Func<TilePos, TileType> tileAt = draft.TileAt;
             for (int y = 0; y < draft.Height; y++)
             {
                 for (int x = 0; x < draft.Width; x++)
                 {
                     int i = y * draft.Width + x;
                     var p = new TilePos(x, y);
-                    TileType type = draft.TileAt(p);
-                    if (_tiles[i] == null || _shownTiles[i] != type)
+                    PieceChoice piece = ThemeKit.Choose(draft.Width, draft.Height, tileAt, draft.Entrance, p);
+                    if (_tiles[i] == null || !_shownTiles[i].Equals(piece))
                     {
                         if (_tiles[i] != null)
                         {
                             Kill(_tiles[i]);
                         }
 
-                        _tiles[i] = Instantiate(_assets.Registry.ForTile(type), SimPose.TileCenter(p), Quaternion.identity, _tileRoot);
-                        _shownTiles[i] = type;
+                        _tiles[i] = theme.Spawn(piece, SimPose.TileCenter(p), _tileRoot);
+                        _shownTiles[i] = piece;
                     }
 
                     Tint(_tiles[i], badTiles.Contains(p) ? Color.red : (Color?)null, false);

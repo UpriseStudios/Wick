@@ -71,7 +71,6 @@ namespace Wick.Editor
 
         private sealed class Materials
         {
-            public Material Floor, Wall, Door, Pit, Ice;
             public Material Flame, Decoy;
             public Material Metal, Water, Gust, Spikes, Warning, Bell, Plate;
             public Material Owl, OwlEye, Moths, Gold, Brazier, BrazierFlame, Crate;
@@ -82,11 +81,6 @@ namespace Wick.Editor
         {
             return new Materials
             {
-                Floor = Lit("Floor", new Color(0.30f, 0.28f, 0.32f)),
-                Wall = Lit("Wall", new Color(0.46f, 0.43f, 0.50f)),
-                Door = Lit("Door", new Color(0.45f, 0.30f, 0.18f)),
-                Pit = Lit("Pit", new Color(0.03f, 0.03f, 0.04f)),
-                Ice = Lit("Ice", new Color(0.55f, 0.75f, 0.92f)),
                 Flame = FlameMaterial("Flame", ignoreMask: true),
                 Decoy = Lit("Decoy", new Color(1f, 0.85f, 0.5f), new Color(2f, 1.4f, 0.5f), ignoreMask: true),
                 Metal = Lit("Metal", new Color(0.40f, 0.40f, 0.46f)),
@@ -145,16 +139,7 @@ namespace Wick.Editor
         {
             ViewRegistry registry = LoadOrCreate<ViewRegistry>(DataDir + "/ViewRegistry.asset");
 
-            registry.Floor = Save("Floor", root => Box(root, "Slab", new Vector3(0f, -0.05f, 0f), new Vector3(1f, 0.1f, 1f), m.Floor));
-            registry.Wall = Save("Wall", root => Box(root, "Block", new Vector3(0f, 0.5f, 0f), Vector3.one, m.Wall));
-            registry.Door = Save("Door", root =>
-            {
-                Box(root, "Slab", new Vector3(0f, -0.05f, 0f), new Vector3(1f, 0.1f, 1f), m.Door);
-                Box(root, "PostL", new Vector3(-0.45f, 0.6f, 0f), new Vector3(0.1f, 1.2f, 0.3f), m.Door);
-                Box(root, "PostR", new Vector3(0.45f, 0.6f, 0f), new Vector3(0.1f, 1.2f, 0.3f), m.Door);
-            });
-            registry.Pit = Save("Pit", root => Box(root, "Hole", new Vector3(0f, -0.3f, 0f), new Vector3(1f, 0.05f, 1f), m.Pit));
-            registry.Ice = Save("Ice", root => Box(root, "Slab", new Vector3(0f, -0.05f, 0f), new Vector3(1f, 0.1f, 1f), m.Ice));
+            registry.Themes = ThemeBuilder.Build(); // tiles come from the themes' kits
 
             // Wick is a holder: WickSkin puts the equipped skin's model in "Skin" when a raid loads.
             registry.Wick = Save("Wick", root =>

@@ -14,11 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Wick.Game::Wick.Game.ViewRegistry
   Wick: {fileID: 2985136790640149024, guid: 1148f6ac835928541870cdaee2131ce8, type: 3}
   Decoy: {fileID: 5038748180398741528, guid: 136253bcccb647f4497688737593e267, type: 3}
-  Floor: {fileID: 6357767501963980195, guid: 38bf68bdb62fdf94e985091411f25725, type: 3}
-  Wall: {fileID: 3676509077104071041, guid: 1fbbc7bfcd754ca4592316689d66e678, type: 3}
-  Door: {fileID: 7128302127833704086, guid: 7c9ea1efdcf33924ab240952bd8dd7fa, type: 3}
-  Pit: {fileID: 3894988039235039764, guid: fa8e7d233656fd744988e70cbb3a94e5, type: 3}
-  Ice: {fileID: 5636130175047907219, guid: 246144e3866ff224c882a17c07c4d3a8, type: 3}
+  Themes: {fileID: 11400000, guid: 51349e55e6bb18d40abd9bda46052a76, type: 2}
   DripPipe: {fileID: 9084058720673360445, guid: 37c2c509594446e4e84c3998a5e0083c, type: 3}
   Bellows: {fileID: 320953170943984632, guid: e4ebc03bbfeee6f4081a1b2dac56cfd3, type: 3}
   SpikeFloor: {fileID: 7736058163157652837, guid: a178f66dd11fe3645bafdf4088509c71, type: 3}
