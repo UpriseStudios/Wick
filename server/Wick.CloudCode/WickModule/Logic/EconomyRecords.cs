@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Wick.Economy;
 
 namespace Wick.CloudCode
 {
@@ -41,12 +42,6 @@ namespace Wick.CloudCode
         public int Lantern { get; set; }
     }
 
-    public static class UpgradeKinds
-    {
-        public const string VaultLevel = "vaultLevel";
-        public const string Lantern = "lantern";
-    }
-
     public sealed class RunningUpgrade
     {
         public string Kind { get; set; }
@@ -82,6 +77,7 @@ namespace Wick.CloudCode
         /// <summary>UTC day (yyyymmdd) of the last daily-first-win bonus.</summary>
         public int FirstWinDay { get; set; }
 
+        [Newtonsoft.Json.JsonIgnore]
         public bool Premium => PremiumSeasons.Contains(Season);
     }
 

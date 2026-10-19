@@ -36,6 +36,15 @@
             <ui:ScrollView name="picker-list" class="list home-list" />
         </ui:VisualElement>
 
+        <!-- A list screen: upgrades, Heist Pass, achievements, shop. -->
+        <ui:VisualElement name="sheet" class="panel blocks-input">
+            <ui:Label name="sheet-title" class="section-title" />
+            <ui:Label name="sheet-subtitle" class="home-stats" />
+            <ui:Label name="sheet-message" class="server-verdict hidden" />
+            <ui:ScrollView name="sheet-list" class="defence-list" />
+            <ui:Button name="sheet-back" text="Back" class="wide-button secondary" />
+        </ui:VisualElement>
+
         <!-- Raids on your vault. -->
         <ui:VisualElement name="defence" class="panel blocks-input">
             <ui:Label text="Raids on your vault" class="section-title" />
@@ -65,6 +74,7 @@
                 <ui:Button name="share-link" text="Share link" class="share-button" />
             </ui:VisualElement>
             <ui:Label name="clip-status" class="mono hidden" />
+            <ui:Button name="double-loot" text="Double your loot (watch an ad)" class="wide-button secondary hidden" />
             <ui:Button name="retry-button" text="Retry" class="wide-button" />
             <ui:Button name="menu-button" text="Vaults" class="wide-button" />
         </ui:VisualElement>

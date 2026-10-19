@@ -22,6 +22,7 @@ namespace Wick.Game
         private VisualElement _hud;
         private VisualElement _picker;
         private VisualElement _defence;
+        private VisualElement _sheet;
         private VisualElement _replayBar;
         private Slider _scrub;
         private bool _scrubbing;
@@ -60,6 +61,9 @@ namespace Wick.Game
         public event Action ShareClipPressed;
         public event Action ShareLinkPressed;
         public event Action ShareMyVaultPressed;
+        public event Action SheetBackPressed;
+        public event Action DoubleLootPressed;
+        public event Action<string> HomeScreenPressed;
 
         public static bool DevBuild => Debug.isDebugBuild;
 
@@ -91,6 +95,7 @@ namespace Wick.Game
             _hud = _root.Q("hud");
             _picker = _root.Q("picker");
             _defence = _root.Q("defence");
+            _sheet = _root.Q("sheet");
             _replayBar = _root.Q("replay-bar");
             _scrub = _root.Q<Slider>("replay-scrub");
             _results = _root.Q("results");
@@ -121,6 +126,8 @@ namespace Wick.Game
             _root.Q<Button>("replay-back").clicked += () => ReplayBackPressed?.Invoke();
             _root.Q<Button>("share-clip").clicked += () => ShareClipPressed?.Invoke();
             _root.Q<Button>("share-link").clicked += () => ShareLinkPressed?.Invoke();
+            _root.Q<Button>("sheet-back").clicked += () => SheetBackPressed?.Invoke();
+            _root.Q<Button>("double-loot").clicked += () => DoubleLootPressed?.Invoke();
             _scrub.RegisterValueChangedCallback(e => ReplayScrubbed?.Invoke(Mathf.RoundToInt(e.newValue)));
             _scrub.RegisterCallback<PointerDownEvent>(_ => _scrubbing = true, TrickleDown.TrickleDown);
             _scrub.RegisterCallback<PointerUpEvent>(_ => _scrubbing = false, TrickleDown.TrickleDown);
@@ -158,6 +165,10 @@ namespace Wick.Game
             list.Clear();
             list.Add(WideButton("Raid", () => RaidPressed?.Invoke()));
             list.Add(WideButton("Raids on your vault", () => DefencePressed?.Invoke(), "secondary"));
+            list.Add(WideButton("Upgrades", () => HomeScreenPressed?.Invoke("upgrades"), "secondary"));
+            list.Add(WideButton("Heist Pass", () => HomeScreenPressed?.Invoke("pass"), "secondary"));
+            list.Add(WideButton("Achievements", () => HomeScreenPressed?.Invoke("achievements"), "secondary"));
+            list.Add(WideButton("Shop", () => HomeScreenPressed?.Invoke("shop"), "secondary"));
             list.Add(WideButton("Vault editor", () => EditorPressed?.Invoke(), "secondary"));
             list.Add(WideButton("Share my vault", () => ShareMyVaultPressed?.Invoke(), "secondary"));
 
@@ -191,6 +202,110 @@ namespace Wick.Game
 
             ShowPickerMessage(null);
             ShowOnly(_picker);
+        }
+
+        /// <summary>A row on a list screen: a line of text and its buttons.</summary>
+        public sealed class SheetRow
+        {
+            public string Text;
+            public string Style;
+            public readonly List<(string Label, Action Act, bool Enabled)> Buttons = new List<(string, Action, bool)>();
+
+            public SheetRow Button(string label, Action act, bool enabled = true)
+            {
+                Buttons.Add((label, act, enabled));
+                return this;
+            }
+        }
+
+        public void ShowSheet(string title, string subtitle, IReadOnlyList<SheetRow> rows)
+        {
+            EnsureReady();
+            ShowOnly(_sheet);
+            _sheet.Q<Label>("sheet-title").text = title;
+            _sheet.Q<Label>("sheet-subtitle").text = subtitle ?? "";
+            var list = _sheet.Q<ScrollView>("sheet-list");
+            float scroll = list.scrollOffset.y;
+            list.Clear();
+            foreach (SheetRow r in rows)
+            {
+                var row = new VisualElement();
+                row.AddToClassList("log-row");
+                var text = new Label(r.Text);
+                text.AddToClassList("log-text");
+                if (r.Style != null)
+                {
+                    text.AddToClassList(r.Style);
+                }
+
+                row.Add(text);
+                if (r.Buttons.Count > 0)
+                {
+                    var buttons = new VisualElement();
+                    buttons.AddToClassList("log-buttons");
+                    foreach ((string label, Action act, bool enabled) in r.Buttons)
+                    {
+                        var b = new Button(act) { text = label };
+                        b.AddToClassList("log-button");
+                        b.SetEnabled(enabled);
+                        buttons.Add(b);
+                    }
+
+                    row.Add(buttons);
+                }
+
+                list.Add(row);
+            }
+
+            list.schedule.Execute(() => list.scrollOffset = new Vector2(0f, scroll));
+        }
+
+        public void SetSheetMessage(string text, bool? ok)
+        {
+            EnsureReady();
+            var label = _sheet.Q<Label>("sheet-message");
+            label.text = text ?? "";
+            label.EnableInClassList("good", ok == true);
+            label.EnableInClassList("bad", ok == false);
+            Show(label, !string.IsNullOrEmpty(text));
+        }
+
+        /// <summary>Shows or hides the results screen's "double your loot" ad offer.</summary>
+        public void SetDoubleLoot(bool offered, string label = null)
+        {
+            EnsureReady();
+            var b = _root.Q<Button>("double-loot");
+            if (label != null)
+            {
+                b.text = label;
+            }
+
+            b.SetEnabled(offered);
+            Show(b, offered || label != null);
+        }
+
+        /// <summary>First launch: the age question that decides personalised ads and analytics.</summary>
+        public void ShowAgePrompt(Action<bool> answered)
+        {
+            EnsureReady();
+            ShowPickerMessage("Are you 18 or older? (Under-18s only see non-personalised ads.)");
+            VisualElement list = _picker.Q("picker-list");
+            var row = new VisualElement { name = "age-prompt" };
+            row.AddToClassList("prompt-row");
+            void Answer(bool adult)
+            {
+                row.RemoveFromHierarchy();
+                ShowPickerMessage(null);
+                answered(adult);
+            }
+
+            var yes = new Button(() => Answer(true)) { text = "I'm 18 or older" };
+            yes.AddToClassList("log-button");
+            var no = new Button(() => Answer(false)) { text = "I'm under 18" };
+            no.AddToClassList("log-button");
+            row.Add(yes);
+            row.Add(no);
+            list.Insert(0, row);
         }
 
         /// <summary>Asks before raiding a vault code found on the clipboard (iOS first launch).</summary>
@@ -432,6 +547,7 @@ namespace Wick.Game
             _results.Q<Label>("result-loot").text = "Loot " + result.Loot;
             SetServerVerdict(null, null);
             SetShare(false, false, null);
+            SetDoubleLoot(false);
             VisualElement dev = _results.Q("result-dev");
             Show(dev, DevBuild);
             _results.Q<Label>("result-live-hash").text = "live   " + liveHash;
@@ -523,6 +639,7 @@ namespace Wick.Game
             Show(_hud, screen == _hud);
             Show(_picker, screen == _picker);
             Show(_defence, screen == _defence);
+            Show(_sheet, screen == _sheet);
             Show(_results, screen == _results);
             Show(_replayBar, false);
         }

@@ -65,6 +65,13 @@ namespace Wick.Economy
         }
     }
 
+    /// <summary>What StartUpgrade and FinishUpgrade can build.</summary>
+    public static class UpgradeKinds
+    {
+        public const string VaultLevel = "vaultLevel";
+        public const string Lantern = "lantern";
+    }
+
     public sealed class LootConfig
     {
         /// <summary>Most gold one raid pays, per defender Vault Level.</summary>
@@ -241,6 +248,7 @@ namespace Wick.Economy
         /// <summary>Wick Club membership.</summary>
         public bool Club { get; set; }
 
+        [JsonIgnore]
         public bool IsEmpty =>
             Gold == 0 && Wax == 0 && Gems == 0 && Workshops == 0 && (Cosmetics == null || Cosmetics.Count == 0) &&
             string.IsNullOrEmpty(PassPremium) && !Club;

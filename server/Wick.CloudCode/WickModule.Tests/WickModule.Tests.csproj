@@ -19,6 +19,7 @@
   <ItemGroup>
     <None Include="../../../unity/Assets/_Wick/Resources/VaultTemplates/1-three-halls.json" Link="Data/three-halls.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../../unity/Assets/_Wick/Services/WickBackend.cs" Link="Data/WickBackend.cs.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../unity/Assets/_Wick/Services/EconomyClient.cs" Link="Data/EconomyClient.cs.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../../unity/Assets/_Wick/Data/SeedVaults/*.json" LinkBase="Data/SeedVaults" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

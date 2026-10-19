@@ -45,6 +45,9 @@ namespace Wick.Game
         [SerializeField] private GameObject[] _hideDuringTest;
 
         private readonly WickBackend _backend = new WickBackend();
+
+        /// <summary>Test runs since the last publish, for the vault_published event.</summary>
+        private int _testRuns;
         private readonly UndoStack<VaultDraft> _undo = new UndoStack<VaultDraft>(d => d.Clone());
         private DraftStore _store;
         private VaultDraft _strokeBefore;
@@ -631,6 +634,7 @@ namespace Wick.Game
         /// <summary>An escape with at least 1 star on the current layout becomes the clear-check.</summary>
         private void OnTestRun(RaidRunReport report)
         {
+            _testRuns++;
             RaidResult r = report.Result;
             if (r.Outcome == Outcome.Escaped && r.Stars >= 1)
             {
@@ -677,6 +681,16 @@ namespace Wick.Game
                 if (reply.Ok)
                 {
                     _store.MarkPublished(draft, reply.VaultId, reply.Version);
+                    VaultDef published = draft.ToVaultDef();
+                    int traps = 0;
+                    for (int i = 0; i < published.ObjectCount; i++)
+                    {
+                        ObjectType t = published.GetObject(i).Type;
+                        traps += ObjectTypes.IsTrap(t) || ObjectTypes.IsGuardian(t) ? 1 : 0;
+                    }
+
+                    Telemetry.VaultPublished(traps, draft.BuildPoints, _testRuns);
+                    _testRuns = 0;
                     _ui.Toast("Your vault is live (version " + reply.Version + ")");
                 }
                 else

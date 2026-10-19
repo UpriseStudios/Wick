@@ -8,7 +8,10 @@
         "Unity.Services.Authentication",
         "Unity.Services.CloudCode",
         "Unity.Services.CloudSave",
-        "Unity.Services.Analytics"
+        "Unity.Services.Analytics",
+        "Unity.LevelPlay",
+        "Unity.Purchasing",
+        "Wick.Economy"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -24,6 +24,9 @@ jobs:
       - name: Test Cloud Code module logic (Cloud Save faked)
         run: dotnet test server/Wick.CloudCode/WickModule.Tests
 
+      - name: Rewarded ads only (no banner or interstitial code)
+        run: python3 tools/check_rewarded_only.py
+
   # Needs repo secrets UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD. See README.
   unity-editmode:
     name: Unity EditMode tests

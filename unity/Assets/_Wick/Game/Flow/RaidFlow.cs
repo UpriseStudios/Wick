@@ -47,6 +47,13 @@ namespace Wick.Game
         private string _clipPath;
         private ClipRenderer _clips;
 
+        private EconomyScreens _screens;
+        private readonly EconomyClient _economy = new EconomyClient();
+        private readonly RewardedAds _ads = new RewardedAds();
+        private string _lastRaidId;
+        private int _lastHitBy;
+        private bool _quitLogged;
+
         public void Bind(RaidRunner runner, RaidUI ui, RaidCamera camera, RaidTuning tuning)
         {
             _runner = runner;
@@ -82,6 +89,10 @@ namespace Wick.Game
             _ui.ShareClipPressed += ShareClip;
             _ui.ShareLinkPressed += ShareLink;
             _ui.ShareMyVaultPressed += ShareMyVault;
+            _ui.HomeScreenPressed += ShowScreen;
+            _ui.SheetBackPressed += ShowPicker;
+            _ui.DoubleLootPressed += DoubleLoot;
+            _runner.SimEventRaised += TrackEvent;
             LinkRouter.Arrived += OnLink;
         }
 
@@ -106,6 +117,10 @@ namespace Wick.Game
             _ui.ShareClipPressed -= ShareClip;
             _ui.ShareLinkPressed -= ShareLink;
             _ui.ShareMyVaultPressed -= ShareMyVault;
+            _ui.HomeScreenPressed -= ShowScreen;
+            _ui.SheetBackPressed -= ShowPicker;
+            _ui.DoubleLootPressed -= DoubleLoot;
+            _runner.SimEventRaised -= TrackEvent;
             LinkRouter.Arrived -= OnLink;
         }
 
@@ -130,7 +145,10 @@ namespace Wick.Game
                 return;
             }
 
+            _screens = gameObject.AddComponent<EconomyScreens>();
+            _screens.Bind(_ui);
             ShowPicker();
+            SettleConsent();
             LinkRouter.Init(this); // already done by Boot; this covers starting in the Raid scene
             IncomingLink link = LinkRouter.Take();
             if (link != null)
@@ -157,8 +175,51 @@ namespace Wick.Game
 
         // ---- Home -------------------------------------------------------------------------
 
+        /// <summary>First launch asks the age question; then consent settles and rewarded ads can load.</summary>
+        private void SettleConsent()
+        {
+            if (Consent.Settled)
+            {
+                RewardedAds.Init();
+                return;
+            }
+
+            if (Consent.Adult == null)
+            {
+                _ui.ShowAgePrompt(adult =>
+                {
+                    Consent.SetAdult(adult);
+                    SettleThenAds();
+                });
+            }
+            else
+            {
+                SettleThenAds();
+            }
+        }
+
+        private async void SettleThenAds()
+        {
+            await Consent.SettleAsync();
+            try
+            {
+                await _backend.SignInAsync();
+                RewardedAds.Init();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Ads wait for sign-in: " + e.Message);
+            }
+        }
+
+        private void ShowScreen(string screen)
+        {
+            _screens.Show(screen);
+        }
+
         private void ShowPicker()
         {
+            _screens?.Close();
             _runner.Unload();
             ClearModes();
             var names = new List<string>();
@@ -172,16 +233,15 @@ namespace Wick.Game
             RefreshHome();
         }
 
-        /// <summary>Gold and Crowns, read from the player's server-written data.</summary>
+        /// <summary>Wallet, Crowns, stars and Vault Level, from the server's economy state.</summary>
         private async void RefreshHome()
         {
             _ui.SetHomeStats("Connecting...");
             try
             {
-                Dictionary<string, string> data = await _cloudSave.LoadProtectedAsync("wallet", "profile");
-                long gold = data.TryGetValue("wallet", out string w) ? JsonReader.Parse(w).Find("gold")?.AsLong() ?? 0 : 0;
-                int crowns = data.TryGetValue("profile", out string p) ? JsonReader.Parse(p).Find("crowns")?.AsInt() ?? 0 : 0;
-                _ui.SetHomeStats(gold + " gold  |  " + crowns + " Crowns");
+                EconomyStateReply s = await _economy.StateAsync();
+                _ui.SetHomeStats(s.Gold + " gold  |  " + s.Wax + " wax  |  " + s.Gems + " gems\n" + s.Crowns + " Crowns  |  " + s.Stars +
+                    " stars  |  Vault Level " + s.VaultLevel);
             }
             catch (Exception e)
             {
@@ -338,7 +398,13 @@ namespace Wick.Game
                 if (reply.Verified)
                 {
                     string crowns = reply.CrownsDelta == 0 ? "" : "  " + (reply.CrownsDelta > 0 ? "+" : "") + reply.CrownsDelta + " Crowns";
-                    _ui.SetServerVerdict("Server check passed: +" + reply.Paid + " gold (" + reply.Gold + " total)" + crowns, true);
+                    string wax = reply.WaxEarned > 0 ? ", +" + reply.WaxEarned + " wax" : "";
+                    _ui.SetServerVerdict("Server check passed: +" + reply.Paid + " gold" + wax + " (" + reply.Gold + " gold total)" + crowns, true);
+                    _lastRaidId = "r_" + raid.Token;
+                    if (reply.Paid > 0 && reply.Outcome == "Escaped")
+                    {
+                        _ui.SetDoubleLoot(RewardedAds.Available);
+                    }
                 }
                 else
                 {
@@ -460,12 +526,59 @@ namespace Wick.Game
             }
         }
 
+        private void TrackEvent(SimEvent e)
+        {
+            if (e.Type == SimEventType.FlickerLost || e.Type == SimEventType.TrapFired)
+            {
+                _lastHitBy = e.EntityId;
+            }
+        }
+
+        private void OnApplicationPause(bool paused)
+        {
+            // Leaving the app mid-raid is where players give up.
+            if (paused && _runner.Mode == RaidMode.Live && !_quitLogged)
+            {
+                _quitLogged = true;
+                Telemetry.RaidQuit(_runner.Sim.State.Tick, _runner.Sim.State.Wick.Flickers);
+            }
+        }
+
+        private async void DoubleLoot()
+        {
+            _ui.SetDoubleLoot(false, "Watching...");
+            AdOutcome o = await _ads.ShowAsync("raid_double_loot", _lastRaidId);
+            _ui.SetDoubleLoot(false, o.Granted ? "Loot doubled: +" + (o.Grant?.Gold ?? 0) + " gold" : o.Reason);
+        }
+
+        private string SnuffCause(VaultDef vault)
+        {
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                if (vault.GetObject(i).Id == _lastHitBy)
+                {
+                    return vault.GetObject(i).Type.ToString();
+                }
+            }
+
+            return "";
+        }
+
         private void OnEnded(RaidRunner runner, RaidResult result)
         {
             if (_clips != null && _clips.Busy)
             {
                 return; // the clip renderer is replaying this raid offscreen
             }
+
+            if (_replaying == null && _serverReplay == null)
+            {
+                Telemetry.RaidEnd(_serverRaid?.VaultId ?? (_vaultIndex >= 0 ? _vaults[_vaultIndex].name : "test"), result.Outcome.ToString(), result.Stars,
+                    result.Ticks, result.Flickers, result.Outcome == Outcome.Snuffed ? SnuffCause(runner.Vault) : "");
+            }
+
+            _quitLogged = false;
+            _lastHitBy = 0;
 
             _lastVault = runner.Vault;
             _lastSeed = runner.Seed;

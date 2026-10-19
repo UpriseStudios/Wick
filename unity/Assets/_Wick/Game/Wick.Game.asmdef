@@ -4,6 +4,7 @@
     "references": [
         "Wick.Sim",
         "Wick.Services",
+        "Wick.Economy",
         "Unity.InputSystem",
         "UnityEngine.UI",
         "NativeShare.Runtime"

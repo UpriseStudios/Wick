@@ -7,6 +7,8 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     // Deferred vault links: the Play Store passes the vault code through the install referrer.
     implementation 'com.android.installreferrer:installreferrer:2.2'
+    // Consent (GDPR/UK): Google's User Messaging Platform form, driven by WickConsent.java.
+    implementation 'com.google.android.ump:user-messaging-platform:3.2.0'
 **DEPS**}
 
 android {
