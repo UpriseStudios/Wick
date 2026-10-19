@@ -9,6 +9,11 @@ dependencies {
     implementation 'com.android.installreferrer:installreferrer:2.2'
     // Consent (GDPR/UK): Google's User Messaging Platform form, driven by WickConsent.java.
     implementation 'com.google.android.ump:user-messaging-platform:3.2.0'
+    // Rewarded ads: the LevelPlay native SDK the Ads Mediation 9.3.2 package's Java bridge calls.
+    // Declared here (as IronSourceSDKDependencies.xml 9.3.0 lists it) instead of installing the
+    // Mobile Dependency Resolver plugin into Assets.
+    implementation 'com.unity3d.ads-mediation:mediation-sdk:9.3.0'
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.1.0'
 **DEPS**}
 
 android {
