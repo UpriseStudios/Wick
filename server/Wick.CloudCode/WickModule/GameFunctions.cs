@@ -64,7 +64,7 @@ namespace Wick.CloudCode
         [CloudCodeFunction("GetEconomyConfig")]
         public async Task<string> GetEconomyConfig(IExecutionContext context)
         {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(await Economy(context).GetAsync());
+            return Json.Write(await Economy(context).GetAsync());
         }
 
         [CloudCodeFunction("GetEconomyState")]
