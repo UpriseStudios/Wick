@@ -46,6 +46,7 @@ namespace Wick.Editor
             // an import can replace freshly created objects and leave stale references behind.
             BuildPanelSettings();
             Materials m = BuildMaterials();
+            VfxLibrary vfx = VfxBuilder.Build();
             (SkinCatalog skins, AnimatorController controller) = SkinBuilder.Build();
             AudioBuilder.Build();
             BuildPrefabs(m, skins, controller);
@@ -372,6 +373,11 @@ namespace Wick.Editor
             DevOverlay overlay = raid.AddComponent<DevOverlay>();
             Set(overlay, "_runner", runner);
             Set(overlay, "_material", overlayMaterial);
+
+            var vfxGo = new GameObject("Vfx");
+            VfxDirector vfxDirector = vfxGo.AddComponent<VfxDirector>();
+            Set(vfxDirector, "_library", AssetDatabase.LoadAssetAtPath<VfxLibrary>(VfxBuilder.LibraryPath));
+            Set(vfxDirector, "_vaultView", vaultView);
 
             var audioGo = new GameObject("Audio");
             AudioDirector audio = audioGo.AddComponent<AudioDirector>();

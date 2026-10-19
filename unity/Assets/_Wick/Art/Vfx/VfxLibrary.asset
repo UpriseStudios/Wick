@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82ab8c5de21ee704c8f8aae187ecb957, type: 3}
+  m_Name: VfxLibrary
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.VfxLibrary
+  Entries:
+  - Id: vfx_coin_burst
+    Role: 2
+    Prefab: {fileID: 1625116761878695686, guid: a00d30fde71d7634c9a5ff9e7108c319, type: 3}
+    StandIn: 1
+  - Id: vfx_flame_flare
+    Role: 0
+    Prefab: {fileID: 3686223891200327877, guid: 0c3985159fd2e8b49adfa943c580256c, type: 3}
+    StandIn: 1
+  - Id: vfx_flame_sputter
+    Role: 0
+    Prefab: {fileID: 4544935672048340196, guid: 1623d062ae147f54496f203b4aebcf5d, type: 3}
+    StandIn: 1
+  - Id: vfx_flame_sparks
+    Role: 0
+    Prefab: {fileID: 2331859873440961136, guid: dd3a4734163d0c344a3078f891c3c12a, type: 3}
+    StandIn: 1
+  - Id: vfx_snuff_puff
+    Role: 2
+    Prefab: {fileID: 7382808421208069456, guid: 54378de6814ea0745b85d07e0edcee23, type: 3}
+    StandIn: 1
+  - Id: vfx_water_splash
+    Role: 1
+    Prefab: {fileID: 8125757083802546643, guid: c635d27b789b6a343bb6b6ddc6568510, type: 3}
+    StandIn: 1
+  - Id: vfx_gust_swirl
+    Role: 1
+    Prefab: {fileID: 7336519012992692944, guid: 4b7f284c523cbad47aeab8f984ddc30c, type: 3}
+    StandIn: 1
+  - Id: vfx_warning_glow
+    Role: 1
+    Prefab: {fileID: 3840294683966119541, guid: fd0ae9f59a764114ebc9b5d021f5a47c, type: 3}
+    StandIn: 1

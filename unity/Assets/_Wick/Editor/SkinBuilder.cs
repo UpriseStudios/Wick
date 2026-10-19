@@ -100,6 +100,9 @@ namespace Wick.Editor
             skin.Id = spec.Id;
             skin.DisplayName = spec.Name;
             skin.FlameMaterial = spec.FlameCore.HasValue ? VariantFlame(spec) : AssetDatabase.LoadAssetAtPath<Material>(Root + "/Art/Materials/Flame.mat");
+            var vfx = AssetDatabase.LoadAssetAtPath<VfxLibrary>(VfxBuilder.LibraryPath);
+            skin.SnuffVfx = vfx?.Find(VfxLibrary.SnuffPuff)?.Prefab;
+            skin.FlameVfx = vfx?.Find(VfxLibrary.FlameSparks)?.Prefab;
 
             // A variant uses its base skin's model with its own paint (when that art exists).
             string modelId = spec.Base ?? spec.AssetId;

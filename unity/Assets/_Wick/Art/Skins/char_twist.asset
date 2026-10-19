@@ -17,7 +17,7 @@ MonoBehaviour:
   Model: {fileID: 649154287856575173, guid: a6e9b5c6dc1a10142971abc320c43d53, type: 3}
   BodyMaterial: {fileID: 0}
   FlameMaterial: {fileID: 2100000, guid: 97e57dd6cf3763347afdfc02218ac14b, type: 2}
-  FlameVfx: {fileID: 0}
-  SnuffVfx: {fileID: 0}
+  FlameVfx: {fileID: 2331859873440961136, guid: dd3a4734163d0c344a3078f891c3c12a, type: 3}
+  SnuffVfx: {fileID: 7382808421208069456, guid: 54378de6814ea0745b85d07e0edcee23, type: 3}
   Icon: {fileID: 0}
   StandIn: 1
