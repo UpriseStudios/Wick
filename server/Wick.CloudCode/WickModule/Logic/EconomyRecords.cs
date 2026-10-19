@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Wick.Economy;
 
@@ -59,6 +60,46 @@ namespace Wick.CloudCode
         public RunningUpgrade Find(string kind)
         {
             return Running.Find(u => u.Kind == kind);
+        }
+
+        /// <summary>
+        /// The record as of server time now: builds whose time is up count as done, so an upgrade
+        /// completes on its own (nobody presses Finish) even while the app is closed. Every reader
+        /// goes through this; writers then store the settled record.
+        /// </summary>
+        public static Upgrades Read(string json, long nowMs)
+        {
+            Upgrades upgrades = Json.Read<Upgrades>(json);
+            upgrades.Settle(nowMs);
+            return upgrades;
+        }
+
+        /// <summary>Applies every build that has ended; returns the kinds it finished.</summary>
+        public List<string> Settle(long nowMs)
+        {
+            var finished = new List<string>();
+            foreach (RunningUpgrade u in Running.FindAll(r => r.EndsMs <= nowMs))
+            {
+                Apply(u);
+                finished.Add(u.Kind);
+            }
+
+            return finished;
+        }
+
+        /// <summary>Raises the level a build was for and frees its workshop.</summary>
+        public void Apply(RunningUpgrade running)
+        {
+            if (running.Kind == UpgradeKinds.VaultLevel)
+            {
+                Levels.VaultLevel = Math.Max(Levels.VaultLevel, running.ToLevel);
+            }
+            else
+            {
+                Levels.Lantern = Math.Max(Levels.Lantern, running.ToLevel);
+            }
+
+            Running.Remove(running);
         }
     }
 

@@ -28,7 +28,7 @@ namespace Wick.CloudCode
 
             // A vault can be built up to the level the player has raised (upgrades, star-gated).
             var levels = await _store.GetProtectedAsync(playerId, new[] { EconomyKeys.Upgrades });
-            int vaultLevel = Json.Read<Upgrades>(levels.TryGetValue(EconomyKeys.Upgrades, out StoredItem u) ? u.Json : null).Levels.VaultLevel;
+            int vaultLevel = Upgrades.Read(levels.TryGetValue(EconomyKeys.Upgrades, out StoredItem u) ? u.Json : null, _clock.NowMs).Levels.VaultLevel;
             VaultCheck.Passed passed = VaultCheck.Check(document, vaultLevel, out PublishResult fail);
             if (passed == null)
             {

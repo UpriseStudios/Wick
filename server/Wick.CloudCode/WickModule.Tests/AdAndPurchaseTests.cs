@@ -104,6 +104,20 @@ namespace Wick.CloudCode.Tests
         }
 
         [Test]
+        public async Task ASpeedUpPastTheEnd_FinishesTheUpgrade()
+        {
+            long now = _w.Clock.NowMs;
+            await _w.Set("p1", EconomyKeys.Upgrades, new Upgrades
+            {
+                Running = { new RunningUpgrade { Kind = UpgradeKinds.VaultLevel, ToLevel = 2, StartedMs = now, EndsMs = now + 10 * Rules.MinuteMs } },
+            });
+            Assert.IsTrue((await View(AdPlacements.SpeedUp, UpgradeKinds.VaultLevel)).Granted);
+            Upgrades stored = _w.Get<Upgrades>("p1", EconomyKeys.Upgrades);
+            Assert.AreEqual(2, stored.Levels.VaultLevel);
+            Assert.AreEqual(0, stored.Running.Count);
+        }
+
+        [Test]
         public async Task TheClientLearnsWhatItsAdEarned_OnlyFromTheServer()
         {
             AdRewardStatus before = await Ads.StatusAsync("p1", "n-42");

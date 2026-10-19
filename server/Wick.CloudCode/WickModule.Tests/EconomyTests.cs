@@ -91,6 +91,34 @@ namespace Wick.CloudCode.Tests
         }
 
         [Test]
+        public async Task AnUpgradeCompletesOnItsOwn_WhenItsTimeIsUp()
+        {
+            await Rich("p1", stars: 5);
+            await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel); // 2 minutes
+            Assert.AreEqual(1, (await Economy.GetStateAsync("p1")).VaultLevel);
+
+            _w.Clock.Advance(2 * Rules.MinuteMs);
+            EconomyState state = await Economy.GetStateAsync("p1");
+            Assert.AreEqual(2, state.VaultLevel, "nobody pressed Finish");
+            Assert.AreEqual(0, state.Running.Count, "the workshop is free again");
+            Assert.AreEqual(2, await Economy.VaultLevelAsync("p1"));
+        }
+
+        [Test]
+        public async Task AFinishedUpgradeIsStoredByTheNextWrite_AndItsWorkshopReused()
+        {
+            await Rich("p1", stars: 15);
+            await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel);
+            _w.Clock.Advance(2 * Rules.MinuteMs);
+
+            EconomyResult next = await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel); // Vault Level 3, same workshop
+            Assert.IsTrue(next.Ok, next.Reason);
+            Upgrades stored = _w.Get<Upgrades>("p1", EconomyKeys.Upgrades);
+            Assert.AreEqual(2, stored.Levels.VaultLevel);
+            Assert.AreEqual(3, stored.Running[0].ToLevel);
+        }
+
+        [Test]
         public async Task FinishingEarly_CostsGems_ByTimeLeft()
         {
             await Rich("p1", stars: 15);
@@ -159,6 +187,22 @@ namespace Wick.CloudCode.Tests
 
             await _w.Set("p1", EconomyKeys.Upgrades, new Upgrades { Levels = new Progression { VaultLevel = 2 } });
             PublishResult ok = await new PublishService(_w.Store, _w.Clock).PublishAsync("p1", "req-pub-0002", TestVaults.PublishDocument(level2));
+            Assert.IsTrue(ok.Ok, ok.Reason);
+        }
+
+        [Test]
+        public async Task PublishingUsesAVaultLevelWhoseBuildHasEnded()
+        {
+            VaultDef halls = TestVaults.Halls();
+            VaultDef level2 = new VaultDef(halls.Schema, halls.VaultId, halls.Version, 2, halls.Width, halls.Height, Tiles(halls), halls.Entrance,
+                new[] { Revalued(halls.GetObject(0), 2) }, halls.HasHoard, halls.Hoard);
+            long now = _w.Clock.NowMs;
+            await _w.Set("p1", EconomyKeys.Upgrades, new Upgrades
+            {
+                Running = { new RunningUpgrade { Kind = UpgradeKinds.VaultLevel, ToLevel = 2, StartedMs = now - 3 * Rules.MinuteMs, EndsMs = now - 1 } },
+            });
+
+            PublishResult ok = await new PublishService(_w.Store, _w.Clock).PublishAsync("p1", "req-pub-0003", TestVaults.PublishDocument(level2));
             Assert.IsTrue(ok.Ok, ok.Reason);
         }
 

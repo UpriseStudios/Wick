@@ -22,6 +22,7 @@ namespace Wick.Game
         private EconomyStateReply _state;
         private float _refreshAt;
         private bool _busy;
+        private bool _settling;
 
         public void Bind(RaidUI ui)
         {
@@ -56,11 +57,38 @@ namespace Wick.Game
 
         private void Update()
         {
-            // Timers count down on screen; the server stays the clock that counts.
-            if (_screen == "upgrades" && _state != null && Time.unscaledTime > _refreshAt)
+            // Timers count down on screen; the server stays the clock that counts. Redraw only while one
+            // runs: a redraw rebuilds the buttons, and a tap that straddles it is lost.
+            if (_screen == "upgrades" && _state?.Running?.Count > 0 && Time.unscaledTime > _refreshAt)
             {
                 _refreshAt = Time.unscaledTime + 1f;
-                Draw();
+                if (_state.Running.Exists(r => r.EndsMs <= ServerNowMs))
+                {
+                    SettleFinished();
+                }
+                else
+                {
+                    Draw();
+                }
+            }
+        }
+
+        /// <summary>A build's time is up: the server applies it on the next read, so just read again.</summary>
+        private async void SettleFinished()
+        {
+            if (_settling)
+            {
+                return;
+            }
+
+            _settling = true;
+            try
+            {
+                await Refresh();
+            }
+            finally
+            {
+                _settling = false;
             }
         }
 
@@ -69,9 +97,18 @@ namespace Wick.Game
             try
             {
                 await _economy.RefreshConfigAsync();
+                EconomyStateReply before = _state;
                 _state = await _economy.StateAsync();
                 _stateAtLocal = Time.realtimeSinceStartupAsDouble;
                 Draw();
+                if (before != null && _state.VaultLevel > before.VaultLevel)
+                {
+                    _ui.SetSheetMessage("Vault Level " + _state.VaultLevel + " complete!", true);
+                }
+                else if (before != null && _state.Lantern > before.Lantern)
+                {
+                    _ui.SetSheetMessage("Lantern " + _state.Lantern + " complete!", true);
+                }
             }
             catch (Exception e)
             {
@@ -134,12 +171,8 @@ namespace Wick.Game
             if (running != null)
             {
                 long left = running.EndsMs - ServerNowMs;
-                var row = new RaidUI.SheetRow { Text = current + " -> " + running.ToLevel + "\n" + (left > 0 ? "Ready in " + Duration(left) : "Ready!") };
-                if (left <= 0)
-                {
-                    row.Button("Finish", () => Act(() => _economy.FinishUpgradeAsync(kind, false)));
-                }
-                else
+                var row = new RaidUI.SheetRow { Text = current + " -> " + running.ToLevel + "\n" + (left > 0 ? "Ready in " + Duration(left) : "Finishing...") };
+                if (left > 0) // when time is up the server completes it; nothing to press
                 {
                     long gems = cfg.SpeedUp.GemsFor(left);
                     row.Button("Finish now (" + gems + " gems)", () => Act(() => _economy.FinishUpgradeAsync(kind, true)), _state.Gems >= gems);

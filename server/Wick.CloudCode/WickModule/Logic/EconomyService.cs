@@ -138,7 +138,7 @@ namespace Wick.CloudCode
             string Get(string k) => data.TryGetValue(k, out StoredItem i) ? i.Json : null;
             long now = _clock.NowMs;
             return EconomyState.Build(cfg, now, Json.Read<Wallet>(Get(Keys.Wallet)), Json.Read<RaidStats>(Get(Keys.Stats)),
-                Json.Read<Profile>(Get(Keys.Profile)), Json.Read<Upgrades>(Get(EconomyKeys.Upgrades)), Json.Read<Inventory>(Get(EconomyKeys.Inventory)),
+                Json.Read<Profile>(Get(Keys.Profile)), Upgrades.Read(Get(EconomyKeys.Upgrades), now), Json.Read<Inventory>(Get(EconomyKeys.Inventory)),
                 Json.Read<PassState>(Get(EconomyKeys.Pass)), Json.Read<Progress>(Get(EconomyKeys.Progress)), Json.Read<AdState>(Get(EconomyKeys.Ads)));
         }
 
@@ -146,7 +146,7 @@ namespace Wick.CloudCode
         public async Task<int> VaultLevelAsync(string playerId)
         {
             var data = await _store.GetProtectedAsync(playerId, new[] { EconomyKeys.Upgrades });
-            return Json.Read<Upgrades>(data.TryGetValue(EconomyKeys.Upgrades, out StoredItem i) ? i.Json : null).Levels.VaultLevel;
+            return Upgrades.Read(data.TryGetValue(EconomyKeys.Upgrades, out StoredItem i) ? i.Json : null, _clock.NowMs).Levels.VaultLevel;
         }
 
         // ---- Upgrades -----------------------------------------------------------------------
@@ -159,7 +159,7 @@ namespace Wick.CloudCode
                 long now = _clock.NowMs;
                 Wallet wallet = Json.Read<Wallet>(s.Json(Keys.Wallet));
                 RaidStats stats = Json.Read<RaidStats>(s.Json(Keys.Stats));
-                Upgrades upgrades = Json.Read<Upgrades>(s.Json(EconomyKeys.Upgrades));
+                Upgrades upgrades = Upgrades.Read(s.Json(EconomyKeys.Upgrades), now);
                 Inventory inventory = Json.Read<Inventory>(s.Json(EconomyKeys.Inventory));
 
                 if (upgrades.Find(kind) != null)
@@ -241,6 +241,11 @@ namespace Wick.CloudCode
                 long now = _clock.NowMs;
                 Wallet wallet = Json.Read<Wallet>(s.Json(Keys.Wallet));
                 Upgrades upgrades = Json.Read<Upgrades>(s.Json(EconomyKeys.Upgrades));
+                if (upgrades.Settle(now).Contains(kind))
+                {
+                    return new Plan<EconomyResult>(EconomyResult.Done("Finished")).Write(EconomyKeys.Upgrades, Json.Write(upgrades));
+                }
+
                 RunningUpgrade running = upgrades.Find(kind);
                 if (running == null)
                 {
@@ -266,16 +271,7 @@ namespace Wick.CloudCode
                     plan.Write(Keys.Wallet, Json.Write(wallet));
                 }
 
-                if (running.Kind == UpgradeKinds.VaultLevel)
-                {
-                    upgrades.Levels.VaultLevel = running.ToLevel;
-                }
-                else
-                {
-                    upgrades.Levels.Lantern = running.ToLevel;
-                }
-
-                upgrades.Running.Remove(running);
+                upgrades.Apply(running);
                 return plan.Write(EconomyKeys.Upgrades, Json.Write(upgrades));
             });
         }
@@ -351,7 +347,7 @@ namespace Wick.CloudCode
                     Wallet wallet = Json.Read<Wallet>(s.Json(Keys.Wallet));
                     Inventory inventory = Json.Read<Inventory>(s.Json(EconomyKeys.Inventory));
                     Progress progress = Json.Read<Progress>(s.Json(EconomyKeys.Progress));
-                    Upgrades upgrades = Json.Read<Upgrades>(s.Json(EconomyKeys.Upgrades));
+                    Upgrades upgrades = Upgrades.Read(s.Json(EconomyKeys.Upgrades), _clock.NowMs);
                     progress.Claimed.TryGetValue(id, out int claimedTier);
                     if (claimedTier >= a.Tiers.Count)
                     {

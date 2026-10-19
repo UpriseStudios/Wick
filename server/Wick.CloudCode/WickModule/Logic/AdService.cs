@@ -147,14 +147,15 @@ namespace Wick.CloudCode
 
                 case AdPlacements.SpeedUp:
                 {
-                    Upgrades upgrades = Json.Read<Upgrades>(s.Json(EconomyKeys.Upgrades));
+                    Upgrades upgrades = Upgrades.Read(s.Json(EconomyKeys.Upgrades), now);
                     RunningUpgrade running = upgrades.Find(context) ?? (upgrades.Running.Count > 0 ? upgrades.Running[0] : null);
-                    if (running == null || running.EndsMs <= now)
+                    if (running == null)
                     {
                         return "Nothing to speed up";
                     }
 
                     running.EndsMs = Math.Max(now, running.EndsMs - placement.Minutes * Rules.MinuteMs);
+                    upgrades.Settle(now); // a speed-up past the end finishes it
                     plan.Write(EconomyKeys.Upgrades, Json.Write(upgrades));
                     return null;
                 }
