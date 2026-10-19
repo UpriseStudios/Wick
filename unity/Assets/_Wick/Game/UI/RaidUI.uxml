@@ -30,7 +30,8 @@
 
         <!-- Home. -->
         <ui:VisualElement name="picker" class="panel blocks-input">
-            <ui:Label text="WICK" class="title" />
+            <ui:Label text="WAX BANDITS" class="title" />
+            <ui:Label text="Tiny Thieves – Big Heists" class="subtitle" />
             <ui:Label name="home-stats" class="home-stats" />
             <ui:Label name="picker-message" class="server-verdict bad hidden" />
             <ui:ScrollView name="picker-list" class="list home-list" />

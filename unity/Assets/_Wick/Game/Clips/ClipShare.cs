@@ -7,7 +7,7 @@ namespace Wick.Game
     {
         public static string Invitation(string code)
         {
-            return "Can you crack my vault in Wick? " + VaultLink.Build(code);
+            return "Can you crack my vault in Wax Bandits? " + VaultLink.Build(code);
         }
 
         public static void ShareClip(string path, string code)

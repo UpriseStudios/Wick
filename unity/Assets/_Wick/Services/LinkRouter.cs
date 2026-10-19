@@ -81,7 +81,7 @@ namespace Wick.Services
 #if UNITY_ANDROID && !UNITY_EDITOR
             host.StartCoroutine(ReadReferrer());
 #elif UNITY_IOS && !UNITY_EDITOR
-            // The web page copies "Wick vault code: CODE"; iOS shows its own paste permission prompt.
+            // The web page copies "Wax Bandits vault code: CODE"; iOS shows its own paste permission prompt.
             Offer(VaultLink.FindCode(GUIUtility.systemCopyBuffer), "paste", true, true);
 #endif
         }

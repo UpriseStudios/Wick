@@ -24,7 +24,7 @@
   }
 
   function copyCode(code) {
-    var text = "Wick vault code: " + code;
+    var text = "Wax Bandits vault code: " + code;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       return navigator.clipboard.writeText(text).catch(function () {});
     }
@@ -54,7 +54,7 @@
   play.addEventListener("click", function () { copyCode(code); });
   apple.addEventListener("click", function () { copyCode(code); });
   copy.addEventListener("click", function () {
-    copyCode(code).then(function () { show("hint", "Copied. Open Wick and it will offer this vault."); });
+    copyCode(code).then(function () { show("hint", "Copied. Open Wax Bandits and it will offer this vault."); });
   });
 
   fetch("/api/vault/" + code)

@@ -652,7 +652,7 @@ namespace Wick.Editor
         private static void ApplyProjectSettings()
         {
             PlayerSettings.companyName = "Uprise Studios";
-            PlayerSettings.productName = "Wick";
+            PlayerSettings.productName = "Wax Bandits";
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.uprisestudios.wick");
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);

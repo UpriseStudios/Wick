@@ -15,7 +15,7 @@ namespace Wick.Game.Tests
         [TestCase("https://wick.uprisestudios.co.uk/v/abcd-2345?utm=x", "ABCD2345")]
         [TestCase("utm_source=google-play&vault=WXYZ6789", "WXYZ6789")]
         [TestCase("vault%3DWXYZ6789", "WXYZ6789")]
-        [TestCase("Hey, Wick vault code: QRST2345 good luck", "QRST2345")]
+        [TestCase("Hey, Wax Bandits vault code: QRST2345 good luck", "QRST2345")]
         [TestCase("qrst 2345", "QRST2345")]
         [TestCase("https://wick.uprisestudios.co.uk/", null)]
         [TestCase("ABCD0123", null)]

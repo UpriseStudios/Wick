@@ -14,7 +14,7 @@ namespace Wick.Services
         public const int CodeLength = 8;
 
         /// <summary>What the web page copies for the iOS first-launch paste prompt.</summary>
-        public const string ClipboardPrefix = "Wick vault code: ";
+        public const string ClipboardPrefix = "Wax Bandits vault code: ";
 
         public static string Build(string code)
         {
