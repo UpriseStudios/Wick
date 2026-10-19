@@ -16,6 +16,7 @@ namespace Wick.Game
         private async void Start()
         {
             DontDestroyOnLoad(gameObject); // keeps the referrer check running across the scene change
+            Screen.sleepTimeout = SleepTimeout.NeverSleep; // the screen stays on while the game is open
             LinkRouter.Init(this);
             _ = UgsBootstrap.EnsureSignedInAsync();
 
