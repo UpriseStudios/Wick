@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &269025766
+--- !u!1 &4903813
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,54 +127,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 269025768}
-  - component: {fileID: 269025767}
-  m_Layer: 0
-  m_Name: Vault View
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &269025767
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 269025766}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 93717cbd905ad9c66ed59885b61f7a14, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Wick.Game::Wick.Game.EditorView
-  _assets: {fileID: 11400000, guid: f96124867105cd640b4c8568b82660df, type: 2}
---- !u!4 &269025768
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 269025766}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &514932913
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 514932916}
-  - component: {fileID: 514932914}
-  - component: {fileID: 514932915}
+  - component: {fileID: 4903816}
+  - component: {fileID: 4903814}
+  - component: {fileID: 4903815}
   m_Layer: 0
   m_Name: Vault Editor
   m_TagString: Untagged
@@ -182,49 +137,49 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &514932914
+--- !u!114 &4903814
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 514932913}
+  m_GameObject: {fileID: 4903813}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ba61f5c14a5578b0d1501eac090f61d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.EditorInput
   _tuning: {fileID: 11400000, guid: e4ab763faf1abe74a99c5be34f345015, type: 2}
---- !u!114 &514932915
+--- !u!114 &4903815
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 514932913}
+  m_GameObject: {fileID: 4903813}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a98d4cdc702033115de23ea6f2d17528, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.VaultEditorController
   _assets: {fileID: 11400000, guid: f96124867105cd640b4c8568b82660df, type: 2}
-  _view: {fileID: 269025767}
-  _camera: {fileID: 1429074978}
-  _input: {fileID: 514932914}
-  _ui: {fileID: 589749507}
+  _view: {fileID: 554822669}
+  _camera: {fileID: 2060282197}
+  _input: {fileID: 4903814}
+  _ui: {fileID: 414930219}
   _hideDuringTest:
-  - {fileID: 1429074977}
-  - {fileID: 1089924427}
-  - {fileID: 269025766}
-  - {fileID: 589749506}
-  - {fileID: 1498646080}
---- !u!4 &514932916
+  - {fileID: 2060282196}
+  - {fileID: 949842210}
+  - {fileID: 554822668}
+  - {fileID: 414930218}
+  - {fileID: 2092230268}
+--- !u!4 &4903816
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 514932913}
+  m_GameObject: {fileID: 4903813}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -233,7 +188,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &589749506
+--- !u!1 &414930218
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -241,9 +196,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 589749509}
-  - component: {fileID: 589749508}
-  - component: {fileID: 589749507}
+  - component: {fileID: 414930221}
+  - component: {fileID: 414930220}
+  - component: {fileID: 414930219}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -251,27 +206,27 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &589749507
+--- !u!114 &414930219
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 589749506}
+  m_GameObject: {fileID: 414930218}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 878ec7b7c3830599f643b0212b1765b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.EditorUI
-  _controller: {fileID: 514932915}
-  _input: {fileID: 514932914}
---- !u!114 &589749508
+  _controller: {fileID: 4903815}
+  _input: {fileID: 4903814}
+--- !u!114 &414930220
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 589749506}
+  m_GameObject: {fileID: 414930218}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
@@ -288,13 +243,13 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!4 &589749509
+--- !u!4 &414930221
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 589749506}
+  m_GameObject: {fileID: 414930218}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -303,7 +258,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1089924427
+--- !u!1 &554822668
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -311,8 +266,53 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1089924429}
-  - component: {fileID: 1089924428}
+  - component: {fileID: 554822670}
+  - component: {fileID: 554822669}
+  m_Layer: 0
+  m_Name: Vault View
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &554822669
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554822668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93717cbd905ad9c66ed59885b61f7a14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.EditorView
+  _assets: {fileID: 11400000, guid: f96124867105cd640b4c8568b82660df, type: 2}
+--- !u!4 &554822670
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 554822668}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &949842210
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 949842212}
+  - component: {fileID: 949842211}
   m_Layer: 0
   m_Name: Key Light
   m_TagString: Untagged
@@ -320,13 +320,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!108 &1089924428
+--- !u!108 &949842211
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1089924427}
+  m_GameObject: {fileID: 949842210}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 1
@@ -385,13 +385,13 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &1089924429
+--- !u!4 &949842212
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1089924427}
+  m_GameObject: {fileID: 949842210}
   serializedVersion: 2
   m_LocalRotation: {x: 0.44601488, y: -0.22957529, z: 0.11950933, w: 0.85678667}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -400,7 +400,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1429074977
+--- !u!1 &2060282196
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -408,9 +408,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1429074980}
-  - component: {fileID: 1429074979}
-  - component: {fileID: 1429074978}
+  - component: {fileID: 2060282199}
+  - component: {fileID: 2060282198}
+  - component: {fileID: 2060282197}
   m_Layer: 0
   m_Name: Editor Camera
   m_TagString: MainCamera
@@ -418,26 +418,26 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1429074978
+--- !u!114 &2060282197
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429074977}
+  m_GameObject: {fileID: 2060282196}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f9c1dc0710af290db9892aeb18741fdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.EditorCamera
   _tuning: {fileID: 11400000, guid: e4ab763faf1abe74a99c5be34f345015, type: 2}
---- !u!20 &1429074979
+--- !u!20 &2060282198
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429074977}
+  m_GameObject: {fileID: 2060282196}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -482,13 +482,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &1429074980
+--- !u!4 &2060282199
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429074977}
+  m_GameObject: {fileID: 2060282196}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -497,7 +497,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1498646080
+--- !u!1 &2092230268
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -505,9 +505,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1498646083}
-  - component: {fileID: 1498646082}
-  - component: {fileID: 1498646081}
+  - component: {fileID: 2092230271}
+  - component: {fileID: 2092230270}
+  - component: {fileID: 2092230269}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -515,13 +515,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1498646081
+--- !u!114 &2092230269
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1498646080}
+  m_GameObject: {fileID: 2092230268}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
@@ -546,13 +546,13 @@ MonoBehaviour:
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
---- !u!114 &1498646082
+--- !u!114 &2092230270
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1498646080}
+  m_GameObject: {fileID: 2092230268}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
@@ -561,13 +561,13 @@ MonoBehaviour:
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
---- !u!4 &1498646083
+--- !u!4 &2092230271
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1498646080}
+  m_GameObject: {fileID: 2092230268}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -580,9 +580,9 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1089924429}
-  - {fileID: 1429074980}
-  - {fileID: 269025768}
-  - {fileID: 514932916}
-  - {fileID: 589749509}
-  - {fileID: 1498646083}
+  - {fileID: 949842212}
+  - {fileID: 2060282199}
+  - {fileID: 554822670}
+  - {fileID: 4903816}
+  - {fileID: 414930221}
+  - {fileID: 2092230271}

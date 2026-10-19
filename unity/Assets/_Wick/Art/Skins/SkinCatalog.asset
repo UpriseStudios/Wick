@@ -15,7 +15,7 @@ MonoBehaviour:
   Skins:
   - Id: skin_default
     DisplayName: Wick
-    StandIn: 1
+    StandIn: 0
     Bundled: {fileID: 11400000, guid: b7b13a055f41f3c4aabe7b12ef7dee65, type: 2}
     Reference:
       m_AssetGUID: 
@@ -25,7 +25,7 @@ MonoBehaviour:
       m_EditorAssetChanged: 0
   - Id: skin_drippy
     DisplayName: Drippy
-    StandIn: 1
+    StandIn: 0
     Bundled: {fileID: 0}
     Reference:
       m_AssetGUID: bd826b6e987d0e54b8e805349fa23e7b
@@ -35,7 +35,7 @@ MonoBehaviour:
       m_EditorAssetChanged: 0
   - Id: skin_cinder
     DisplayName: Cinder
-    StandIn: 1
+    StandIn: 0
     Bundled: {fileID: 0}
     Reference:
       m_AssetGUID: 0ad10e6c822a28046a5c10a72f6dbfc7
@@ -45,7 +45,7 @@ MonoBehaviour:
       m_EditorAssetChanged: 0
   - Id: skin_pip
     DisplayName: Pip
-    StandIn: 1
+    StandIn: 0
     Bundled: {fileID: 0}
     Reference:
       m_AssetGUID: 0ee298d55a885cc4392c67588d1825af
@@ -55,7 +55,7 @@ MonoBehaviour:
       m_EditorAssetChanged: 0
   - Id: skin_twist
     DisplayName: Twist
-    StandIn: 1
+    StandIn: 0
     Bundled: {fileID: 0}
     Reference:
       m_AssetGUID: 59551bbb74df2274ca584fdc4744f9c3
@@ -65,7 +65,7 @@ MonoBehaviour:
       m_EditorAssetChanged: 0
   - Id: skin_ember
     DisplayName: Ember
-    StandIn: 1
+    StandIn: 0
     Bundled: {fileID: 0}
     Reference:
       m_AssetGUID: e4e4ff3b47986c54a826e093ab40665c
@@ -75,7 +75,7 @@ MonoBehaviour:
       m_EditorAssetChanged: 0
   - Id: skin_twist_gilded
     DisplayName: Gilded Twist
-    StandIn: 1
+    StandIn: 0
     Bundled: {fileID: 0}
     Reference:
       m_AssetGUID: f488fb6cc06b0214e85bb3b1e91f78d3
@@ -85,7 +85,7 @@ MonoBehaviour:
       m_EditorAssetChanged: 0
   - Id: skin_twist_flame
     DisplayName: Blazing Twist
-    StandIn: 1
+    StandIn: 0
     Bundled: {fileID: 0}
     Reference:
       m_AssetGUID: 09faeb7823b586246a0656e779335331

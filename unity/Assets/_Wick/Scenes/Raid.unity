@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &352147154
+--- !u!1 &87210459
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,80 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 352147157}
-  - component: {fileID: 352147156}
-  - component: {fileID: 352147155}
+  - component: {fileID: 87210462}
+  - component: {fileID: 87210461}
+  - component: {fileID: 87210460}
+  m_Layer: 0
+  m_Name: UI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &87210460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 87210459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0aa64a1560da3711036aed1fb99069f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.RaidUI
+  _runner: {fileID: 1395329350}
+  _input: {fileID: 1395329349}
+  _overlay: {fileID: 1395329348}
+--- !u!114 &87210461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 87210459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: d315aaaffe30b444098d081c6812499e, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: b06e688345d771a4488021965e5e5a7f, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!4 &87210462
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 87210459}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &957739220
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 957739223}
+  - component: {fileID: 957739222}
+  - component: {fileID: 957739221}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -137,27 +208,27 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &352147155
+--- !u!114 &957739221
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 352147154}
+  m_GameObject: {fileID: 957739220}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f8d895b5e85f42e345a13f001c223f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.RaidCamera
-  _vaultView: {fileID: 665679868}
+  _vaultView: {fileID: 1395329351}
   _tuning: {fileID: 11400000, guid: 6091ece938886e141a48db5a71016829, type: 2}
---- !u!20 &352147156
+--- !u!20 &957739222
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 352147154}
+  m_GameObject: {fileID: 957739220}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -202,13 +273,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &352147157
+--- !u!4 &957739223
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 352147154}
+  m_GameObject: {fileID: 957739220}
   serializedVersion: 2
   m_LocalRotation: {x: 0.46174863, y: 0, z: 0, w: 0.8870109}
   m_LocalPosition: {x: 4, y: 9.010672, z: -17.309341}
@@ -217,7 +288,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &362659808
+--- !u!1 &1137155201
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -225,61 +296,36 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 362659811}
-  - component: {fileID: 362659810}
-  - component: {fileID: 362659809}
+  - component: {fileID: 1137155203}
+  - component: {fileID: 1137155202}
   m_Layer: 0
-  m_Name: UI
+  m_Name: Vfx
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &362659809
+--- !u!114 &1137155202
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 362659808}
+  m_GameObject: {fileID: 1137155201}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0aa64a1560da3711036aed1fb99069f0, type: 3}
+  m_Script: {fileID: 11500000, guid: 57ebfbd0b21d2eb4aa62be932a0a79c9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Wick.Game::Wick.Game.RaidUI
-  _runner: {fileID: 665679867}
-  _input: {fileID: 665679866}
-  _overlay: {fileID: 665679865}
---- !u!114 &362659810
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 362659808}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: d315aaaffe30b444098d081c6812499e, type: 2}
-  m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: b06e688345d771a4488021965e5e5a7f, type: 3}
-  m_SortingOrder: 0
-  m_Position: 0
-  m_WorldSpaceSizeMode: 1
-  m_WorldSpaceWidth: 1920
-  m_WorldSpaceHeight: 1080
-  m_PivotReferenceSize: 0
-  m_Pivot: 0
-  m_WorldSpaceCollider: {fileID: 0}
---- !u!4 &362659811
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.VfxDirector
+  _library: {fileID: 11400000, guid: 61a184d7cabc5fc499b15a73c9e09909, type: 2}
+  _vaultView: {fileID: 1395329351}
+--- !u!4 &1137155203
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 362659808}
+  m_GameObject: {fileID: 1137155201}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -288,7 +334,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &665679864
+--- !u!1 &1395329347
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -296,15 +342,15 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 665679873}
-  - component: {fileID: 665679867}
-  - component: {fileID: 665679869}
-  - component: {fileID: 665679868}
-  - component: {fileID: 665679866}
-  - component: {fileID: 665679872}
-  - component: {fileID: 665679865}
-  - component: {fileID: 665679871}
-  - component: {fileID: 665679870}
+  - component: {fileID: 1395329356}
+  - component: {fileID: 1395329350}
+  - component: {fileID: 1395329352}
+  - component: {fileID: 1395329351}
+  - component: {fileID: 1395329349}
+  - component: {fileID: 1395329355}
+  - component: {fileID: 1395329348}
+  - component: {fileID: 1395329354}
+  - component: {fileID: 1395329353}
   m_Layer: 0
   m_Name: Raid
   m_TagString: Untagged
@@ -312,130 +358,130 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &665679865
+--- !u!114 &1395329348
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8d99c76a69a4f8fbf39879cfa2420cf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.DevOverlay
-  _runner: {fileID: 665679867}
+  _runner: {fileID: 1395329350}
   _material: {fileID: 2100000, guid: ff3311d9176393d4abc57c0f3ffb9764, type: 2}
   _litColor: {r: 0.2, g: 1, b: 0.4, a: 0.35}
   _gridColor: {r: 1, g: 1, b: 1, a: 0.35}
---- !u!114 &665679866
+--- !u!114 &1395329349
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e79b71b3b2387105572725d5603412b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.RaidInput
-  _runner: {fileID: 665679867}
+  _runner: {fileID: 1395329350}
   _tuning: {fileID: 11400000, guid: f309863bfb2631045a8f9f026381efeb, type: 2}
   _raidTuning: {fileID: 11400000, guid: 6091ece938886e141a48db5a71016829, type: 2}
---- !u!114 &665679867
+--- !u!114 &1395329350
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 65a1fed9bf986e5b8d5be4ce35bc870d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.RaidRunner
---- !u!114 &665679868
+--- !u!114 &1395329351
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 20c1f477b521e5a98b82a8d860426cb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.VaultView
-  _runner: {fileID: 665679867}
+  _runner: {fileID: 1395329350}
   _registry: {fileID: 11400000, guid: 4d49a88e9cb1d9f4c98a6060ee2fece2, type: 2}
-  _mask: {fileID: 665679869}
+  _mask: {fileID: 1395329352}
   _tuning: {fileID: 11400000, guid: 6091ece938886e141a48db5a71016829, type: 2}
---- !u!114 &665679869
+--- !u!114 &1395329352
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d82b7956d1e89ea01769d7e6f15cde07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.VisibilityMask
-  _runner: {fileID: 665679867}
+  _runner: {fileID: 1395329350}
   _tuning: {fileID: 11400000, guid: 6091ece938886e141a48db5a71016829, type: 2}
---- !u!114 &665679870
+--- !u!114 &1395329353
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 88a4a269f038aba4c89764a6373fb787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.RaidFeel
-  _vaultView: {fileID: 665679868}
-  _ui: {fileID: 362659809}
-  _camera: {fileID: 352147156}
---- !u!114 &665679871
+  _vaultView: {fileID: 1395329351}
+  _ui: {fileID: 87210460}
+  _camera: {fileID: 957739222}
+--- !u!114 &1395329354
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1734647fb17d2f04e2d40bf41baacc7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.RaidFlow
-  _runner: {fileID: 665679867}
-  _ui: {fileID: 362659809}
-  _camera: {fileID: 352147155}
+  _runner: {fileID: 1395329350}
+  _ui: {fileID: 87210460}
+  _camera: {fileID: 957739221}
   _tuning: {fileID: 11400000, guid: 6091ece938886e141a48db5a71016829, type: 2}
---- !u!114 &665679872
+--- !u!114 &1395329355
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 29d082cd88149374cb4ff00a82a2d6dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Wick.Game::Wick.Game.PerfProbe
-  _runner: {fileID: 665679867}
---- !u!4 &665679873
+  _runner: {fileID: 1395329350}
+--- !u!4 &1395329356
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665679864}
+  m_GameObject: {fileID: 1395329347}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -444,7 +490,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1335791919
+--- !u!1 &1429147887
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -452,9 +498,56 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1335791922}
-  - component: {fileID: 1335791921}
-  - component: {fileID: 1335791920}
+  - component: {fileID: 1429147889}
+  - component: {fileID: 1429147888}
+  m_Layer: 0
+  m_Name: Audio
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1429147888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1429147887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2e92209ac9cf514a9964627bb287b1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.AudioDirector
+  _mixer: {fileID: 24100000, guid: a8cfcdc9b1d6fb64bb4e35d6aca56b04, type: 2}
+  _bank: {fileID: 11400000, guid: 45ab178a87e7af148baf11e6d1f97927, type: 2}
+  _vaultView: {fileID: 1395329351}
+--- !u!4 &1429147889
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1429147887}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1778380835
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1778380838}
+  - component: {fileID: 1778380837}
+  - component: {fileID: 1778380836}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -462,13 +555,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1335791920
+--- !u!114 &1778380836
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1335791919}
+  m_GameObject: {fileID: 1778380835}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
@@ -493,13 +586,13 @@ MonoBehaviour:
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
   m_ScrollDeltaPerTick: 6
---- !u!114 &1335791921
+--- !u!114 &1778380837
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1335791919}
+  m_GameObject: {fileID: 1778380835}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
@@ -508,106 +601,13 @@ MonoBehaviour:
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
---- !u!4 &1335791922
+--- !u!4 &1778380838
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1335791919}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1597485377
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1597485379}
-  - component: {fileID: 1597485378}
-  m_Layer: 0
-  m_Name: Vfx
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1597485378
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1597485377}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57ebfbd0b21d2eb4aa62be932a0a79c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Wick.Game::Wick.Game.VfxDirector
-  _library: {fileID: 11400000, guid: 61a184d7cabc5fc499b15a73c9e09909, type: 2}
-  _vaultView: {fileID: 665679868}
---- !u!4 &1597485379
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1597485377}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1687896852
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1687896854}
-  - component: {fileID: 1687896853}
-  m_Layer: 0
-  m_Name: Audio
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1687896853
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1687896852}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c2e92209ac9cf514a9964627bb287b1d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Wick.Game::Wick.Game.AudioDirector
-  _mixer: {fileID: 24100000, guid: a8cfcdc9b1d6fb64bb4e35d6aca56b04, type: 2}
-  _bank: {fileID: 11400000, guid: 45ab178a87e7af148baf11e6d1f97927, type: 2}
-  _vaultView: {fileID: 665679868}
---- !u!4 &1687896854
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1687896852}
+  m_GameObject: {fileID: 1778380835}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -620,9 +620,9 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 665679873}
-  - {fileID: 1597485379}
-  - {fileID: 1687896854}
-  - {fileID: 352147157}
-  - {fileID: 362659811}
-  - {fileID: 1335791922}
+  - {fileID: 1395329356}
+  - {fileID: 1137155203}
+  - {fileID: 1429147889}
+  - {fileID: 957739223}
+  - {fileID: 87210462}
+  - {fileID: 1778380838}

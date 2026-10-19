@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Wick.Game::Wick.Game.SkinDefinition
   Id: skin_ember
   DisplayName: Ember
-  Model: {fileID: 1636356598321601571, guid: f7c13517424c9da4982276823242363d, type: 3}
-  BodyMaterial: {fileID: 0}
+  Model: {fileID: 919132149155446097, guid: c43b483bb5e3fd244900c88e1e282eb7, type: 3}
+  BodyMaterial: {fileID: 2100000, guid: 7900fc9c7cc9d1b46b349022f145c7d8, type: 2}
   FlameMaterial: {fileID: 2100000, guid: 97e57dd6cf3763347afdfc02218ac14b, type: 2}
   FlameVfx: {fileID: 2331859873440961136, guid: dd3a4734163d0c344a3078f891c3c12a, type: 3}
   SnuffVfx: {fileID: 7382808421208069456, guid: 54378de6814ea0745b85d07e0edcee23, type: 3}
   Icon: {fileID: 0}
-  StandIn: 1
+  StandIn: 0

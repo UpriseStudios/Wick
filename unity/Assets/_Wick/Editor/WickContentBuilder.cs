@@ -158,7 +158,7 @@ namespace Wick.Editor
 
                 var lightGo = new GameObject("FlameLight");
                 lightGo.transform.SetParent(root, false);
-                lightGo.transform.localPosition = new Vector3(0f, 1.1f, 0f);
+                lightGo.transform.localPosition = new Vector3(0f, 1.9f, 0f); // high enough that his own pale wax doesn't blow out
                 Light light = lightGo.AddComponent<Light>();
                 light.type = LightType.Point;
                 light.shadows = LightShadows.None;

@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Wick.Game::Wick.Game.SkinDefinition
   Id: skin_cinder
   DisplayName: Cinder
-  Model: {fileID: 2037003231269581724, guid: 369f2097dc7d8384ca8589d43807aa91, type: 3}
-  BodyMaterial: {fileID: 0}
+  Model: {fileID: 919132149155446097, guid: 6d1e3b7ca46d60d46a853791e19387fa, type: 3}
+  BodyMaterial: {fileID: 2100000, guid: 87091f87635449e46b3c413edaed56f2, type: 2}
   FlameMaterial: {fileID: 2100000, guid: 97e57dd6cf3763347afdfc02218ac14b, type: 2}
   FlameVfx: {fileID: 2331859873440961136, guid: dd3a4734163d0c344a3078f891c3c12a, type: 3}
   SnuffVfx: {fileID: 7382808421208069456, guid: 54378de6814ea0745b85d07e0edcee23, type: 3}
   Icon: {fileID: 0}
-  StandIn: 1
+  StandIn: 0

@@ -90,6 +90,18 @@ namespace Wick.Game.Tests
             Assert.IsNotNull(skin.Flame, id + " has no flame_base bone");
         }
 
+        /// <summary>Views turn Wick with SimPose.Facing, which assumes the model faces +Z with its left on -X.</summary>
+        [TestCaseSource(nameof(SkinIds))]
+        public void EverySkinFacesForward(string id)
+        {
+            (WickSkin skin, _) = Dress(id);
+            Transform root = skin.Animator.transform;
+            Vector3 left = root.InverseTransformPoint(WickSkin.FindDeep(root, "eye.L").position);
+            Vector3 right = root.InverseTransformPoint(WickSkin.FindDeep(root, "eye.R").position);
+            Assert.Greater(left.z, 0.02f, id + " faces backwards");
+            Assert.Less(left.x, right.x, id + "'s left eye is on its right");
+        }
+
         [TestCaseSource(nameof(SkinIds))]
         public void EveryClipBindsToEverySkin(string id)
         {

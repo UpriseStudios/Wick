@@ -30,6 +30,8 @@ namespace Wick.Editor.ArtPipeline
             "idle", "idle_fidget_pat", "idle_fidget_count", "dash", "run", "tiptoe", "hit", "low_health", "grab", "escape", "snuff", "victory",
         };
 
+        public static readonly string[] LoopingClips = { "idle", "run", "tiptoe", "low_health" };
+
         public static readonly string[] TrapClips = { "idle", "warn", "fire", "reset" };
 
         public static readonly string[] GuardianClips = { "idle", "patrol", "alert", "chase", "sleep", "wake", "hit_player" };

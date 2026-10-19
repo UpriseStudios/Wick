@@ -93,6 +93,59 @@ namespace Wick.Editor.ArtPipeline
             Log(ArtRules.CheckModel(category, assetId, stem, ArtFacts.Model(assetPath, root, (ModelImporter)assetImporter)));
         }
 
+        /// <summary>
+        /// Clips arrive as "Armature|idle" from Blender: name them "idle" and loop the ones the
+        /// handoff list loops (idle, run, tiptoe, low_health).
+        /// </summary>
+        private void OnPreprocessAnimation()
+        {
+            if (!InScope(assetPath, out _, out _, out _))
+            {
+                return;
+            }
+
+            var importer = (ModelImporter)assetImporter;
+            ModelImporterClipAnimation[] clips = importer.defaultClipAnimations;
+            foreach (ModelImporterClipAnimation c in clips)
+            {
+                c.name = ClipName(c.takeName);
+                c.loopTime = ArtBudgets.Contains(ArtBudgets.LoopingClips, c.name);
+            }
+
+            importer.clipAnimations = clips;
+        }
+
+        /// <summary>
+        /// The shared rig's contract: clips rotate and scale bones under Armature, and only the body bone moves (hops),
+        /// because skins put their bones in different places (Pip sits in a cup, Ember is squat). The
+        /// flame bone's scale belongs to the sim's light radius. Other curves are dropped here.
+        /// </summary>
+        private void OnPostprocessAnimation(GameObject root, AnimationClip clip)
+        {
+            if (!InScope(assetPath, out string category, out _, out _) || category != "char")
+            {
+                return;
+            }
+
+            foreach (EditorCurveBinding b in AnimationUtility.GetCurveBindings(clip))
+            {
+                // Only bones animate: mesh objects and face shapes (ReactionDriver's) are left alone.
+                bool bone = b.path.StartsWith("Armature/") && b.type == typeof(Transform);
+                string name = b.path.Substring(b.path.LastIndexOf('/') + 1);
+                bool position = b.propertyName.StartsWith("m_LocalPosition") && name != "body";
+                bool flameScale = b.propertyName.StartsWith("m_LocalScale") && name == "flame_base";
+                if (!bone || position || flameScale)
+                {
+                    AnimationUtility.SetEditorCurve(clip, b, null);
+                }
+            }
+        }
+
+        public static string ClipName(string take)
+        {
+            return take.Substring(take.LastIndexOf('|') + 1);
+        }
+
         private void OnPreprocessAudio()
         {
             if (!InScope(assetPath, out string category, out _, out _))

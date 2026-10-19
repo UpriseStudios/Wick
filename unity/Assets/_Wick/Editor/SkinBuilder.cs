@@ -183,7 +183,8 @@ namespace Wick.Editor
             Material leather = TintedMaterial("standin_leather", new Color(0.45f, 0.28f, 0.15f));
 
             var model = new GameObject(spec.AssetId);
-            Transform root = Bone("root", model.transform, Vector3.zero);
+            Transform skeleton = Bone("Armature", model.transform, Vector3.zero); // as Blender's FBX export names it
+            Transform root = Bone("root", skeleton, Vector3.zero);
             Transform body = Bone("body", root, new Vector3(0f, 0.04f, 0f));
             Transform head = Bone("head", body, new Vector3(0f, 0.26f * h, 0f));
             Transform eyeL = Bone("eye.L", head, new Vector3(-0.055f * w, 0.06f, 0.15f * w));
@@ -386,9 +387,13 @@ namespace Wick.Editor
                 {
                     foreach (Object o in AssetDatabase.LoadAllAssetsAtPath(AssetDatabase.GUIDToAssetPath(guid)))
                     {
-                        if (o is AnimationClip c && !c.name.StartsWith("__preview__") && ArtBudgets.Contains(ArtBudgets.WickClips, c.name))
+                        if (o is AnimationClip c && !c.name.StartsWith("__preview__"))
                         {
-                            clips[c.name] = c;
+                            string name = ArtImportChecks.ClipName(c.name);
+                            if (ArtBudgets.Contains(ArtBudgets.WickClips, name))
+                            {
+                                clips[name] = c;
+                            }
                         }
                     }
                 }
@@ -406,8 +411,8 @@ namespace Wick.Editor
         }
 
         // Clips never touch flame_base's scale: WickView sets it from the sim's light radius.
-        private const string Body = "root/body", Head = "root/body/head";
-        private const string ArmL = "root/body/arm.L", ArmR = "root/body/arm.R", FootL = "root/foot.L", FootR = "root/foot.R";
+        private const string Body = "Armature/root/body", Head = "Armature/root/body/head";
+        private const string ArmL = "Armature/root/body/arm.L", ArmR = "Armature/root/body/arm.R", FootL = "Armature/root/foot.L", FootR = "Armature/root/foot.R";
 
         private static AnimationClip StandInClip(string name)
         {
