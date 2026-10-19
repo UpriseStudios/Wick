@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: BrazierFlame
-  m_Shader: {fileID: 4800000, guid: ab002ef57bbcfbc47a5b7139c08dae67, type: 3}
+  m_Shader: {fileID: 4800000, guid: 4443a58f1fa4b8f40a21f4396fe6162a, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -25,9 +25,17 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _CoreSize: 0.45
+    - _Flare: 0
+    - _Flickers: 3
     - _IgnoreMask: 0
+    - _Intensity: 1.6
+    - _SwayAmount: 0.025
+    - _SwaySpeed: 3
     m_Colors:
     - _BaseColor: {r: 1, g: 0.45, b: 0.15, a: 1}
+    - _CoreColor: {r: 1, g: 0.886, b: 0.6039999, a: 1}
     - _EmissionColor: {r: 3, g: 1.2, b: 0.3, a: 1}
+    - _OuterColor: {r: 1, g: 0.624, b: 0.10999996, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

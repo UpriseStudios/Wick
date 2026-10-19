@@ -10,6 +10,9 @@ namespace Wick.Game
     /// </summary>
     public sealed class WickView : MonoBehaviour
     {
+        private static readonly int FlickersId = Shader.PropertyToID("_Flickers");
+        private static readonly int FlareId = Shader.PropertyToID("_Flare");
+
         [SerializeField] private Transform _body;
         [SerializeField] private Transform _flame;
         [SerializeField] private Light _flameLight;
@@ -19,6 +22,8 @@ namespace Wick.Game
         private float _range;
         private float _rangeVelocity;
         private float _flare;
+        private Renderer _flameRenderer;
+        private MaterialPropertyBlock _flameProps;
 
         public void Init(ViewContext ctx)
         {
@@ -26,6 +31,8 @@ namespace Wick.Game
             transform.position = SimPose.Position(ctx.Current.Wick);
             transform.rotation = SimPose.Facing(ctx.Current.Wick.Facing);
             _range = TargetRange();
+            _flameRenderer = _flame != null ? _flame.GetComponent<Renderer>() : null;
+            _flameProps ??= new MaterialPropertyBlock();
             if (_flameLight != null)
             {
                 _flameLight.color = ctx.Tuning.FlameColor;
@@ -64,7 +71,16 @@ namespace Wick.Game
             {
                 _flame.gameObject.SetActive(lit);
                 float size = 0.15f + 0.06f * _range / _ctx.Tuning.FlameRangePerTile + _flare * 0.15f;
-                _flame.localScale = Vector3.one * size;
+                _flame.localScale = new Vector3(size, size * 1.6f, size); // taller than wide, like a flame
+            }
+
+            if (_flameRenderer != null)
+            {
+                // Wick/Flame sways harder and dims a little as flickers run out.
+                _flameRenderer.GetPropertyBlock(_flameProps);
+                _flameProps.SetFloat(FlickersId, cur.Flickers);
+                _flameProps.SetFloat(FlareId, _flare);
+                _flameRenderer.SetPropertyBlock(_flameProps);
             }
 
             if (_reactions != null)

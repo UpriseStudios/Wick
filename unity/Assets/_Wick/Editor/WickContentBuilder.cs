@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Animations;
@@ -50,11 +51,15 @@ namespace Wick.Editor
             AssetDatabase.SaveAssets();
             BuildScene();
             BuildEditorContent();
-            EditorBuildSettings.scenes = new[]
+            var scenes = new List<EditorBuildSettingsScene>();
+            if (File.Exists(BootSceneBuilder.ScenePath))
             {
-                new EditorBuildSettingsScene(ScenePath, true),
-                new EditorBuildSettingsScene(EditorScenePath, true),
-            };
+                scenes.Add(new EditorBuildSettingsScene(BootSceneBuilder.ScenePath, true)); // Boot stays the first scene
+            }
+
+            scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
+            scenes.Add(new EditorBuildSettingsScene(EditorScenePath, true));
+            EditorBuildSettings.scenes = scenes.ToArray();
             RemoveTemplateLeftovers();
             ApplyProjectSettings();
             AssetDatabase.SaveAssets();
@@ -83,7 +88,7 @@ namespace Wick.Editor
                 Ice = Lit("Ice", new Color(0.55f, 0.75f, 0.92f)),
                 WickBody = Lit("WickBody", new Color(0.95f, 0.92f, 0.82f), new Color(0.35f, 0.28f, 0.18f)),
                 WickFace = Lit("WickFace", new Color(0.08f, 0.06f, 0.06f)),
-                Flame = Lit("Flame", new Color(1f, 0.6f, 0.2f), new Color(4f, 2f, 0.5f), ignoreMask: true),
+                Flame = FlameMaterial("Flame", ignoreMask: true),
                 Decoy = Lit("Decoy", new Color(1f, 0.85f, 0.5f), new Color(2f, 1.4f, 0.5f), ignoreMask: true),
                 Metal = Lit("Metal", new Color(0.40f, 0.40f, 0.46f)),
                 Water = Lit("Water", new Color(0.30f, 0.55f, 1f), new Color(0.1f, 0.25f, 0.6f)),
@@ -97,7 +102,7 @@ namespace Wick.Editor
                 Moths = Lit("Moths", new Color(0.88f, 0.84f, 0.62f), new Color(0.3f, 0.28f, 0.15f)),
                 Gold = Lit("Gold", new Color(1f, 0.8f, 0.2f), new Color(0.4f, 0.3f, 0.05f)),
                 Brazier = Lit("Brazier", new Color(0.30f, 0.25f, 0.20f)),
-                BrazierFlame = Lit("BrazierFlame", new Color(1f, 0.45f, 0.15f), new Color(3f, 1.2f, 0.3f)),
+                BrazierFlame = FlameMaterial("BrazierFlame", ignoreMask: false),
                 Crate = Lit("Crate", new Color(0.56f, 0.38f, 0.20f)),
                 Overlay = MaterialAsset("Overlay", Shader.Find("Wick/Overlay")),
             };
@@ -105,9 +110,17 @@ namespace Wick.Editor
 
         private static Material Lit(string name, Color baseColor, Color? emission = null, bool ignoreMask = false)
         {
-            Material mat = MaterialAsset(name, Shader.Find("Wick/VaultLit"));
+            Material mat = MaterialAsset(name, Shader.Find("Wick/StylisedLit"));
             mat.SetColor("_BaseColor", baseColor);
             mat.SetColor("_EmissionColor", emission ?? Color.black);
+            mat.SetFloat("_IgnoreMask", ignoreMask ? 1f : 0f);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        private static Material FlameMaterial(string name, bool ignoreMask)
+        {
+            Material mat = MaterialAsset(name, Shader.Find("Wick/Flame"));
             mat.SetFloat("_IgnoreMask", ignoreMask ? 1f : 0f);
             EditorUtility.SetDirty(mat);
             return mat;

@@ -4,8 +4,9 @@ using Wick.Sim;
 namespace Wick.Game
 {
     /// <summary>
-    /// Copies Wick.Sim's visibility into a one-texel-per-tile texture for WickVaultLit and is
-    /// the single place views ask "is this tile visible?". During the scout it shows
+    /// Copies Wick.Sim's visibility into a one-texel-per-tile texture for Wick/StylisedLit and
+    /// Wick/Flame (Art/Shaders/WickVisibility.hlsl), and is the single place views ask "is this
+    /// tile visible?". During the scout it shows
     /// Lighting.ComputeScout; while the clock runs, the sim's lit set (RaidState.Lit).
     /// It never computes visibility itself.
     /// </summary>
