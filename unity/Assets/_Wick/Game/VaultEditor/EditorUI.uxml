@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <Style src="EditorUI.uss" />
+    <Style src="../UI/UiKit.uss" />
     <ui:VisualElement name="root" class="root" picking-mode="Ignore">
 
         <!-- Drafts list. -->

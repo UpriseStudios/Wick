@@ -33,6 +33,11 @@ namespace Wick.Game
 
         public RaidMode Mode { get; private set; } = RaidMode.Idle;
         public RaidSim Sim { get; private set; }
+
+        /// <summary>How long the last sim tick took, in milliseconds (performance budget: under 0.2).</summary>
+        public double LastStepMs { get; private set; }
+
+        private readonly System.Diagnostics.Stopwatch _stepTimer = new System.Diagnostics.Stopwatch();
         public VaultDef Vault { get; private set; }
         public int Seed { get; private set; }
 
@@ -162,7 +167,10 @@ namespace Wick.Game
             Previous = Current;
             Current = spare;
 
+            _stepTimer.Restart();
             Sim.Step();
+            _stepTimer.Stop();
+            LastStepMs = _stepTimer.Elapsed.TotalMilliseconds; // measured around the sim, never inside it
             Current.CopyFrom(Sim.State);
 
             for (int i = 0; i < Sim.Events.Count; i++)

@@ -77,6 +77,8 @@ namespace Wick.Game
 
             _ready = true;
             _root = GetComponent<UIDocument>().rootVisualElement;
+            SafeArea.Attach(_root.Q("root") ?? _root);
+            UiFeedback.Register(_root);
             _drafts = _root.Q("drafts");
             _editor = _root.Q("editor");
             _issuesPanel = _root.Q("issues-panel");

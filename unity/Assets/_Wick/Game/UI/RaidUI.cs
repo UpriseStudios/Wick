@@ -92,6 +92,7 @@ namespace Wick.Game
 
             _ready = true;
             _root = GetComponent<UIDocument>().rootVisualElement;
+            SafeArea.Attach(_root.Q("root") ?? _root); // every layer clears notches and gesture bars
             _hud = _root.Q("hud");
             _picker = _root.Q("picker");
             _defence = _root.Q("defence");
@@ -645,7 +646,8 @@ namespace Wick.Game
                 return;
             }
 
-            _devFps.text = "FPS " + Mathf.RoundToInt(_fps);
+            PerfProbe probe = _runner.GetComponent<PerfProbe>();
+            _devFps.text = probe != null && probe.Summary.Length > 0 ? probe.Summary : "FPS " + Mathf.RoundToInt(_fps);
             if (_runner.Sim != null)
             {
                 _devTick.text = "tick " + _runner.Sim.State.Tick + "  seed " + _runner.Seed + "  " + _runner.Mode;
