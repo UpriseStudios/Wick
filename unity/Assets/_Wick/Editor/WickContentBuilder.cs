@@ -5,6 +5,7 @@ using UnityEditor.Animations;
 using UnityEditor.Build;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering;
@@ -46,6 +47,7 @@ namespace Wick.Editor
             BuildPanelSettings();
             Materials m = BuildMaterials();
             (SkinCatalog skins, AnimatorController controller) = SkinBuilder.Build();
+            AudioBuilder.Build();
             BuildPrefabs(m, skins, controller);
             LoadOrCreate<RaidTuning>(DataDir + "/RaidTuning.asset");
             LoadOrCreate<InputTuning>(DataDir + "/InputTuning.asset");
@@ -371,6 +373,12 @@ namespace Wick.Editor
             Set(overlay, "_runner", runner);
             Set(overlay, "_material", overlayMaterial);
 
+            var audioGo = new GameObject("Audio");
+            AudioDirector audio = audioGo.AddComponent<AudioDirector>();
+            Set(audio, "_mixer", AssetDatabase.LoadAssetAtPath<AudioMixer>(AudioBuilder.MixerPath));
+            Set(audio, "_bank", AssetDatabase.LoadAssetAtPath<SfxBank>(AudioBuilder.BankPath));
+            Set(audio, "_vaultView", vaultView);
+
             var cameraGo = new GameObject("Main Camera") { tag = "MainCamera" };
             Camera camera = cameraGo.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
@@ -397,6 +405,11 @@ namespace Wick.Editor
             Set(flow, "_ui", ui);
             Set(flow, "_camera", raidCamera);
             Set(flow, "_tuning", raidTuning);
+
+            RaidFeel feel = raid.AddComponent<RaidFeel>();
+            Set(feel, "_vaultView", vaultView);
+            Set(feel, "_ui", ui);
+            Set(feel, "_camera", camera);
 
             var eventSystem = new GameObject("EventSystem");
             eventSystem.AddComponent<EventSystem>();

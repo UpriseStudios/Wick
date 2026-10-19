@@ -40,9 +40,9 @@ namespace Wick.Game
             _screen = screen;
             _ui.ShowSheet(Title(screen), "Loading...", new List<RaidUI.SheetRow>());
             _ui.SetSheetMessage(null, null);
-            if (screen == "privacy")
+            if (screen == "privacy" || screen == "settings")
             {
-                DrawPrivacy();
+                DrawSettings();
                 return;
             }
 
@@ -512,7 +512,42 @@ namespace Wick.Game
         public const string PrivacyPolicyUrl = "https://" + VaultLink.Domain + "/privacy";
 
         /// <summary>The player ID (what a data request needs), ad choices where the region allows, and the policy.</summary>
-        private void DrawPrivacy()
+        /// <summary>Sound, haptics, then the privacy items (player ID, ad choices, policy).</summary>
+        private void DrawSettings()
+        {
+            var rows = new List<RaidUI.SheetRow>
+            {
+                VolumeRow("Music", AudioPrefs.Music),
+                VolumeRow("Sound effects", AudioPrefs.Sfx),
+                VolumeRow("Button sounds", AudioPrefs.Ui),
+                new RaidUI.SheetRow { Text = "Vibration: " + (AudioPrefs.Haptics ? "on" : "off") }
+                    .Button(AudioPrefs.Haptics ? "Turn off" : "Turn on", () =>
+                    {
+                        AudioPrefs.Haptics = !AudioPrefs.Haptics;
+                        Haptics.Play(HapticStrength.Medium); // a taste of it when turned on
+                        DrawSettings();
+                    }),
+            };
+            rows.AddRange(PrivacyRows());
+            _ui.ShowSheet("Settings", Consent.Personalised ? "Ads may be personalised." : "Ads are not personalised.", rows);
+        }
+
+        private RaidUI.SheetRow VolumeRow(string label, string channel)
+        {
+            float level = AudioPrefs.Get(channel);
+            void Change(float by)
+            {
+                AudioPrefs.Set(channel, Mathf.Round((AudioPrefs.Get(channel) + by) * 10f) / 10f);
+                AudioDirector.ApplyVolumes();
+                DrawSettings();
+            }
+
+            return new RaidUI.SheetRow { Text = label + ": " + Mathf.RoundToInt(level * 100f) + "%" }
+                .Button("-", () => Change(-0.1f), level > 0f)
+                .Button("+", () => Change(0.1f), level < 1f);
+        }
+
+        private List<RaidUI.SheetRow> PrivacyRows()
         {
             string id = UgsBootstrap.PlayerId;
             var rows = new List<RaidUI.SheetRow>
@@ -533,13 +568,13 @@ namespace Wick.Game
 
             rows.Add(new RaidUI.SheetRow { Text = "How we use your information." }
                 .Button("Privacy policy", () => Application.OpenURL(PrivacyPolicyUrl)));
-            _ui.ShowSheet("Privacy", Consent.Personalised ? "Ads may be personalised." : "Ads are not personalised.", rows);
+            return rows;
         }
 
         private async void ChangeAdChoices()
         {
             await Consent.ShowPrivacyOptionsAsync();
-            DrawPrivacy();
+            DrawSettings();
             _ui.SetSheetMessage("Your choices are saved.", true);
         }
 
@@ -558,7 +593,8 @@ namespace Wick.Game
                 case "pass": return "Heist Pass";
                 case "achievements": return "Achievements";
                 case "shop": return "Shop";
-                case "privacy": return "Privacy";
+                case "privacy":
+                case "settings": return "Settings";
                 case "skins": return "Skins and themes";
                 default: return "Upgrades";
             }

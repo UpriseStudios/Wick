@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0a17de90200bff44924e0a0064201d3, type: 3}
+  m_Name: SfxBank
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.SfxBank
+  Cues:
+  - Id: sfx_step
+    Clips:
+    - {fileID: 8300000, guid: 7fe6b6a589223174b95f24cf4b53d6d7, type: 3}
+    Volume: 0.45
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_tiptoe
+    Clips:
+    - {fileID: 8300000, guid: c76c4f6f1e43a7c4dbe7f68a70346588, type: 3}
+    Volume: 0.35
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_dash
+    Clips:
+    - {fileID: 8300000, guid: 2718b7be737d51141839d5abbadc5a27, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_flame_flare
+    Clips:
+    - {fileID: 8300000, guid: b3d88d1845024144d95e6a5168c48c94, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_flicker_lost
+    Clips:
+    - {fileID: 8300000, guid: f9ccc94629d0a984e9cdbf52a208fe2d, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_snuff
+    Clips:
+    - {fileID: 8300000, guid: dd7f3a9d352a86842876e6dbc82fa4ff, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_gold_grab
+    Clips:
+    - {fileID: 8300000, guid: 18a404d000b35b64b97729150055d579, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_escape
+    Clips:
+    - {fileID: 8300000, guid: 2a90e2e603603014899b83fbb7dfc128, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_drip
+    Clips:
+    - {fileID: 8300000, guid: e55ef45c0c2b07744bcf0d8c966959dd, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_bellows
+    Clips:
+    - {fileID: 8300000, guid: b98557baf7216da43b56a4c2f47ab7c7, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_spike_warning
+    Clips:
+    - {fileID: 8300000, guid: 5f6cf1dcbca1ec24c9f8e3ea026daeb8, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_snuffer_bell
+    Clips:
+    - {fileID: 8300000, guid: 30c02a5c5a01499449907fffeee79b47, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_owl_alert
+    Clips:
+    - {fileID: 8300000, guid: 4d0ec75bf6f36f247be6594c02a505e7, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_moths
+    Clips:
+    - {fileID: 8300000, guid: 0307ed1deb8d41740acf2ec5470f2f77, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.06
+    StandIn: 1
+  - Id: sfx_ui_tap
+    Clips:
+    - {fileID: 8300000, guid: a6ea6a8bed5ff104d87796c6c7f36a01, type: 3}
+    Volume: 0.8
+    PitchJitter: 0.02
+    StandIn: 1
+  MusicCalm: {fileID: 8300000, guid: e98c31db8d4856d4b8f039e6f6a994dc, type: 3}
+  MusicTense: {fileID: 8300000, guid: 1f2125507c964d34e8b6bd88fdc69f53, type: 3}
+  MusicEscape: {fileID: 8300000, guid: 3a02a65520f018742977cf1cb6479c09, type: 3}

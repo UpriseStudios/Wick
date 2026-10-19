@@ -22,6 +22,11 @@ namespace Wick.Game
 
         public ViewRegistry Registry => _registry;
 
+        private float _hitStop;
+
+        /// <summary>True while a hit-stop holds the views still (the sim keeps running).</summary>
+        public bool HitStopped => _hitStop > 0f;
+
         public WickView Wick { get; private set; }
         public DecoyView Decoy { get; private set; }
         public ViewContext Context { get; private set; }
@@ -65,7 +70,18 @@ namespace Wick.Game
                 return;
             }
 
-            _mask.Refresh();
+            _mask.Refresh(); // visibility always follows the sim, even during a hit-stop
+            if (_hitStop > 0f)
+            {
+                _hitStop -= Time.unscaledDeltaTime;
+                if (_hitStop > 0f)
+                {
+                    return; // hold every view's pose; the next sync shows the sim's current state
+                }
+
+                SetAnimatorSpeed(1f);
+            }
+
             Wick.Sync();
             Decoy.Sync();
             foreach (EntityView v in _views)
@@ -74,8 +90,28 @@ namespace Wick.Game
             }
         }
 
+        /// <summary>
+        /// Presentation-only hit-stop: views and Wick's animator pause for `seconds` of real time.
+        /// RaidRunner, the sim clock and input are untouched, so replays and hashes can't change.
+        /// </summary>
+        public void HitStop(float seconds)
+        {
+            _hitStop = Mathf.Max(_hitStop, seconds);
+            SetAnimatorSpeed(0f);
+        }
+
+        private void SetAnimatorSpeed(float speed)
+        {
+            Animator a = Wick != null && Wick.Skin != null ? Wick.Skin.Animator : null;
+            if (a != null)
+            {
+                a.speed = speed;
+            }
+        }
+
         public void Build(RaidRunner runner)
         {
+            _hitStop = 0f;
             Clear();
             VaultDef vault = runner.Vault;
             Context = new ViewContext { Runner = runner, Vault = vault, Mask = _mask, Tuning = _tuning };

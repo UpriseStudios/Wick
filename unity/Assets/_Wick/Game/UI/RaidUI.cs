@@ -107,6 +107,7 @@ namespace Wick.Game
             _stealthIcon = _root.Q("stealth-icon");
             _decoy = _root.Q<Button>("decoy-button");
             _stealthButton = _root.Q<Button>("stealth-button");
+            UiFeedback.Register(_root);
             _flickers.Clear();
             _flickers.AddRange(_root.Q("flickers").Children());
             _stars.Clear();
@@ -170,7 +171,7 @@ namespace Wick.Game
             list.Add(WideButton("Achievements", () => HomeScreenPressed?.Invoke("achievements"), "secondary"));
             list.Add(WideButton("Shop", () => HomeScreenPressed?.Invoke("shop"), "secondary"));
             list.Add(WideButton("Skins", () => HomeScreenPressed?.Invoke("skins"), "secondary"));
-            list.Add(WideButton("Privacy", () => HomeScreenPressed?.Invoke("privacy"), "secondary"));
+            list.Add(WideButton("Settings", () => HomeScreenPressed?.Invoke("settings"), "secondary"));
             list.Add(WideButton("Vault editor", () => EditorPressed?.Invoke(), "secondary"));
             list.Add(WideButton("Share my vault", () => ShareMyVaultPressed?.Invoke(), "secondary"));
 
@@ -421,6 +422,47 @@ namespace Wick.Game
         {
             EnsureReady();
             _root.Q<Button>("replay-pause").text = paused ? "Play" : "Pause";
+        }
+
+        /// <summary>
+        /// Gold that flies from a screen point (Wick) to the loot counter, a few coins staggered,
+        /// then a pulse on the counter. Presentation only.
+        /// </summary>
+        public void FlyCoins(Vector2 screenFrom, int count)
+        {
+            if (_root?.panel == null || !Visible(_hud))
+            {
+                return;
+            }
+
+            Vector2 from = RuntimePanelUtils.ScreenToPanel(_root.panel, new Vector2(screenFrom.x, Screen.height - screenFrom.y));
+            Vector2 to = _root.WorldToLocal(_loot.worldBound.center);
+            for (int i = 0; i < count; i++)
+            {
+                var coin = new VisualElement { pickingMode = PickingMode.Ignore };
+                coin.AddToClassList("fly-coin");
+                _root.Add(coin);
+                Vector2 jitter = new Vector2(UnityEngine.Random.Range(-40f, 40f), UnityEngine.Random.Range(-30f, 30f));
+                float start = Time.unscaledTime + i * 0.05f;
+                const float flight = 0.5f;
+                coin.style.left = from.x;
+                coin.style.top = from.y;
+                coin.schedule.Execute(() =>
+                {
+                    float t = Mathf.Clamp01((Time.unscaledTime - start) / flight);
+                    float ease = t * t; // speeds up into the counter
+                    Vector2 arc = Vector2.Lerp(from + jitter, to, ease) + Vector2.up * (-60f * Mathf.Sin(t * Mathf.PI));
+                    coin.style.left = arc.x;
+                    coin.style.top = arc.y;
+                    coin.style.opacity = t <= 0f ? 0f : 1f;
+                    if (t >= 1f)
+                    {
+                        coin.RemoveFromHierarchy();
+                        _loot.style.scale = new Scale(new Vector3(1.25f, 1.25f, 1f));
+                        _loot.schedule.Execute(() => _loot.style.scale = new Scale(Vector3.one)).StartingIn(80);
+                    }
+                }).Every(16).Until(() => coin.parent == null);
+            }
         }
 
         private Button WideButton(string text, Action onClick, string extraClass = null)

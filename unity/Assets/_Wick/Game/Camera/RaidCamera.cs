@@ -66,10 +66,14 @@ namespace Wick.Game
 
         private void OnSimEvent(SimEvent e)
         {
-            if (e.Type == SimEventType.FlickerLost || e.Type == SimEventType.Snuffed)
-            {
-                _punch = 1f;
-            }
+            // A punch scaled to the moment: snuff hardest, a lost flicker, then small nudges for a
+            // grab or a near miss.
+            float strength = e.Type == SimEventType.Snuffed ? 1.3f
+                : e.Type == SimEventType.FlickerLost ? 1f
+                : e.Type == SimEventType.NearMiss ? 0.45f
+                : e.Type == SimEventType.TreasureTaken ? 0.3f
+                : 0f;
+            _punch = Mathf.Max(_punch, strength);
         }
 
         private void LateUpdate()
@@ -92,7 +96,7 @@ namespace Wick.Game
             }
 
             _punch = Mathf.MoveTowards(_punch, 0f, Time.deltaTime / Mathf.Max(0.01f, _tuning.PunchSeconds));
-            float zoom = 1f + (_tuning.PunchZoom - 1f) * Mathf.Sin(_punch * Mathf.PI * 0.5f);
+            float zoom = 1f + (_tuning.PunchZoom - 1f) * Mathf.Sin(Mathf.Min(_punch, 1f) * Mathf.PI * 0.5f) * Mathf.Max(1f, _punch);
             Place(transform, _focus, _tuning, zoom);
         }
 
