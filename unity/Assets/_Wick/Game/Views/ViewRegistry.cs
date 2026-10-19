@@ -45,6 +45,7 @@ namespace Wick.Game
             }
         }
 
-        public ThemeDefinition Theme => Themes != null ? Themes.Current : null;
+        /// <summary>The chosen theme, or the bundled default until a remote one has downloaded.</summary>
+        public ThemeDefinition Theme => Themes != null ? ContentLoader.Theme(Themes, Themes.CurrentId) : null;
     }
 }

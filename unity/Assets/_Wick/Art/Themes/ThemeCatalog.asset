@@ -13,5 +13,23 @@ MonoBehaviour:
   m_Name: ThemeCatalog
   m_EditorClassIdentifier: Wick.Game::Wick.Game.ThemeCatalog
   Themes:
-  - {fileID: 11400000, guid: 3ba5cb5126bbf70439ce03a537082aea, type: 2}
-  - {fileID: 11400000, guid: 64a2bd06c08eb584d8fb0bb386302b99, type: 2}
+  - Id: theme_treasury
+    DisplayName: Classic Treasury
+    StandIn: 1
+    Bundled: {fileID: 11400000, guid: 3ba5cb5126bbf70439ce03a537082aea, type: 2}
+    Reference:
+      m_AssetGUID: 
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0
+  - Id: theme_crypt
+    DisplayName: Crypt
+    StandIn: 1
+    Bundled: {fileID: 0}
+    Reference:
+      m_AssetGUID: 64a2bd06c08eb584d8fb0bb386302b99
+      m_SubObjectName: 
+      m_SubObjectType: 
+      m_SubObjectGUID: 
+      m_EditorAssetChanged: 0

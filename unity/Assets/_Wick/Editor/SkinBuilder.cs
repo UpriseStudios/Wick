@@ -3,6 +3,7 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Rendering;
 using Wick.Editor.ArtPipeline;
 using Wick.Game;
@@ -85,7 +86,16 @@ namespace Wick.Editor
             catalog.Skins.Clear();
             foreach (SkinSpec spec in Specs)
             {
-                catalog.Skins.Add(BuildSkin(spec));
+                SkinDefinition skin = BuildSkin(spec);
+                bool bundled = spec.Id == SkinCatalog.DefaultId; // the default ships in the app; the rest are remote
+                catalog.Skins.Add(new SkinListing
+                {
+                    Id = skin.Id,
+                    DisplayName = skin.DisplayName,
+                    StandIn = skin.StandIn,
+                    Bundled = bundled ? skin : null,
+                    Reference = bundled ? null : new AssetReferenceT<SkinDefinition>(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(skin))),
+                });
             }
 
             EditorUtility.SetDirty(catalog);

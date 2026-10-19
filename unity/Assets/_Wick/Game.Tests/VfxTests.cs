@@ -31,8 +31,10 @@ namespace Wick.Game.Tests
         [Test]
         public void EverySkinsFlameAndSnuffFollowTheRules()
         {
-            foreach (SkinDefinition s in AssetDatabase.LoadAssetAtPath<SkinCatalog>(SkinCatalogPath).Skins)
+            var catalog = AssetDatabase.LoadAssetAtPath<SkinCatalog>(SkinCatalogPath);
+            foreach (SkinListing listing in catalog.Skins)
             {
+                SkinDefinition s = ContentLoader.Skin(catalog, listing.Id);
                 Assert.IsNotNull(s.SnuffVfx, s.Id + " has no snuff effect");
                 Assert.IsEmpty(VfxRules.Check(s.Id + " snuff", VfxRole.Neutral, s.SnuffVfx));
                 if (s.FlameVfx != null)

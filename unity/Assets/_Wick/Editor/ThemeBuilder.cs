@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using UnityEngine.Rendering;
 using Wick.Editor.ArtPipeline;
 using Wick.Game;
@@ -64,7 +65,16 @@ namespace Wick.Editor
             catalog.Themes.Clear();
             foreach (ThemeSpec spec in Specs)
             {
-                catalog.Themes.Add(BuildTheme(spec));
+                ThemeDefinition theme = BuildTheme(spec);
+                bool bundled = spec.Id == ThemeCatalog.DefaultId;
+                catalog.Themes.Add(new ThemeListing
+                {
+                    Id = theme.Id,
+                    DisplayName = theme.DisplayName,
+                    StandIn = theme.StandIn,
+                    Bundled = bundled ? theme : null,
+                    Reference = bundled ? null : new AssetReferenceT<ThemeDefinition>(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(theme))),
+                });
             }
 
             EditorUtility.SetDirty(catalog);

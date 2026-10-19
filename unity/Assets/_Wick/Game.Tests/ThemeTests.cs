@@ -98,9 +98,17 @@ namespace Wick.Game.Tests
 
         // ---- Every theme, every vault -----------------------------------------------------------
 
+        private static ThemeDefinition Theme(string id)
+        {
+            var catalog = AssetDatabase.LoadAssetAtPath<ThemeCatalog>(CatalogPath);
+            ThemeDefinition theme = ContentLoader.Theme(catalog, id);
+            Assert.AreEqual(id, theme.Id, "resolves to the theme itself, not the fallback");
+            return theme;
+        }
+
         public static IEnumerable<string> ThemeIds()
         {
-            foreach (ThemeDefinition t in AssetDatabase.LoadAssetAtPath<ThemeCatalog>(CatalogPath).Themes)
+            foreach (ThemeListing t in AssetDatabase.LoadAssetAtPath<ThemeCatalog>(CatalogPath).Themes)
             {
                 yield return t.Id;
             }
@@ -109,7 +117,7 @@ namespace Wick.Game.Tests
         [TestCaseSource(nameof(ThemeIds))]
         public void EveryPieceFitsOneTile(string id)
         {
-            ThemeDefinition theme = AssetDatabase.LoadAssetAtPath<ThemeCatalog>(CatalogPath).Find(id);
+            ThemeDefinition theme = Theme(id);
             foreach (TilePiece piece in Enum.GetValues(typeof(TilePiece)))
             {
                 Assert.IsNotNull(theme.PrefabFor(new PieceChoice(piece, Dir.N, 0, false)), id + " has nothing for " + piece);
@@ -151,7 +159,7 @@ namespace Wick.Game.Tests
                 Assert.Ignore("No GPU in this run");
             }
 
-            ThemeDefinition theme = AssetDatabase.LoadAssetAtPath<ThemeCatalog>(CatalogPath).Find(id);
+            ThemeDefinition theme = Theme(id);
             Shader.SetGlobalVector("_WickVisGrid", Vector4.zero); // no mask: judge the art itself
             Shader.SetGlobalFloat("_WickLitBoost", 0f);
             var light = new GameObject("Neutral light (test)").AddComponent<Light>();

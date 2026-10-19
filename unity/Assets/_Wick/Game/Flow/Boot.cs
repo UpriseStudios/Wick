@@ -19,6 +19,7 @@ namespace Wick.Game
             Screen.sleepTimeout = SleepTimeout.NeverSleep; // the screen stays on while the game is open
             LinkRouter.Init(this);
             _ = UgsBootstrap.EnsureSignedInAsync();
+            _ = ContentLoader.InitializeAsync(); // remote content catalog, checked for updates
 
             // Returning players settle consent here (the UMP form, if their region needs it); a first
             // launch asks the age question on Home first.

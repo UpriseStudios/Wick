@@ -7,7 +7,9 @@
         "Wick.Economy",
         "Unity.InputSystem",
         "UnityEngine.UI",
-        "NativeShare.Runtime"
+        "NativeShare.Runtime",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

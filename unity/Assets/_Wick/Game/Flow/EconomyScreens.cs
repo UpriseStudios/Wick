@@ -464,33 +464,35 @@ namespace Wick.Game
                 return rows;
             }
 
-            SkinDefinition equipped = _skins.Equipped;
-            foreach (SkinDefinition s in _skins.Skins)
+            string equipped = _skins.EquippedId;
+            foreach (SkinListing s in _skins.Skins)
             {
                 bool owned = s.Id == SkinCatalog.DefaultId || _state.Cosmetics?.Contains(s.Id) == true;
+                bool on = s.Id == equipped;
                 string text = s.DisplayName + (s.StandIn ? "  (placeholder model)" : "") + "\n" +
-                    (s == equipped ? "Equipped" : owned ? "Owned" : "From the shop or the Heist Pass");
-                rows.Add(new RaidUI.SheetRow { Text = text, Style = s == equipped ? "held" : null }
-                    .Button(s == equipped ? "Equipped" : "Equip", () => Equip(s.Id), owned && s != equipped));
+                    (on ? "Equipped" : owned ? "Owned" : "From the shop or the Heist Pass");
+                rows.Add(new RaidUI.SheetRow { Text = text, Style = on ? "held" : null }
+                    .Button(on ? "Equipped" : "Equip", () => Equip(s.Id), owned && !on));
             }
 
             if (_themes != null)
             {
-                ThemeDefinition current = _themes.Current;
-                foreach (ThemeDefinition t in _themes.Themes)
+                string current = _themes.CurrentId;
+                foreach (ThemeListing t in _themes.Themes)
                 {
                     // Themes are on sale later; development builds can try them all now.
                     bool owned = t.Id == ThemeCatalog.DefaultId || Debug.isDebugBuild || _state.Cosmetics?.Contains(t.Id) == true;
                     rows.Add(new RaidUI.SheetRow
                     {
-                        Text = "Vault theme: " + t.DisplayName + (t.StandIn ? "  (placeholder kit)" : "") + "\n" + (t == current ? "In use" : owned ? "Owned" : "Coming soon"),
-                        Style = t == current ? "held" : null,
-                    }.Button(t == current ? "In use" : "Use", () =>
+                        Text = "Vault theme: " + t.DisplayName + (t.StandIn ? "  (placeholder kit)" : "") + "\n" + (t.Id == current ? "In use" : owned ? "Owned" : "Coming soon"),
+                        Style = t.Id == current ? "held" : null,
+                    }.Button(t.Id == current ? "In use" : "Use", () =>
                     {
                         ThemeCatalog.Choose(t.Id);
+                        _ = ContentLoader.PrefetchAsync(_skins, _themes);
                         _ui.SetSheetMessage("Vaults now show as " + t.DisplayName + ".", true);
                         Draw();
-                    }, owned && t != current));
+                    }, owned && t.Id != current));
                 }
             }
 
@@ -501,6 +503,7 @@ namespace Wick.Game
         {
             if (SkinCatalog.Equip(id, _state.Cosmetics))
             {
+                _ = ContentLoader.PrefetchAsync(_skins, _themes);
                 _ui.SetSheetMessage("Equipped. Your next raid uses it.", true);
             }
 

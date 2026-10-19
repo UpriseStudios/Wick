@@ -35,10 +35,10 @@ namespace Wick.Game
             _holder = holder;
         }
 
-        /// <summary>The equipped skin, unless this one already shows it.</summary>
+        /// <summary>The equipped skin (the default until a remote skin has downloaded), unless already shown.</summary>
         public void ApplyEquipped()
         {
-            SkinDefinition skin = _catalog != null ? _catalog.Equipped : null;
+            SkinDefinition skin = _catalog != null ? ContentLoader.Skin(_catalog, _catalog.EquippedId) : null;
             if (skin != null && skin != Current)
             {
                 Apply(skin);

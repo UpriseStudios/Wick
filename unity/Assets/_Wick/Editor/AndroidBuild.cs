@@ -15,11 +15,15 @@ namespace Wick.Editor
     {
         public const string OutputPath = "Builds/Wick-dev.apk";
 
+        /// <summary>The install-size budget (tech design, Testing and performance budgets).</summary>
+        public const long InstallBudgetMb = 150;
+
         [MenuItem("Wick/Build Android Dev APK")]
         public static void BuildDev()
         {
             GoldenSync.Sync(true);
             EditorUserBuildSettings.buildAppBundle = false;
+            AddressablesSetup.UseProfile(AddressablesSetup.Development); // remote groups ride along in dev APKs
 
             var options = new BuildPlayerOptions
             {
@@ -33,11 +37,18 @@ namespace Wick.Editor
 
             BuildReport report = BuildPipeline.BuildPlayer(options);
             BuildSummary summary = report.summary;
-            Debug.Log("AndroidBuild: " + summary.result + ", " + summary.totalSize / (1024 * 1024) + " MB, " +
-                summary.totalTime.TotalSeconds.ToString("0") + " s -> " + OutputPath);
             if (summary.result != BuildResult.Succeeded)
             {
                 throw new Exception("Android build failed: " + summary.result + " (" + summary.totalErrors + " errors)");
+            }
+
+            // The APK itself, not summary.totalSize (Unity's uncompressed build data, several times larger).
+            long apkMb = new System.IO.FileInfo(OutputPath).Length / (1024 * 1024);
+            Debug.Log("AndroidBuild: " + summary.result + ", APK " + apkMb + " MB of the " + InstallBudgetMb + " MB budget, " +
+                summary.totalTime.TotalSeconds.ToString("0") + " s -> " + OutputPath);
+            if (apkMb > InstallBudgetMb)
+            {
+                Debug.LogWarning("AndroidBuild: the APK is over the install-size budget (" + apkMb + " MB > " + InstallBudgetMb + " MB)");
             }
         }
     }

@@ -150,7 +150,10 @@ namespace Wick.Game
             WickSkin wick = vaultView != null && vaultView.Registry != null && vaultView.Registry.Wick != null
                 ? vaultView.Registry.Wick.GetComponent<WickSkin>()
                 : null;
-            _screens.Bind(_ui, wick != null ? wick.Catalog : null, vaultView != null && vaultView.Registry != null ? vaultView.Registry.Themes : null);
+            SkinCatalog skins = wick != null ? wick.Catalog : null;
+            ThemeCatalog themes = vaultView != null && vaultView.Registry != null ? vaultView.Registry.Themes : null;
+            _screens.Bind(_ui, skins, themes);
+            _ = ContentLoader.PrefetchAsync(skins, themes); // the equipped skin and chosen theme, ready for the next raid
             ShowPicker();
             SettleConsent();
             LinkRouter.Init(this); // already done by Boot; this covers starting in the Raid scene

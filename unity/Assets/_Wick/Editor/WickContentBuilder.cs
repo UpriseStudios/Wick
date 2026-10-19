@@ -45,11 +45,13 @@ namespace Wick.Editor
             // Anything that imports assets runs before the references the scene keeps are loaded:
             // an import can replace freshly created objects and leave stale references behind.
             BuildPanelSettings();
+            UiKitBuilder.Build(); // before the screens load their styles
             Materials m = BuildMaterials();
             VfxLibrary vfx = VfxBuilder.Build();
             (SkinCatalog skins, AnimatorController controller) = SkinBuilder.Build();
             AudioBuilder.Build();
-            BuildPrefabs(m, skins, controller);
+            ViewRegistry registry = BuildPrefabs(m, skins, controller);
+            AddressablesSetup.Configure(skins, registry.Themes); // skins and themes beyond the defaults are remote
             LoadOrCreate<RaidTuning>(DataDir + "/RaidTuning.asset");
             LoadOrCreate<InputTuning>(DataDir + "/InputTuning.asset");
             AssetDatabase.SaveAssets();
@@ -370,6 +372,8 @@ namespace Wick.Editor
             Set(input, "_runner", runner);
             Set(input, "_tuning", inputTuning);
             Set(input, "_raidTuning", raidTuning);
+            PerfProbe probe = raid.AddComponent<PerfProbe>();
+            Set(probe, "_runner", runner);
             DevOverlay overlay = raid.AddComponent<DevOverlay>();
             Set(overlay, "_runner", runner);
             Set(overlay, "_material", overlayMaterial);

@@ -38,7 +38,7 @@ namespace Wick.Game.Tests
         public static IEnumerable<string> SkinIds()
         {
             var catalog = AssetDatabase.LoadAssetAtPath<SkinCatalog>(CatalogPath);
-            foreach (SkinDefinition s in catalog.Skins)
+            foreach (SkinListing s in catalog.Skins)
             {
                 yield return s.Id;
             }
@@ -52,7 +52,7 @@ namespace Wick.Game.Tests
             _spawned.Add(go);
             WickSkin skin = go.AddComponent<WickSkin>();
             skin.Bind(catalog, controller, go.transform);
-            skin.Apply(catalog.Find(id));
+            skin.Apply(ContentLoader.Skin(catalog, id));
             ReactionDriver reactions = go.AddComponent<ReactionDriver>();
             reactions.Bind(skin.Animator, skin.Face);
             skin.Animator.Rebind();
@@ -63,11 +63,11 @@ namespace Wick.Game.Tests
         public void TheCatalogHasTheDefaultAndEverySkinTheEconomyGrants()
         {
             var catalog = AssetDatabase.LoadAssetAtPath<SkinCatalog>(CatalogPath);
-            Assert.IsNotNull(catalog.Find(SkinCatalog.DefaultId));
+            Assert.IsNotNull(catalog.Default, "the default skin ships in the app");
             string economy = File.ReadAllText("Assets/_Wick/Resources/Economy/economy-default.json");
             foreach (Match m in Regex.Matches(economy, "\"(skin_[a-z0-9_]+)\""))
             {
-                Assert.IsNotNull(catalog.Find(m.Groups[1].Value), m.Groups[1].Value + " can be granted but has no skin");
+                Assert.IsNotNull(catalog.Listing(m.Groups[1].Value), m.Groups[1].Value + " can be granted but has no skin");
             }
         }
 
