@@ -16,6 +16,7 @@ namespace Wick.Game
     public sealed class EconomyScreens : MonoBehaviour
     {
         private RaidUI _ui;
+        private SkinCatalog _skins;
         private readonly EconomyClient _economy = new EconomyClient();
         private readonly RewardedAds _ads = new RewardedAds();
         private string _screen;
@@ -24,9 +25,10 @@ namespace Wick.Game
         private bool _busy;
         private bool _settling;
 
-        public void Bind(RaidUI ui)
+        public void Bind(RaidUI ui, SkinCatalog skins)
         {
             _ui = ui;
+            _skins = skins;
         }
 
         public bool Showing => _screen != null;
@@ -144,6 +146,9 @@ namespace Wick.Game
                     break;
                 case "shop":
                     _ui.ShowSheet("Shop", wallet, ShopRows(cfg));
+                    break;
+                case "skins":
+                    _ui.ShowSheet("Skins", "Every skin shares Wick's size and moves: looks only.", SkinRows());
                     break;
             }
         }
@@ -447,6 +452,39 @@ namespace Wick.Game
             return sb.ToString();
         }
 
+        // ---- Skins ----------------------------------------------------------------------------
+
+        private List<RaidUI.SheetRow> SkinRows()
+        {
+            var rows = new List<RaidUI.SheetRow>();
+            if (_skins == null)
+            {
+                return rows;
+            }
+
+            SkinDefinition equipped = _skins.Equipped;
+            foreach (SkinDefinition s in _skins.Skins)
+            {
+                bool owned = s.Id == SkinCatalog.DefaultId || _state.Cosmetics?.Contains(s.Id) == true;
+                string text = s.DisplayName + (s.StandIn ? "  (placeholder model)" : "") + "\n" +
+                    (s == equipped ? "Equipped" : owned ? "Owned" : "From the shop or the Heist Pass");
+                rows.Add(new RaidUI.SheetRow { Text = text, Style = s == equipped ? "held" : null }
+                    .Button(s == equipped ? "Equipped" : "Equip", () => Equip(s.Id), owned && s != equipped));
+            }
+
+            return rows;
+        }
+
+        private void Equip(string id)
+        {
+            if (SkinCatalog.Equip(id, _state.Cosmetics))
+            {
+                _ui.SetSheetMessage("Equipped. Your next raid uses it.", true);
+            }
+
+            Draw();
+        }
+
         // ---- Privacy ------------------------------------------------------------------------
 
         public const string PrivacyPolicyUrl = "https://" + VaultLink.Domain + "/privacy";
@@ -499,6 +537,7 @@ namespace Wick.Game
                 case "achievements": return "Achievements";
                 case "shop": return "Shop";
                 case "privacy": return "Privacy";
+                case "skins": return "Skins";
                 default: return "Upgrades";
             }
         }

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e02633f023db8c499847a41a7dcf05c, type: 3}
+  m_Name: SkinCatalog
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.SkinCatalog
+  Skins:
+  - {fileID: 11400000, guid: b7b13a055f41f3c4aabe7b12ef7dee65, type: 2}
+  - {fileID: 11400000, guid: bd826b6e987d0e54b8e805349fa23e7b, type: 2}
+  - {fileID: 11400000, guid: 0ad10e6c822a28046a5c10a72f6dbfc7, type: 2}
+  - {fileID: 11400000, guid: 0ee298d55a885cc4392c67588d1825af, type: 2}
+  - {fileID: 11400000, guid: 59551bbb74df2274ca584fdc4744f9c3, type: 2}
+  - {fileID: 11400000, guid: e4e4ff3b47986c54a826e093ab40665c, type: 2}
+  - {fileID: 11400000, guid: f488fb6cc06b0214e85bb3b1e91f78d3, type: 2}
+  - {fileID: 11400000, guid: 09faeb7823b586246a0656e779335331, type: 2}

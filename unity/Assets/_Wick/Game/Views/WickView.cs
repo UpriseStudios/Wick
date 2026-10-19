@@ -4,9 +4,10 @@ using Wick.Sim;
 namespace Wick.Game
 {
     /// <summary>
-    /// Wick: interpolated position and facing, and his flame. The flame's point light range and
-    /// the flame mesh size follow the sim's light radius (Lighting.RadiusUnits), so tiptoe and
-    /// a Bellows gust visibly dim him. The light is decoration only: visibility is the mask.
+    /// Wick: interpolated position and facing, his skin and his flame. The flame's point light
+    /// range and the flame bone's scale follow the sim's light radius (Lighting.RadiusUnits), so
+    /// tiptoe and a Bellows gust visibly dim him, and Wick/Flame grows frantic as flickers run
+    /// out. The light is decoration only: visibility is the mask.
     /// </summary>
     public sealed class WickView : MonoBehaviour
     {
@@ -14,16 +15,19 @@ namespace Wick.Game
         private static readonly int FlareId = Shader.PropertyToID("_Flare");
 
         [SerializeField] private Transform _body;
-        [SerializeField] private Transform _flame;
         [SerializeField] private Light _flameLight;
         [SerializeField] private ReactionDriver _reactions;
+        [SerializeField] private WickSkin _skin;
 
         private ViewContext _ctx;
         private float _range;
+        private float _baseRange;
         private float _rangeVelocity;
         private float _flare;
-        private Renderer _flameRenderer;
         private MaterialPropertyBlock _flameProps;
+
+        public WickSkin Skin => _skin;
+        public ReactionDriver Reactions => _reactions;
 
         public void Init(ViewContext ctx)
         {
@@ -31,11 +35,17 @@ namespace Wick.Game
             transform.position = SimPose.Position(ctx.Current.Wick);
             transform.rotation = SimPose.Facing(ctx.Current.Wick.Facing);
             _range = TargetRange();
-            _flameRenderer = _flame != null ? _flame.GetComponent<Renderer>() : null;
+            _baseRange = Mathf.Max(0.01f, _range); // the flame's rest size is a full, calm flame
             _flameProps ??= new MaterialPropertyBlock();
             if (_flameLight != null)
             {
                 _flameLight.color = ctx.Tuning.FlameColor;
+            }
+
+            if (_skin != null)
+            {
+                _skin.ApplyEquipped();
+                _reactions?.Bind(_skin.Animator, _skin.Face);
             }
 
             if (_reactions != null)
@@ -67,20 +77,28 @@ namespace Wick.Game
                 _flameLight.intensity = _ctx.Tuning.FlameIntensity * (1f + _flare);
             }
 
-            if (_flame != null)
+            if (_skin != null && _skin.Flame != null)
             {
-                _flame.gameObject.SetActive(lit);
-                float size = 0.15f + 0.06f * _range / _ctx.Tuning.FlameRangePerTile + _flare * 0.15f;
-                _flame.localScale = new Vector3(size, size * 1.6f, size); // taller than wide, like a flame
+                float scale = Mathf.Clamp(_range / _baseRange, 0.4f, 1.4f) * (1f + _flare * 0.3f);
+                _skin.Flame.localScale = Vector3.one * scale;
             }
 
-            if (_flameRenderer != null)
+            Renderer flame = _skin != null ? _skin.FlameRenderer : null;
+            if (flame != null)
             {
-                // Wick/Flame sways harder and dims a little as flickers run out.
-                _flameRenderer.GetPropertyBlock(_flameProps);
+                flame.enabled = lit;
+                flame.GetPropertyBlock(_flameProps);
                 _flameProps.SetFloat(FlickersId, cur.Flickers);
                 _flameProps.SetFloat(FlareId, _flare);
-                _flameRenderer.SetPropertyBlock(_flameProps);
+                flame.SetPropertyBlock(_flameProps);
+            }
+
+            if (_skin != null && _skin.FlameTip != null)
+            {
+                foreach (Transform vfx in _skin.FlameTip)
+                {
+                    vfx.gameObject.SetActive(lit);
+                }
             }
 
             if (_reactions != null)
@@ -99,6 +117,13 @@ namespace Wick.Game
             if (e.Type == SimEventType.TreasureTaken || e.Type == SimEventType.BrazierUsed)
             {
                 _flare = 1f;
+            }
+
+            if (e.Type == SimEventType.Snuffed && _skin?.Current?.SnuffVfx != null)
+            {
+                Transform at = _skin.FlameTip != null ? _skin.FlameTip : transform;
+                GameObject puff = Instantiate(_skin.Current.SnuffVfx, at.position, Quaternion.identity, transform.parent);
+                Destroy(puff, 4f);
             }
         }
 

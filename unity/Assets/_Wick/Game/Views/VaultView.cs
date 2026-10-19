@@ -20,6 +20,8 @@ namespace Wick.Game
         private EntityView[] _byObject = Array.Empty<EntityView>();
         private Transform _root;
 
+        public ViewRegistry Registry => _registry;
+
         public WickView Wick { get; private set; }
         public DecoyView Decoy { get; private set; }
         public ViewContext Context { get; private set; }

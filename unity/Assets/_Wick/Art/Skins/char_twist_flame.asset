@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0595ef70f88bd4997139aae88d8393, type: 3}
+  m_Name: char_twist_flame
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.SkinDefinition
+  Id: skin_twist_flame
+  DisplayName: Blazing Twist
+  Model: {fileID: 2057276592174979033, guid: f9b90395b284d6946a583bf431a89896, type: 3}
+  BodyMaterial: {fileID: 0}
+  FlameMaterial: {fileID: 2100000, guid: c42ad58543754c64097debef8d9faea0, type: 2}
+  FlameVfx: {fileID: 0}
+  SnuffVfx: {fileID: 0}
+  Icon: {fileID: 0}
+  StandIn: 1

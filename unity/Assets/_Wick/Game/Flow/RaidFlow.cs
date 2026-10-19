@@ -146,7 +146,11 @@ namespace Wick.Game
             }
 
             _screens = gameObject.AddComponent<EconomyScreens>();
-            _screens.Bind(_ui);
+            VaultView vaultView = FindAnyObjectByType<VaultView>();
+            WickSkin wick = vaultView != null && vaultView.Registry != null && vaultView.Registry.Wick != null
+                ? vaultView.Registry.Wick.GetComponent<WickSkin>()
+                : null;
+            _screens.Bind(_ui, wick != null ? wick.Catalog : null);
             ShowPicker();
             SettleConsent();
             LinkRouter.Init(this); // already done by Boot; this covers starting in the Raid scene

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c0595ef70f88bd4997139aae88d8393, type: 3}
+  m_Name: char_drippy
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.SkinDefinition
+  Id: skin_drippy
+  DisplayName: Drippy
+  Model: {fileID: 7376242213521300960, guid: 0f0b907662402a844b57737959e6c17f, type: 3}
+  BodyMaterial: {fileID: 0}
+  FlameMaterial: {fileID: 2100000, guid: 97e57dd6cf3763347afdfc02218ac14b, type: 2}
+  FlameVfx: {fileID: 0}
+  SnuffVfx: {fileID: 0}
+  Icon: {fileID: 0}
+  StandIn: 1

@@ -15,8 +15,9 @@ namespace Wick.Editor
 {
     /// <summary>
     /// Generates the placeholder (grey-box) content for the raid scene from code: materials,
-    /// primitive prefabs, the ViewRegistry, tuning assets, Wick's Animator controller, UI panel
-    /// settings, the Raid scene, and build/player settings. Idempotent: run it again after
+    /// primitive prefabs, the ViewRegistry, tuning assets, Wick's skins and shared Animator
+    /// controller (SkinBuilder), UI panel settings, the Raid scene, and build/player settings.
+    /// Idempotent: run it again after
     /// changing it. Real art replaces the prefabs later through the ViewRegistry.
     /// Menu: Wick > Rebuild Placeholder Content. Batch: -executeMethod Wick.Editor.WickContentBuilder.Build
     /// </summary>
@@ -44,8 +45,8 @@ namespace Wick.Editor
             // an import can replace freshly created objects and leave stale references behind.
             BuildPanelSettings();
             Materials m = BuildMaterials();
-            AnimatorController controller = BuildAnimator();
-            BuildPrefabs(m, controller);
+            (SkinCatalog skins, AnimatorController controller) = SkinBuilder.Build();
+            BuildPrefabs(m, skins, controller);
             LoadOrCreate<RaidTuning>(DataDir + "/RaidTuning.asset");
             LoadOrCreate<InputTuning>(DataDir + "/InputTuning.asset");
             AssetDatabase.SaveAssets();
@@ -71,7 +72,7 @@ namespace Wick.Editor
         private sealed class Materials
         {
             public Material Floor, Wall, Door, Pit, Ice;
-            public Material WickBody, WickFace, Flame, Decoy;
+            public Material Flame, Decoy;
             public Material Metal, Water, Gust, Spikes, Warning, Bell, Plate;
             public Material Owl, OwlEye, Moths, Gold, Brazier, BrazierFlame, Crate;
             public Material Overlay;
@@ -86,8 +87,6 @@ namespace Wick.Editor
                 Door = Lit("Door", new Color(0.45f, 0.30f, 0.18f)),
                 Pit = Lit("Pit", new Color(0.03f, 0.03f, 0.04f)),
                 Ice = Lit("Ice", new Color(0.55f, 0.75f, 0.92f)),
-                WickBody = Lit("WickBody", new Color(0.95f, 0.92f, 0.82f), new Color(0.35f, 0.28f, 0.18f)),
-                WickFace = Lit("WickFace", new Color(0.08f, 0.06f, 0.06f)),
                 Flame = FlameMaterial("Flame", ignoreMask: true),
                 Decoy = Lit("Decoy", new Color(1f, 0.85f, 0.5f), new Color(2f, 1.4f, 0.5f), ignoreMask: true),
                 Metal = Lit("Metal", new Color(0.40f, 0.40f, 0.46f)),
@@ -140,128 +139,9 @@ namespace Wick.Editor
             return mat;
         }
 
-        // ---- Animator --------------------------------------------------------------------
-
-        private static AnimatorController BuildAnimator()
-        {
-            string path = AnimationDir + "/Wick.controller";
-            AssetDatabase.DeleteAsset(path);
-            AnimatorController controller = AnimatorController.CreateAnimatorControllerAtPath(path);
-            controller.AddParameter("Fear", AnimatorControllerParameterType.Float);
-            controller.AddParameter("Flickers", AnimatorControllerParameterType.Int);
-            controller.AddParameter("Greed", AnimatorControllerParameterType.Float);
-            controller.AddParameter("Tiptoe", AnimatorControllerParameterType.Bool);
-            controller.AddParameter("Outcome", AnimatorControllerParameterType.Int);
-
-            AnimationClip idle = Clip("Idle", true, ("", "m_LocalScale", Curve3(Vector3.one)));
-            AnimationClip scared = Clip("Scared", true,
-                ("", "m_LocalPosition.x", Wobble(0.04f, 0.15f)),
-                ("", "m_LocalScale", Curve3(new Vector3(0.95f, 1.03f, 0.95f))));
-            AnimationClip tiptoe = Clip("Tiptoe", true, ("", "m_LocalScale", Curve3(new Vector3(1.12f, 0.72f, 1.12f))));
-            AnimationClip escaped = Clip("Escaped", true, ("", "m_LocalPosition.y", Hop()));
-            AnimationClip snuffed = Clip("Snuffed", false, ("", "m_LocalScale", Shrink()));
-            AnimationClip calm = Clip("FaceCalm", true, ("Face", "m_LocalScale", Curve3(Vector3.one)));
-            AnimationClip grin = Clip("FaceGrin", true, ("Face", "m_LocalScale", Curve3(new Vector3(1.6f, 0.6f, 1f))));
-
-            AnimatorStateMachine sm = controller.layers[0].stateMachine;
-            BlendTree fearTree;
-            AnimatorState normal = controller.CreateBlendTreeInController("Normal", out fearTree, 0);
-            fearTree.blendParameter = "Fear";
-            fearTree.AddChild(idle, 0f);
-            fearTree.AddChild(scared, 1f);
-            AnimatorState tip = sm.AddState("Tiptoe");
-            tip.motion = tiptoe;
-            AnimatorState esc = sm.AddState("Escaped");
-            esc.motion = escaped;
-            AnimatorState snuff = sm.AddState("Snuffed");
-            snuff.motion = snuffed;
-            sm.defaultState = normal;
-
-            Transition(normal, tip, AnimatorConditionMode.If, "Tiptoe");
-            Transition(tip, normal, AnimatorConditionMode.IfNot, "Tiptoe");
-            AnimatorStateTransition toEscaped = sm.AddAnyStateTransition(esc);
-            toEscaped.AddCondition(AnimatorConditionMode.Equals, 1, "Outcome");
-            toEscaped.canTransitionToSelf = false;
-            AnimatorStateTransition toSnuffed = sm.AddAnyStateTransition(snuff);
-            toSnuffed.AddCondition(AnimatorConditionMode.Equals, 2, "Outcome");
-            toSnuffed.canTransitionToSelf = false;
-
-            // Greed: a second layer that only drives the face.
-            controller.AddLayer("Greed");
-            AnimatorControllerLayer[] layers = controller.layers;
-            layers[1].defaultWeight = 1f;
-            controller.layers = layers;
-            BlendTree greedTree;
-            controller.CreateBlendTreeInController("Greed", out greedTree, 1);
-            greedTree.blendParameter = "Greed";
-            greedTree.AddChild(calm, 0f);
-            greedTree.AddChild(grin, 1f);
-
-            EditorUtility.SetDirty(controller);
-            return controller;
-        }
-
-        private static void Transition(AnimatorState from, AnimatorState to, AnimatorConditionMode mode, string param)
-        {
-            AnimatorStateTransition t = from.AddTransition(to);
-            t.AddCondition(mode, 0f, param);
-            t.hasExitTime = false;
-            t.duration = 0.1f;
-        }
-
-        private static AnimationClip Clip(string name, bool loop, params (string path, string property, AnimationCurve[] curves)[] tracks)
-        {
-            string path = AnimationDir + "/" + name + ".anim";
-            AssetDatabase.DeleteAsset(path);
-            var clip = new AnimationClip { name = name };
-            foreach ((string trackPath, string property, AnimationCurve[] curves) in tracks)
-            {
-                if (curves.Length == 3)
-                {
-                    clip.SetCurve(trackPath, typeof(Transform), property + ".x", curves[0]);
-                    clip.SetCurve(trackPath, typeof(Transform), property + ".y", curves[1]);
-                    clip.SetCurve(trackPath, typeof(Transform), property + ".z", curves[2]);
-                }
-                else
-                {
-                    clip.SetCurve(trackPath, typeof(Transform), property, curves[0]);
-                }
-            }
-
-            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
-            settings.loopTime = loop;
-            AnimationUtility.SetAnimationClipSettings(clip, settings);
-            AssetDatabase.CreateAsset(clip, path);
-            return clip;
-        }
-
-        private static AnimationCurve[] Curve3(Vector3 v)
-        {
-            return new[] { AnimationCurve.Constant(0f, 1f, v.x), AnimationCurve.Constant(0f, 1f, v.y), AnimationCurve.Constant(0f, 1f, v.z) };
-        }
-
-        private static AnimationCurve[] Wobble(float amount, float period)
-        {
-            var c = new AnimationCurve(
-                new Keyframe(0f, 0f), new Keyframe(period * 0.25f, amount), new Keyframe(period * 0.75f, -amount), new Keyframe(period, 0f));
-            return new[] { c };
-        }
-
-        private static AnimationCurve[] Hop()
-        {
-            return new[] { new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(0.2f, 0.35f), new Keyframe(0.4f, 0f), new Keyframe(0.8f, 0f)) };
-        }
-
-        private static AnimationCurve[] Shrink()
-        {
-            AnimationCurve s = AnimationCurve.EaseInOut(0f, 1f, 0.6f, 0.45f);
-            AnimationCurve h = AnimationCurve.EaseInOut(0f, 1f, 0.6f, 0.25f);
-            return new[] { s, h, s };
-        }
-
         // ---- Prefabs ---------------------------------------------------------------------
 
-        private static ViewRegistry BuildPrefabs(Materials m, AnimatorController controller)
+        private static ViewRegistry BuildPrefabs(Materials m, SkinCatalog skins, AnimatorController controller)
         {
             ViewRegistry registry = LoadOrCreate<ViewRegistry>(DataDir + "/ViewRegistry.asset");
 
@@ -276,21 +156,16 @@ namespace Wick.Editor
             registry.Pit = Save("Pit", root => Box(root, "Hole", new Vector3(0f, -0.3f, 0f), new Vector3(1f, 0.05f, 1f), m.Pit));
             registry.Ice = Save("Ice", root => Box(root, "Slab", new Vector3(0f, -0.05f, 0f), new Vector3(1f, 0.1f, 1f), m.Ice));
 
+            // Wick is a holder: WickSkin puts the equipped skin's model in "Skin" when a raid loads.
             registry.Wick = Save("Wick", root =>
             {
-                var body = new GameObject("Body").transform;
+                var body = new GameObject("Skin").transform;
                 body.SetParent(root, false);
-                Prim(PrimitiveType.Capsule, body, "Candle", new Vector3(0f, 0.35f, 0f), new Vector3(0.45f, 0.35f, 0.45f), m.WickBody);
-                var face = new GameObject("Face").transform;
-                face.SetParent(body, false);
-                face.localPosition = new Vector3(0f, 0.5f, 0.2f);
-                Prim(PrimitiveType.Sphere, face, "EyeL", new Vector3(-0.09f, 0f, 0f), Vector3.one * 0.09f, m.WickFace);
-                Prim(PrimitiveType.Sphere, face, "EyeR", new Vector3(0.09f, 0f, 0f), Vector3.one * 0.09f, m.WickFace);
-                Animator animator = body.gameObject.AddComponent<Animator>();
-                animator.runtimeAnimatorController = controller;
-                animator.applyRootMotion = false;
+                WickSkin skin = root.gameObject.AddComponent<WickSkin>();
+                Set(skin, "_catalog", skins);
+                Set(skin, "_controller", controller);
+                Set(skin, "_holder", body);
 
-                Transform flame = Prim(PrimitiveType.Sphere, root, "Flame", new Vector3(0f, 0.85f, 0f), Vector3.one * 0.25f, m.Flame).transform;
                 var lightGo = new GameObject("FlameLight");
                 lightGo.transform.SetParent(root, false);
                 lightGo.transform.localPosition = new Vector3(0f, 1.1f, 0f);
@@ -300,12 +175,11 @@ namespace Wick.Editor
                 light.range = 5f;
 
                 ReactionDriver reactions = root.gameObject.AddComponent<ReactionDriver>();
-                Set(reactions, "_animator", animator);
                 WickView view = root.gameObject.AddComponent<WickView>();
                 Set(view, "_body", body);
-                Set(view, "_flame", flame);
                 Set(view, "_flameLight", light);
                 Set(view, "_reactions", reactions);
+                Set(view, "_skin", skin);
             });
 
             registry.Decoy = Save("Decoy", root =>
