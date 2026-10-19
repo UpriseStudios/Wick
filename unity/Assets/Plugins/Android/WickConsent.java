@@ -54,6 +54,33 @@ public final class WickConsent {
         });
     }
 
+    /** The privacy options form, so players can change their choices later (Google requires an entry point). */
+    public static void showPrivacyOptions(final Activity activity) {
+        state = 0;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    UserMessagingPlatform.showPrivacyOptionsForm(activity, formError -> {
+                        if (formError != null) {
+                            error = formError.getMessage();
+                        }
+                        state = 1;
+                    });
+                } catch (Throwable t) {
+                    error = String.valueOf(t.getMessage());
+                    state = 2;
+                }
+            }
+        });
+    }
+
+    /** True where the player's region lets them revisit their choices (the form above is available). */
+    public static boolean privacyOptionsRequired(Activity activity) {
+        return UserMessagingPlatform.getConsentInformation(activity).getPrivacyOptionsRequirementStatus()
+            == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED;
+    }
+
     public static int state() {
         return state;
     }

@@ -125,3 +125,47 @@ h1 {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
 }
+
+/* Long-form pages (privacy policy). */
+body.doc {
+  display: block;
+}
+
+.card.doc-card {
+  max-width: 720px;
+  margin: 24px auto;
+  text-align: left;
+}
+
+.doc-card h2 {
+  margin: 28px 0 8px;
+  font-size: 19px;
+  color: var(--gold);
+}
+
+.doc-card p,
+.doc-card li {
+  color: var(--text);
+}
+
+.doc-card a {
+  color: var(--gold);
+}
+
+.doc-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.doc-card th,
+.doc-card td {
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+  vertical-align: top;
+}
+
+.doc-card .table-wrap {
+  overflow-x: auto;
+}

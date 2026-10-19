@@ -10,7 +10,7 @@ namespace Wick.Game
 {
     /// <summary>
     /// Home's economy screens: Upgrades (Vault Level and Lantern, timers, gems, ad speed-ups),
-    /// Heist Pass, Achievements and Shop. All numbers come from the server's state and config;
+    /// Heist Pass, Achievements and Shop, plus the Privacy screen. All numbers come from the server's state and config;
     /// every action is a server call, and the screen redraws from the server's answer.
     /// </summary>
     public sealed class EconomyScreens : MonoBehaviour
@@ -35,6 +35,12 @@ namespace Wick.Game
             _screen = screen;
             _ui.ShowSheet(Title(screen), "Loading...", new List<RaidUI.SheetRow>());
             _ui.SetSheetMessage(null, null);
+            if (screen == "privacy")
+            {
+                DrawPrivacy();
+                return;
+            }
+
             if (screen == "shop")
             {
                 _ = Shop.ConnectAsync();
@@ -408,6 +414,42 @@ namespace Wick.Game
             return sb.ToString();
         }
 
+        // ---- Privacy ------------------------------------------------------------------------
+
+        public const string PrivacyPolicyUrl = "https://" + VaultLink.Domain + "/privacy";
+
+        /// <summary>The player ID (what a data request needs), ad choices where the region allows, and the policy.</summary>
+        private void DrawPrivacy()
+        {
+            string id = UgsBootstrap.PlayerId;
+            var rows = new List<RaidUI.SheetRow>
+            {
+                new RaidUI.SheetRow { Text = "Your player ID: " + (id ?? "not signed in yet") + "\nInclude it if you email us about your data." }
+                    .Button("Copy ID", () =>
+                    {
+                        GUIUtility.systemCopyBuffer = id;
+                        _ui.SetSheetMessage("Player ID copied.", true);
+                    }, id != null),
+            };
+
+            if (Consent.PrivacyOptionsAvailable)
+            {
+                rows.Add(new RaidUI.SheetRow { Text = "Change what you agreed to for ads and analytics." }
+                    .Button("Ad privacy choices", ChangeAdChoices));
+            }
+
+            rows.Add(new RaidUI.SheetRow { Text = "How we use your information." }
+                .Button("Privacy policy", () => Application.OpenURL(PrivacyPolicyUrl)));
+            _ui.ShowSheet("Privacy", Consent.Personalised ? "Ads may be personalised." : "Ads are not personalised.", rows);
+        }
+
+        private async void ChangeAdChoices()
+        {
+            await Consent.ShowPrivacyOptionsAsync();
+            DrawPrivacy();
+            _ui.SetSheetMessage("Your choices are saved.", true);
+        }
+
         private static string Duration(long ms)
         {
             long s = Math.Max(0, (ms + 999) / 1000);
@@ -423,6 +465,7 @@ namespace Wick.Game
                 case "pass": return "Heist Pass";
                 case "achievements": return "Achievements";
                 case "shop": return "Shop";
+                case "privacy": return "Privacy";
                 default: return "Upgrades";
             }
         }

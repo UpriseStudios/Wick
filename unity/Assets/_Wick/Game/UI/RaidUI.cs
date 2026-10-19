@@ -169,6 +169,7 @@ namespace Wick.Game
             list.Add(WideButton("Heist Pass", () => HomeScreenPressed?.Invoke("pass"), "secondary"));
             list.Add(WideButton("Achievements", () => HomeScreenPressed?.Invoke("achievements"), "secondary"));
             list.Add(WideButton("Shop", () => HomeScreenPressed?.Invoke("shop"), "secondary"));
+            list.Add(WideButton("Privacy", () => HomeScreenPressed?.Invoke("privacy"), "secondary"));
             list.Add(WideButton("Vault editor", () => EditorPressed?.Invoke(), "secondary"));
             list.Add(WideButton("Share my vault", () => ShareMyVaultPressed?.Invoke(), "secondary"));
 
