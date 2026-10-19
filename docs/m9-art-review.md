@@ -5,15 +5,17 @@ How each item on the art review checklists is covered once final art arrives in
 anyone looking. **Tool** means M9 built something that shows you the answer. **By eye** means a
 person has to judge it.
 
-Status is as of the end of M9 (19 October 2026). No final assets had been supplied yet, so every
-system ran on generated stand-ins: rigged skins, tile kits, VFX, UI sprites and synthesised sounds.
-These follow the spec's names, bones, budgets and palette.
+Status is as of the end of M9 (19 October 2026). Wick and the five skins (plus the gilded Twist repaint)
+are scripted Blender blockouts built from the locked references (`tools/blender/build_skins.py`). They are
+real FBX assets through the full pipeline: import checks, shared rig, face shapes, twelve clips. Everything
+else (tile kits, VFX, UI sprites, sounds) is still a generated stand-in that follows the spec's names,
+budgets and palette.
 
 ## Art Direction pack: review checklist
 
 | Checklist item | How M9 covers it | Kind | Status with stand-ins | When real art lands |
 | --- | --- | --- | --- | --- |
-| Silhouette readable as a solid black shape at 64 px | Not automated in Unity. The Blender toolkit's `render_preview()` (Asset Production, Stage 3) renders the 64 px thumbnail. | By eye | Not applicable to stand-ins | Check the 64 px preview of every asset before export |
+| Silhouette readable as a solid black shape at 64 px | Not automated in Unity. `tools/blender/build_skins.py` renders a 64 px silhouette for every skin. | By eye | Skins: previews in `tools/blender/previews/`; other assets not applicable yet | Check the 64 px preview of every asset before export |
 | Looks right on the dark vault floor and under Wick's warm light | `Wick/StylisedLit` (two-step ramp, trilight ambient, warm rim from the mask's green channel). `Wick > Screenshots` renders every dev vault from the Raid scene. | Tool | Stand-ins render correctly in scout, live and lit-overlay screenshots | Run the screenshots, then look on a phone |
 | Uses palette colours; danger never shown in flame orange | VFX: `VfxRules` rejects flame-orange danger effects and over-busy particle systems on every effect and every skin's snuff and sparks (`VfxTests`). Theme stand-ins and UI kit use the palette's hex values. | Automatic (VFX), by eye (textures) | Pass: 8 effects and 8 skins | Painted textures are judged by eye; VFX stay automatic |
 | Matches Wick's reference proportions (characters and skins) | Import check: height 0.3 to 1.0 m (Wick 0.6 m, flame tip about 0.8 m), pivot at the base centre, every shared bone, all five face shapes. | Automatic (scale, rig), by eye (likeness) | Pass on all 8 stand-in skins | Likeness against `docs/art/references/` is by eye |
