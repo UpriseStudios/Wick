@@ -13,11 +13,20 @@ namespace Wick.Services
     /// order's receipt goes to ValidatePurchase, the server verifies it with the store and grants
     /// once per order, and only then is the order confirmed (so an interrupted purchase is retried
     /// on the next launch). The Editor uses Unity IAP's fake store, accepted only in development.
+    /// Every purchase finishes with a reply, even when the store never answers, so the screens that
+    /// wait on it can't get stuck.
     /// </summary>
     public sealed class Shop
     {
         private static StoreController _store;
         private static Task _connecting;
+        private static TaskCompletionSource<bool> _fetched = new TaskCompletionSource<bool>();
+
+        private static readonly TimeSpan ConnectWait = TimeSpan.FromSeconds(15);
+
+        /// <summary>The store's own purchase sheet waits on the player, so this is only a backstop.</summary>
+        private static readonly TimeSpan PurchaseWait = TimeSpan.FromMinutes(5);
+
         private static readonly Dictionary<string, TaskCompletionSource<PurchaseReply>> Waiting = new Dictionary<string, TaskCompletionSource<PurchaseReply>>();
         private static readonly EconomyClient Economy = new EconomyClient();
 
@@ -39,6 +48,13 @@ namespace Wick.Services
             _store = UnityIAPServices.StoreController();
             _store.OnPurchasePending += OnPending;
             _store.OnPurchaseFailed += OnFailed;
+            _store.OnPurchaseDeferred += OnDeferred;
+            _store.OnProductsFetched += _ => _fetched.TrySetResult(true);
+            _store.OnProductsFetchFailed += f =>
+            {
+                Debug.LogWarning("Store products didn't load: " + f.FailureReason);
+                _fetched.TrySetResult(false);
+            };
             await _store.Connect();
 
             var definitions = new List<ProductDefinition>();
@@ -68,11 +84,47 @@ namespace Wick.Services
 
         public static async Task<PurchaseReply> BuyAsync(string productId)
         {
-            await ConnectAsync();
+            Task connecting = ConnectAsync();
+            if (await Task.WhenAny(connecting, Task.Delay(ConnectWait)) != connecting || connecting.IsFaulted)
+            {
+                return Fail(productId, "The store isn't available right now.");
+            }
+
+            await Task.WhenAny(_fetched.Task, Task.Delay(ConnectWait));
+            if (!Listed(productId))
+            {
+                // Unity IAP never answers a purchase of a product the store doesn't list.
+                return Fail(productId, "This item isn't in the store yet.");
+            }
+
             var done = new TaskCompletionSource<PurchaseReply>();
             Waiting[productId] = done;
             _store.PurchaseProduct(productId);
-            return await done.Task;
+            if (await Task.WhenAny(done.Task, Task.Delay(PurchaseWait)) != done.Task)
+            {
+                Waiting.Remove(productId);
+                return Fail(productId, "The store didn't answer. If you were charged, it will be added next time you play.");
+            }
+
+            return done.Task.Result;
+        }
+
+        private static bool Listed(string productId)
+        {
+            foreach (UnityEngine.Purchasing.Product p in Products)
+            {
+                if (p.definition.id == productId && p.availableToPurchase)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static PurchaseReply Fail(string productId, string reason)
+        {
+            return new PurchaseReply { Ok = false, ProductId = productId, Reason = reason };
         }
 
         private static async void OnPending(PendingOrder order)
@@ -111,6 +163,15 @@ namespace Wick.Services
             foreach (CartItem item in order.CartOrdered.Items())
             {
                 Complete(item.Product.definition.id, new PurchaseReply { Ok = false, Reason = order.FailureReason.ToString() });
+            }
+        }
+
+        /// <summary>Paid later (e.g. cash at a shop): the pending order arrives when the payment does.</summary>
+        private static void OnDeferred(DeferredOrder order)
+        {
+            foreach (CartItem item in order.CartOrdered.Items())
+            {
+                Complete(item.Product.definition.id, Fail(item.Product.definition.id, "Payment pending. It will be added when the payment goes through."));
             }
         }
 
