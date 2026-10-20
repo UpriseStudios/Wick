@@ -11,7 +11,7 @@ namespace Wick.Game
         [Range(0f, 1f)] public float UnlitBrightness = 0.04f;
 
         [Tooltip("Flat light added to lit tiles so they always read brighter than unlit ones.")]
-        [Range(0f, 1f)] public float LitBoost = 0.2f;
+        [Range(0f, 1f)] public float LitBoost = 0.06f;
 
         [Header("Camera")]
         [Tooltip("Degrees below horizontal.")]

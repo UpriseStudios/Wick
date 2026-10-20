@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RaidTuning
   m_EditorClassIdentifier: Wick.Game::Wick.Game.RaidTuning
   UnlitBrightness: 0.04
-  LitBoost: 0.2
+  LitBoost: 0.06
   CameraPitch: 55
   CameraYaw: 0
   CameraDistance: 11

@@ -25,8 +25,8 @@ MonoBehaviour:
   Pit: {fileID: 9118177770379579636, guid: 61535b06b8b34b34494cb02bd2c0cff3, type: 3}
   Ice: {fileID: 662604246714435549, guid: df56634cc2a47a44d9c000f00f1814e9, type: 3}
   EntranceArch: {fileID: 6556796128905281262, guid: a404c8082e6a97b46b19cb5c3eea77f4, type: 3}
-  AmbientSky: {r: 0.12, g: 0.11, b: 0.2, a: 1}
-  AmbientEquator: {r: 0.07, g: 0.06, b: 0.11, a: 1}
-  AmbientGround: {r: 0.03, g: 0.03, b: 0.05, a: 1}
+  AmbientSky: {r: 0.06, g: 0.05, b: 0.07, a: 1}
+  AmbientEquator: {r: 0.035, g: 0.03, b: 0.035, a: 1}
+  AmbientGround: {r: 0.015, g: 0.012, b: 0.012, a: 1}
   Icon: {fileID: 0}
   StandIn: 1

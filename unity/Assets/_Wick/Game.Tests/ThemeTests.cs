@@ -208,21 +208,27 @@ namespace Wick.Game.Tests
             Vector3 Mean(TileType t) => sum[t] / count[t];
             float Lum(Vector3 c) => 0.2126f * c.x + 0.7152f * c.y + 0.0722f * c.z;
 
+            // Contrast as a ratio, so a dark, moody palette passes as long as the tiles stay distinct.
+            float Ratio(float a, float b) => (Mathf.Max(a, b) + 0.01f) / (Mathf.Min(a, b) + 0.01f);
+            float Apart(Vector3 a, Vector3 b) => (a - b).magnitude / Mathf.Max(0.02f, Mathf.Max(a.magnitude, b.magnitude));
+
             Vector3 floor = Mean(TileType.Floor);
             Assert.IsTrue(sum.ContainsKey(TileType.Wall), what + " has no walls?");
             Vector3 wall = Mean(TileType.Wall);
-            Assert.Greater(Mathf.Abs(Lum(wall) - Lum(floor)), 0.08f, what + ": walls and floors too alike (" + wall + " vs " + floor + ")");
+            Assert.Greater(Ratio(Lum(wall), Lum(floor)), 1.6f, what + ": walls and floors too alike (" + wall + " vs " + floor + ")");
             if (sum.ContainsKey(TileType.Pit))
             {
-                Assert.Less(Lum(Mean(TileType.Pit)), Lum(floor) - 0.05f, what + ": pits don't read darker than floor");
+                Vector3 pit = Mean(TileType.Pit);
+                Assert.Less(Lum(pit), Lum(floor), what + ": pits don't read darker than floor");
+                Assert.Greater(Ratio(Lum(pit), Lum(floor)), 1.4f, what + ": pits too close to floor");
             }
 
             foreach (TileType t in new[] { TileType.Ice, TileType.Door })
             {
                 if (sum.ContainsKey(t))
                 {
-                    Assert.Greater((Mean(t) - floor).magnitude, 0.08f, what + ": " + t + " too close to floor");
-                    Assert.Greater((Mean(t) - wall).magnitude, 0.08f, what + ": " + t + " too close to walls");
+                    Assert.Greater(Apart(Mean(t), floor), 0.25f, what + ": " + t + " too close to floor");
+                    Assert.Greater(Apart(Mean(t), wall), 0.25f, what + ": " + t + " too close to walls");
                 }
             }
         }

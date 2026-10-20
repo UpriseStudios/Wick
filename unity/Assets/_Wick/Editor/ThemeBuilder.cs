@@ -35,18 +35,18 @@ namespace Wick.Editor
             new ThemeSpec
             {
                 Name = "treasury", Id = ThemeCatalog.DefaultId, DisplayName = "Classic Treasury",
-                Floor = new Color(0.24f, 0.21f, 0.36f), FloorAlt = new Color(0.27f, 0.24f, 0.40f), Wall = new Color(0.40f, 0.46f, 0.66f),
-                Trim = new Color(0.62f, 0.16f, 0.18f), Door = new Color(0.50f, 0.32f, 0.18f), Pit = new Color(0.03f, 0.03f, 0.05f),
-                Ice = new Color(0.62f, 0.88f, 0.94f), Sky = new Color(0.12f, 0.11f, 0.20f), Equator = new Color(0.07f, 0.06f, 0.11f),
-                Ground = new Color(0.03f, 0.03f, 0.05f),
+                Floor = new Color(0.17f, 0.14f, 0.12f), FloorAlt = new Color(0.20f, 0.165f, 0.135f), Wall = new Color(0.36f, 0.31f, 0.27f),
+                Trim = new Color(0.42f, 0.09f, 0.11f), Door = new Color(0.34f, 0.21f, 0.11f), Pit = new Color(0.02f, 0.015f, 0.012f),
+                Ice = new Color(0.46f, 0.62f, 0.66f), Sky = new Color(0.06f, 0.05f, 0.07f), Equator = new Color(0.035f, 0.03f, 0.035f),
+                Ground = new Color(0.015f, 0.012f, 0.012f),
             },
             new ThemeSpec
             {
                 Name = "crypt", Id = "theme_crypt", DisplayName = "Crypt",
-                Floor = new Color(0.27f, 0.24f, 0.30f), FloorAlt = new Color(0.31f, 0.28f, 0.34f), Wall = new Color(0.80f, 0.76f, 0.68f),
-                Trim = new Color(0.46f, 0.26f, 0.62f), Door = new Color(0.58f, 0.38f, 0.20f), Pit = new Color(0.02f, 0.02f, 0.03f),
-                Ice = new Color(0.62f, 0.88f, 0.94f), Sky = new Color(0.13f, 0.10f, 0.18f), Equator = new Color(0.07f, 0.05f, 0.10f),
-                Ground = new Color(0.03f, 0.02f, 0.05f),
+                Floor = new Color(0.15f, 0.14f, 0.15f), FloorAlt = new Color(0.18f, 0.165f, 0.17f), Wall = new Color(0.54f, 0.50f, 0.44f),
+                Trim = new Color(0.26f, 0.14f, 0.30f), Door = new Color(0.40f, 0.27f, 0.15f), Pit = new Color(0.015f, 0.012f, 0.015f),
+                Ice = new Color(0.46f, 0.62f, 0.66f), Sky = new Color(0.06f, 0.05f, 0.08f), Equator = new Color(0.035f, 0.03f, 0.04f),
+                Ground = new Color(0.015f, 0.012f, 0.015f),
             },
         };
 
@@ -156,9 +156,10 @@ namespace Wick.Editor
             theme.Ice = Piece("ice", t => Box(t, new Vector3(0f, -0.05f, 0f), new Vector3(1f, 0.1f, 1f), ice));
             theme.EntranceArch = Piece("entrance", t =>
             {
-                Box(t, new Vector3(-0.46f, 0.7f, 0f), new Vector3(0.08f, 1.4f, 0.2f), trim);
-                Box(t, new Vector3(0.46f, 0.7f, 0f), new Vector3(0.08f, 1.4f, 0.2f), trim);
-                Box(t, new Vector3(0f, 1.42f, 0f), new Vector3(1f, 0.1f, 0.2f), trim);
+                // Dark timber, like the doors: crimson stays for the banners.
+                Box(t, new Vector3(-0.46f, 0.7f, 0f), new Vector3(0.08f, 1.4f, 0.2f), door);
+                Box(t, new Vector3(0.46f, 0.7f, 0f), new Vector3(0.08f, 1.4f, 0.2f), door);
+                Box(t, new Vector3(0f, 1.42f, 0f), new Vector3(1f, 0.1f, 0.2f), door);
             });
             theme.StandIn = real == 0;
             EditorUtility.SetDirty(theme);

@@ -44,6 +44,7 @@ namespace Wick.Game.Tests
             RaidRunner runner = rig.AddComponent<RaidRunner>();
             VisibilityMask mask = rig.AddComponent<VisibilityMask>();
             var tuning = ScriptableObject.CreateInstance<RaidTuning>();
+            tuning.LitBoost = 0.3f; // a clear lit/dark gap: this checks the tile mapping, not the look
             _spawned.Add(tuning);
             mask.Bind(runner, tuning);
 
@@ -146,7 +147,7 @@ namespace Wick.Game.Tests
 
         private static void AssertPixelsMatch(RaidRunner runner, VaultDef vault, Texture2D image, string when)
         {
-            // Lit tiles get at least the lit boost (0.2 by default); unlit ones a flat 0.04.
+            // Lit tiles get at least the lit boost (0.3 here); unlit ones a flat 0.04.
             const float threshold = 0.12f;
             for (int y = 0; y < vault.Height; y++)
             {
