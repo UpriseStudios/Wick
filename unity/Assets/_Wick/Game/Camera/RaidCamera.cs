@@ -20,6 +20,9 @@ namespace Wick.Game
         private bool _scouting;
         private float _scoutTime;
         private Vector3 _scoutFrom;
+        private bool _home;
+        private Vector3 _homeFocus;
+        private float _homeZoom = 1f;
 
         public bool IsScouting => _scouting;
 
@@ -42,8 +45,19 @@ namespace Wick.Game
         }
 
         /// <summary>Flies from the vault's far end to Wick over ScoutSeconds.</summary>
+        /// <summary>Home: the whole vault framed, still, with a slow drift so it feels alive.</summary>
+        public void ShowHome(VaultDef vault)
+        {
+            _home = true;
+            _scouting = false;
+            _homeFocus = SimPose.TileCenter(new TilePos(vault.Width / 2, vault.Height / 2)) + new Vector3(0f, 0f, -1.2f);
+            float extent = Mathf.Max(vault.Width * 1.25f, vault.Height * 0.95f);
+            _homeZoom = Mathf.Clamp(_tuning.CameraDistance / (extent * 1.15f + 2f), 0.4f, 1f);
+        }
+
         public void BeginScout()
         {
+            _home = false;
             VaultDef vault = _vaultView.Context.Vault;
             _scoutFrom = SimPose.TileCenter(new TilePos(vault.Width / 2, 0));
             _scoutTime = 0f;
@@ -59,6 +73,7 @@ namespace Wick.Game
 
         private void OnBuilt(VaultView view)
         {
+            _home = false;
             _focus = FocusFor(view.Wick.transform.position, _tuning);
             _velocity = Vector3.zero;
             _punch = 0f;
@@ -80,6 +95,13 @@ namespace Wick.Game
         {
             if (_vaultView.Wick == null)
             {
+                return;
+            }
+
+            if (_home)
+            {
+                float drift = Mathf.Sin(Time.time * 0.15f) * 0.35f;
+                Place(transform, _homeFocus + new Vector3(drift, 0f, 0f), _tuning, _homeZoom);
                 return;
             }
 

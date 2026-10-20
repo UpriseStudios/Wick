@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Wick.Economy;
 using Wick.Services;
 using Wick.Sim;
 
@@ -48,6 +50,11 @@ namespace Wick.Game
         private ClipRenderer _clips;
 
         private EconomyScreens _screens;
+
+        /// <summary>The vault shown behind Home (the player's latest draft, else a template). Never raided.</summary>
+        private VaultDef _homeVault;
+        private Light[] _homeLights;
+        private static bool _titleShown;
         private readonly EconomyClient _economy = new EconomyClient();
         private readonly RewardedAds _ads = new RewardedAds();
         private string _lastRaidId;
@@ -155,6 +162,12 @@ namespace Wick.Game
             _screens.Bind(_ui, skins, themes);
             _ = ContentLoader.PrefetchAsync(skins, themes); // the equipped skin and chosen theme, ready for the next raid
             ShowPicker();
+            if (!_titleShown)
+            {
+                _titleShown = true;
+                StartCoroutine(Title());
+            }
+
             SettleConsent();
             LinkRouter.Init(this); // already done by Boot; this covers starting in the Raid scene
             IncomingLink link = LinkRouter.Take();
@@ -164,11 +177,21 @@ namespace Wick.Game
             }
         }
 
+        private bool AtHome => _homeVault != null && _runner.Vault == _homeVault;
+
         private void Update()
         {
-            if (_runner.Mode != RaidMode.Scout)
+            if (_homeLights != null)
             {
-                return;
+                foreach (Light l in _homeLights)
+                {
+                    l.enabled = AtHome;
+                }
+            }
+
+            if (_runner.Mode != RaidMode.Scout || AtHome)
+            {
+                return; // Home's vault is scenery: its clock never starts
             }
 
             _scoutLeft -= Time.deltaTime;
@@ -181,6 +204,36 @@ namespace Wick.Game
         }
 
         // ---- Home -------------------------------------------------------------------------
+
+        private static int ClaimablePassTiers(EconomyStateReply s)
+        {
+            EconomyConfig cfg = EconomyClient.Config;
+            int n = 0;
+            foreach (PassReward r in cfg.Pass.Rewards)
+            {
+                if (r.Tier > s.PassTier)
+                {
+                    continue;
+                }
+
+                n += !r.Free.IsEmpty && s.PassClaimedFree?.Contains(r.Tier) != true ? 1 : 0;
+                n += s.PassPremium && s.PassClaimedPremium?.Contains(r.Tier) != true ? 1 : 0;
+            }
+
+            return n;
+        }
+
+        private static int ClaimableAchievements(EconomyStateReply s)
+        {
+            int n = 0;
+            foreach (AchievementProgressReply p in s.Achievements ?? new List<AchievementProgressReply>())
+            {
+                Achievement a = EconomyClient.Config.Achievement(p.Id);
+                n += a != null && p.Claimed < a.Tiers.Count && p.Value >= a.Tiers[p.Claimed] ? 1 : 0;
+            }
+
+            return n;
+        }
 
         /// <summary>First launch asks the age question; then consent settles and rewarded ads can load.</summary>
         private void SettleConsent()
@@ -227,8 +280,8 @@ namespace Wick.Game
         private void ShowPicker()
         {
             _screens?.Close();
-            _runner.Unload();
             ClearModes();
+            ShowHomeVault();
             var names = new List<string>();
             foreach (TextAsset v in _vaults)
             {
@@ -240,15 +293,98 @@ namespace Wick.Game
             RefreshHome();
         }
 
-        /// <summary>Wallet, Crowns, stars and Vault Level, from the server's economy state.</summary>
+        /// <summary>The title art, a load bar until signed in (or a few seconds), then "Tap to play".</summary>
+        private IEnumerator Title()
+        {
+            bool tapped = false;
+            void OnTap() => tapped = true;
+            string version = "v" + Application.version;
+            float started = Time.unscaledTime;
+            while (!UgsBootstrap.IsSignedIn && Time.unscaledTime - started < 6f)
+            {
+                _ui.ShowTitle(version, Mathf.Clamp01((Time.unscaledTime - started) / 3f) * 0.9f, false);
+                yield return null;
+            }
+
+            _ui.ShowTitle(version, 1f, true);
+            _ui.TitleTapped += OnTap;
+            while (!tapped)
+            {
+                yield return null;
+            }
+
+            _ui.TitleTapped -= OnTap;
+            _ui.HideTitle();
+        }
+
+        /// <summary>Home's backdrop: your latest vault (or a template), warmly lit, framed whole.</summary>
+        private void ShowHomeVault()
+        {
+            _homeVault = HomeVault();
+            _runner.LoadLive(_homeVault, 1); // presentation only: the clock never starts at Home
+            _camera.ShowHome(_homeVault);
+            if (_homeLights == null)
+            {
+                _homeLights = new Light[2];
+                for (int i = 0; i < _homeLights.Length; i++)
+                {
+                    var go = new GameObject("Home light " + i);
+                    go.transform.SetParent(transform, false);
+                    Light l = go.AddComponent<Light>();
+                    l.type = LightType.Point;
+                    l.shadows = LightShadows.None;
+                    l.color = i == 0 ? new Color(1f, 0.66f, 0.34f) : new Color(1f, 0.78f, 0.45f);
+                    _homeLights[i] = l;
+                }
+            }
+
+            // A wide warm wash over the middle and a gold glow over the hoard, like torchlight.
+            Vector3 middle = SimPose.TileCenter(new TilePos(_homeVault.Width / 2, _homeVault.Height / 2));
+            _homeLights[0].transform.position = middle + Vector3.up * 3.2f;
+            _homeLights[0].range = Mathf.Max(_homeVault.Width, _homeVault.Height) * 1.1f;
+            _homeLights[0].intensity = 7f;
+            Vector3 hoard = _homeVault.HasHoard
+                ? SimPose.TileCenter(new TilePos((_homeVault.Hoard.MinX + _homeVault.Hoard.MaxX) / 2, (_homeVault.Hoard.MinY + _homeVault.Hoard.MaxY) / 2))
+                : middle;
+            _homeLights[1].transform.position = hoard + Vector3.up * 2f;
+            _homeLights[1].range = 7f;
+            _homeLights[1].intensity = 5f;
+        }
+
+        private static VaultDef HomeVault()
+        {
+            try
+            {
+                var store = new DraftStore(Application.persistentDataPath);
+                List<DraftStore.Entry> drafts = store.List();
+                if (drafts.Count > 0)
+                {
+                    return store.Load(drafts[0].DraftId).ToVaultDef();
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Home vault: " + e.Message);
+            }
+
+            TextAsset[] templates = Resources.LoadAll<TextAsset>("VaultTemplates");
+            return VaultJson.Parse(templates[0].text);
+        }
+
+        /// <summary>Wallet, Crowns, the running upgrade and badges, from the server's economy state.</summary>
         private async void RefreshHome()
         {
             _ui.SetHomeStats("Connecting...");
             try
             {
                 EconomyStateReply s = await _economy.StateAsync();
-                _ui.SetHomeStats(s.Gold + " gold  |  " + s.Wax + " wax  |  " + s.Gems + " gems\n" + s.Crowns + " Crowns  |  " + s.Stars +
-                    " stars  |  Vault Level " + s.VaultLevel);
+                _ui.SetWallet(s.Gold, s.Wax, s.Gems, s.Crowns);
+                RunningUpgradeReply running = s.Running != null && s.Running.Count > 0 ? s.Running[0] : null;
+                _ui.SetHomeStats(running != null
+                    ? (running.Kind == UpgradeKinds.VaultLevel ? "Vault Level " : "Lantern ") + running.ToLevel + " building"
+                    : "Vault Level " + s.VaultLevel + "  ·  " + s.Stars + " ★");
+                _ui.SetBadge("pass", ClaimablePassTiers(s));
+                _ui.SetBadge("trophies", ClaimableAchievements(s));
             }
             catch (Exception e)
             {

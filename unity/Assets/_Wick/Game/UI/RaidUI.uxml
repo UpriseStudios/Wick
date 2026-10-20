@@ -3,82 +3,174 @@
     <Style src="UiKit.uss" />
     <ui:VisualElement name="root" class="root" picking-mode="Ignore">
 
-        <!-- In-raid HUD. Containers ignore touches; only buttons block swipes. -->
+        <!-- In-raid HUD: flickers, the clock and loot on small plaques; sneak and decoy as round thumb buttons.
+             Containers ignore touches; only buttons block swipes. -->
         <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
             <ui:VisualElement class="topbar" picking-mode="Ignore">
-                <ui:VisualElement name="flickers" class="flickers" picking-mode="Ignore">
+                <ui:VisualElement name="flickers" class="flickers plaque" picking-mode="Ignore">
                     <ui:VisualElement class="flicker" picking-mode="Ignore" />
                     <ui:VisualElement class="flicker" picking-mode="Ignore" />
                     <ui:VisualElement class="flicker" picking-mode="Ignore" />
                 </ui:VisualElement>
-                <ui:Label name="timer" text="60" class="timer" picking-mode="Ignore" />
-                <ui:Label name="loot" text="0" class="loot" picking-mode="Ignore" />
+                <ui:Label name="timer" text="60" class="timer plaque" picking-mode="Ignore" />
+                <ui:VisualElement class="loot-plaque plaque" picking-mode="Ignore">
+                    <ui:VisualElement class="icon icon-coin res-icon" picking-mode="Ignore" />
+                    <ui:Label name="loot" text="0" class="loot" picking-mode="Ignore" />
+                </ui:VisualElement>
             </ui:VisualElement>
             <ui:Label name="banner" text="SCOUTING" class="banner" picking-mode="Ignore" />
             <ui:VisualElement name="stealth-icon" class="stealth-icon" picking-mode="Ignore">
-                <ui:Label text="STEALTH" class="stealth-text" picking-mode="Ignore" />
+                <ui:Label text="SNEAKING" class="stealth-text" picking-mode="Ignore" />
             </ui:VisualElement>
-            <ui:VisualElement name="replay-bar" class="replay-bar blocks-input hidden">
+            <ui:VisualElement name="replay-bar" class="replay-bar plaque blocks-input hidden">
                 <ui:Button name="replay-pause" text="Pause" class="bar-button" />
                 <ui:Slider name="replay-scrub" low-value="0" high-value="1800" class="scrub" />
                 <ui:Button name="replay-back" text="Back" class="bar-button" />
             </ui:VisualElement>
             <ui:VisualElement class="bottom-right" picking-mode="Ignore">
-                <ui:Button name="stealth-button" text="Sneak" class="round-button blocks-input" />
-                <ui:Button name="decoy-button" text="Decoy" class="round-button blocks-input" />
+                <ui:Button name="stealth-button" class="round-button blocks-input">
+                    <ui:VisualElement class="icon icon-sneak round-icon" picking-mode="Ignore" />
+                    <ui:Label text="Sneak" class="round-caption" picking-mode="Ignore" />
+                </ui:Button>
+                <ui:Button name="decoy-button" class="round-button blocks-input">
+                    <ui:VisualElement class="icon icon-wax round-icon" picking-mode="Ignore" />
+                    <ui:Label text="Decoy" class="round-caption" picking-mode="Ignore" />
+                </ui:Button>
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Home. -->
-        <ui:VisualElement name="picker" class="panel blocks-input">
-            <ui:Label text="WAX BANDITS" class="title" />
-            <ui:Label text="Tiny Thieves – Big Heists" class="subtitle" />
-            <ui:Label name="home-stats" class="home-stats" />
-            <ui:Label name="picker-message" class="server-verdict bad hidden" />
-            <ui:ScrollView name="picker-list" class="list home-list" />
+        <!-- Home: your vault in 3D behind; wallet top right, you top left, menus as round icons, RAID and Build. -->
+        <ui:VisualElement name="picker" class="home" picking-mode="Ignore">
+            <ui:VisualElement class="home-top" picking-mode="Ignore">
+                <ui:VisualElement class="player plaque" picking-mode="Ignore">
+                    <ui:VisualElement class="avatar" picking-mode="Ignore" />
+                    <ui:VisualElement picking-mode="Ignore">
+                        <ui:Label name="home-name" text="Bandit" class="lettering player-name" picking-mode="Ignore" />
+                        <ui:VisualElement class="res-row" picking-mode="Ignore">
+                            <ui:VisualElement class="icon icon-crown res-icon" picking-mode="Ignore" />
+                            <ui:Label name="home-crowns" text="0" class="res-label" picking-mode="Ignore" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="wallet" picking-mode="Ignore">
+                    <ui:VisualElement class="res plaque" picking-mode="Ignore">
+                        <ui:VisualElement class="icon icon-coin res-icon" picking-mode="Ignore" />
+                        <ui:Label name="home-gold" text="0" class="res-label" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="res plaque" picking-mode="Ignore">
+                        <ui:VisualElement class="icon icon-wax res-icon" picking-mode="Ignore" />
+                        <ui:Label name="home-wax" text="0" class="res-label" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="res plaque" picking-mode="Ignore">
+                        <ui:VisualElement class="icon icon-gem res-icon" picking-mode="Ignore" />
+                        <ui:Label name="home-gems" text="0" class="res-label" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="home-side right" picking-mode="Ignore">
+                <ui:Button name="home-shop" class="round"><ui:VisualElement class="icon icon-shop round-icon" picking-mode="Ignore" /><ui:Label text="Shop" class="round-caption" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="home-pass" class="round"><ui:VisualElement class="icon icon-pass round-icon" picking-mode="Ignore" /><ui:Label text="Pass" class="round-caption" picking-mode="Ignore" /><ui:Label name="badge-pass" class="badge hidden" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="home-skins" class="round"><ui:VisualElement class="icon icon-skins round-icon" picking-mode="Ignore" /><ui:Label text="Skins" class="round-caption" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="home-settings" class="round"><ui:VisualElement class="icon icon-settings round-icon" picking-mode="Ignore" /><ui:Label text="Settings" class="round-caption" picking-mode="Ignore" /></ui:Button>
+            </ui:VisualElement>
+            <ui:VisualElement class="home-side left" picking-mode="Ignore">
+                <ui:Button name="home-log" class="round"><ui:VisualElement class="icon icon-log round-icon" picking-mode="Ignore" /><ui:Label text="Defence" class="round-caption" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="home-trophies" class="round"><ui:VisualElement class="icon icon-trophy round-icon" picking-mode="Ignore" /><ui:Label text="Trophies" class="round-caption" picking-mode="Ignore" /><ui:Label name="badge-trophies" class="badge hidden" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="home-share" class="round"><ui:VisualElement class="icon icon-share round-icon" picking-mode="Ignore" /><ui:Label text="Share" class="round-caption" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="home-dev" class="round"><ui:VisualElement class="icon icon-vault round-icon" picking-mode="Ignore" /><ui:Label text="Test" class="round-caption" picking-mode="Ignore" /></ui:Button>
+            </ui:VisualElement>
+
+            <!-- Questions that need an answer here (age, a vault you were sent) and server messages. -->
+            <ui:VisualElement class="prompt-box" picking-mode="Ignore">
+                <ui:Label name="picker-message" class="server-verdict prompt-text hidden" />
+                <ui:VisualElement name="picker-list" class="prompt-list" picking-mode="Ignore" />
+            </ui:VisualElement>
+
+            <ui:Button name="home-upgrade" class="upgrade-chip plaque">
+                <ui:VisualElement class="icon icon-vault res-icon" picking-mode="Ignore" />
+                <ui:Label name="home-stats" text="Vault Level 1" class="res-label" picking-mode="Ignore" />
+            </ui:Button>
+            <ui:Button name="home-raid" class="raid-button btn-gold">
+                <ui:Label text="RAID!" class="raid-label" picking-mode="Ignore" />
+                <ui:Label text="Find a vault" class="raid-sub" picking-mode="Ignore" />
+            </ui:Button>
+            <ui:Button name="home-build" class="build-button btn-crimson">
+                <ui:VisualElement class="icon icon-build build-icon" picking-mode="Ignore" />
+                <ui:Label text="Build" class="build-label" picking-mode="Ignore" />
+            </ui:Button>
         </ui:VisualElement>
 
-        <!-- A list screen: upgrades, Heist Pass, achievements, shop. -->
-        <ui:VisualElement name="sheet" class="panel blocks-input">
-            <ui:Label name="sheet-title" class="section-title" />
-            <ui:Label name="sheet-subtitle" class="home-stats" />
-            <ui:Label name="sheet-message" class="server-verdict hidden" />
-            <ui:ScrollView name="sheet-list" class="defence-list" />
-            <ui:Button name="sheet-back" text="Back" class="wide-button secondary" />
+        <!-- Development: test vaults, the server vault and raid-by-id. -->
+        <ui:VisualElement name="home-more" class="overlay blocks-input hidden">
+            <ui:VisualElement class="sheet-card panel-card">
+                <ui:Label text="TEST VAULTS" class="ribbon" />
+                <ui:Button name="more-close" text="×" class="close-button" />
+                <ui:ScrollView name="more-list" class="sheet-list" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- A menu: upgrades, Heist Pass, achievements, shop, skins, settings. -->
+        <ui:VisualElement name="sheet" class="overlay blocks-input">
+            <ui:VisualElement class="sheet-card panel-card">
+                <ui:Label name="sheet-title" class="ribbon" />
+                <ui:Button name="sheet-back" text="×" class="close-button" />
+                <ui:Label name="sheet-subtitle" class="sheet-subtitle" />
+                <ui:Label name="sheet-message" class="server-verdict hidden" />
+                <ui:ScrollView name="sheet-list" class="sheet-list" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Raids on your vault. -->
-        <ui:VisualElement name="defence" class="panel blocks-input">
-            <ui:Label text="Raids on your vault" class="section-title" />
-            <ui:Label name="defence-stats" class="home-stats" />
-            <ui:ScrollView name="defence-list" class="defence-list" />
-            <ui:Button name="defence-back" text="Back" class="wide-button secondary" />
+        <ui:VisualElement name="defence" class="overlay blocks-input">
+            <ui:VisualElement class="sheet-card panel-card">
+                <ui:Label text="DEFENCE" class="ribbon" />
+                <ui:Button name="defence-back" text="×" class="close-button" />
+                <ui:Label name="defence-stats" class="sheet-subtitle" />
+                <ui:ScrollView name="defence-list" class="sheet-list" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Results. -->
-        <ui:VisualElement name="results" class="panel blocks-input">
-            <ui:Label name="result-title" text="ESCAPED" class="title" />
-            <ui:VisualElement name="stars" class="stars">
-                <ui:VisualElement class="star" />
-                <ui:VisualElement class="star" />
-                <ui:VisualElement class="star" />
+        <ui:VisualElement name="results" class="overlay blocks-input">
+            <ui:VisualElement class="results-card panel-card">
+                <ui:Label name="result-title" text="ESCAPED" class="title" />
+                <ui:VisualElement name="stars" class="stars">
+                    <ui:VisualElement class="star" />
+                    <ui:VisualElement class="star" />
+                    <ui:VisualElement class="star" />
+                </ui:VisualElement>
+                <ui:VisualElement class="loot-row">
+                    <ui:VisualElement class="icon icon-coin res-icon" />
+                    <ui:Label name="result-loot" text="Loot 0" class="lettering result-loot" />
+                </ui:VisualElement>
+                <ui:Label name="result-server" class="server-verdict hidden" />
+                <ui:Label name="result-server-detail" class="mono hidden" />
+                <ui:VisualElement name="result-dev" class="dev-block">
+                    <ui:Label name="result-live-hash" class="mono" />
+                    <ui:Label name="result-replay-hash" class="mono" />
+                    <ui:Label name="result-match" class="match" />
+                </ui:VisualElement>
+                <ui:VisualElement name="share-row" class="share-row">
+                    <ui:Button name="share-clip" text="Share clip" class="share-button" />
+                    <ui:Button name="share-link" text="Share link" class="share-button" />
+                </ui:VisualElement>
+                <ui:Label name="clip-status" class="mono hidden" />
+                <ui:Button name="double-loot" text="Double your loot (watch an ad)" class="wide-button btn-crimson hidden" />
+                <ui:VisualElement class="result-buttons">
+                    <ui:Button name="retry-button" text="Retry" class="wide-button secondary result-button" />
+                    <ui:Button name="menu-button" text="Home" class="wide-button result-button" />
+                </ui:VisualElement>
             </ui:VisualElement>
-            <ui:Label name="result-loot" text="Loot 0" class="subtitle" />
-            <ui:Label name="result-server" class="server-verdict hidden" />
-            <ui:Label name="result-server-detail" class="mono hidden" />
-            <ui:VisualElement name="result-dev" class="dev-block">
-                <ui:Label name="result-live-hash" class="mono" />
-                <ui:Label name="result-replay-hash" class="mono" />
-                <ui:Label name="result-match" class="match" />
+        </ui:VisualElement>
+
+        <!-- Title: the art, then "Tap to play". Shown once per launch. -->
+        <ui:VisualElement name="title-screen" class="title-screen blocks-input hidden">
+            <ui:Label name="title-tap" text="TAP TO PLAY" class="lettering title-tap" />
+            <ui:VisualElement class="title-bar bar">
+                <ui:VisualElement name="title-fill" class="bar-fill title-fill" />
             </ui:VisualElement>
-            <ui:VisualElement name="share-row" class="share-row">
-                <ui:Button name="share-clip" text="Share clip" class="share-button" />
-                <ui:Button name="share-link" text="Share link" class="share-button" />
-            </ui:VisualElement>
-            <ui:Label name="clip-status" class="mono hidden" />
-            <ui:Button name="double-loot" text="Double your loot (watch an ad)" class="wide-button secondary hidden" />
-            <ui:Button name="retry-button" text="Retry" class="wide-button" />
-            <ui:Button name="menu-button" text="Vaults" class="wide-button" />
+            <ui:Label name="title-version" class="title-version" />
         </ui:VisualElement>
 
         <!-- Dev menu (development builds and the Editor only). -->
@@ -92,7 +184,7 @@
             <ui:Toggle name="dev-stealth-button" label="Stealth button (fallback)" />
             <ui:Label text="Replay a golden raid" class="section" />
             <ui:ScrollView name="dev-goldens" class="golden-list" />
-            <ui:Button name="dev-vaults" text="Back to vaults" class="wide-button" />
+            <ui:Button name="dev-vaults" text="Back home" class="wide-button" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

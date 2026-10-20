@@ -105,6 +105,29 @@ namespace Wick.Game.Tests
             Assert.IsNotNull(bank.MusicEscape);
         }
 
+        /// <summary>Without exactly one listener a scene is silent (or Unity complains every frame).</summary>
+        [TestCase("Assets/_Wick/Scenes/Raid.unity")]
+        [TestCase("Assets/_Wick/Scenes/Editor.unity")]
+        public void EveryPlayedSceneHasOneAudioListener(string path)
+        {
+            UnityEngine.SceneManagement.Scene scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(path,
+                UnityEditor.SceneManagement.OpenSceneMode.Additive);
+            try
+            {
+                int listeners = 0;
+                foreach (GameObject root in scene.GetRootGameObjects())
+                {
+                    listeners += root.GetComponentsInChildren<AudioListener>(true).Length;
+                }
+
+                Assert.AreEqual(1, listeners, path);
+            }
+            finally
+            {
+                UnityEditor.SceneManagement.EditorSceneManager.CloseScene(scene, true);
+            }
+        }
+
         [Test]
         public void VolumesMapToDecibels()
         {

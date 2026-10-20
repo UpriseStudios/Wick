@@ -9,6 +9,7 @@ using UnityEngine.Audio;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UIElements;
 using Wick.Game;
 
@@ -87,23 +88,85 @@ namespace Wick.Editor
             return new Materials
             {
                 Flame = FlameMaterial("Flame", ignoreMask: true),
-                Decoy = Lit("Decoy", new Color(1f, 0.85f, 0.5f), new Color(2f, 1.4f, 0.5f), ignoreMask: true),
-                Metal = Lit("Metal", new Color(0.40f, 0.40f, 0.46f)),
-                Water = Lit("Water", new Color(0.30f, 0.55f, 1f), new Color(0.1f, 0.25f, 0.6f)),
-                Gust = Lit("Gust", new Color(0.60f, 0.72f, 0.88f), new Color(0.12f, 0.16f, 0.24f)),
-                Spikes = Lit("Spikes", new Color(0.80f, 0.80f, 0.86f)),
-                Warning = Lit("Warning", new Color(1f, 0.3f, 0.2f), new Color(1.5f, 0.3f, 0.1f)),
-                Bell = Lit("Bell", new Color(0.72f, 0.56f, 0.24f)),
-                Plate = Lit("Plate", new Color(0.52f, 0.46f, 0.36f)),
-                Owl = Lit("Owl", new Color(0.45f, 0.35f, 0.25f)),
-                OwlEye = Lit("OwlEye", Color.white, new Color(0.6f, 0.6f, 0.5f)),
-                Moths = Lit("Moths", new Color(0.88f, 0.84f, 0.62f), new Color(0.3f, 0.28f, 0.15f)),
-                Gold = Lit("Gold", new Color(1f, 0.8f, 0.2f), new Color(0.4f, 0.3f, 0.05f)),
-                Brazier = Lit("Brazier", new Color(0.30f, 0.25f, 0.20f)),
+                Decoy = Lit("Decoy", new Color(0.95f, 0.85f, 0.6f), new Color(1.2f, 0.8f, 0.3f), ignoreMask: true),
+                Metal = Lit("Metal", new Color(0.30f, 0.29f, 0.30f)),
+                Water = Lit("Water", new Color(0.20f, 0.42f, 0.52f), new Color(0.04f, 0.12f, 0.16f)),
+                Gust = Lit("Gust", new Color(0.42f, 0.52f, 0.56f), new Color(0.05f, 0.07f, 0.09f)),
+                Spikes = Lit("Spikes", new Color(0.52f, 0.50f, 0.50f)),
+                Warning = Lit("Warning", new Color(0.55f, 0.12f, 0.12f), new Color(0.7f, 0.1f, 0.08f)),
+                Bell = Lit("Bell", new Color(0.50f, 0.36f, 0.16f)),
+                Plate = Lit("Plate", new Color(0.30f, 0.26f, 0.21f)),
+                Owl = Lit("Owl", new Color(0.33f, 0.25f, 0.18f)),
+                OwlEye = Lit("OwlEye", new Color(0.95f, 0.85f, 0.55f), new Color(0.45f, 0.38f, 0.15f)),
+                Moths = Lit("Moths", new Color(0.62f, 0.58f, 0.45f), new Color(0.12f, 0.11f, 0.06f)),
+                Gold = Lit("Gold", new Color(0.88f, 0.64f, 0.20f), new Color(0.28f, 0.19f, 0.04f)),
+                Brazier = Lit("Brazier", new Color(0.22f, 0.18f, 0.15f)),
                 BrazierFlame = FlameMaterial("BrazierFlame", ignoreMask: false),
-                Crate = Lit("Crate", new Color(0.56f, 0.38f, 0.20f)),
+                Crate = Lit("Crate", new Color(0.32f, 0.20f, 0.11f)),
                 Overlay = MaterialAsset("Overlay", Shader.Find("Wick/Overlay")),
             };
+        }
+
+        // ---- Colour grade ----------------------------------------------------------------------
+
+        /// <summary>
+        /// The look from the title screen: tonemapped, warm, a little less saturated, a vignette that
+        /// sinks the edges into the dark, and a soft glow only bright flames and gold reach.
+        /// </summary>
+        private static VolumeProfile GradeProfile()
+        {
+            string path = DataDir + "/WickGrade.asset";
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(path);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, path);
+            }
+
+            T Get<T>() where T : VolumeComponent
+            {
+                if (!profile.TryGet(out T c))
+                {
+                    c = profile.Add<T>(true);
+                    c.name = typeof(T).Name;
+                    AssetDatabase.AddObjectToAsset(c, profile);
+                }
+
+                c.active = true;
+                return c;
+            }
+
+            Tonemapping tone = Get<Tonemapping>();
+            tone.mode.Override(TonemappingMode.Neutral);
+            WhiteBalance wb = Get<WhiteBalance>();
+            wb.temperature.Override(10f);
+            ColorAdjustments adjust = Get<ColorAdjustments>();
+            adjust.saturation.Override(-14f);
+            adjust.contrast.Override(10f);
+            adjust.postExposure.Override(0.1f);
+            Vignette vignette = Get<Vignette>();
+            vignette.intensity.Override(0.34f);
+            vignette.smoothness.Override(0.5f);
+            vignette.color.Override(new Color(0.04f, 0.02f, 0.01f));
+            Bloom bloom = Get<Bloom>();
+            bloom.threshold.Override(1.0f);
+            bloom.intensity.Override(0.55f);
+            bloom.scatter.Override(0.6f);
+            bloom.tint.Override(new Color(1f, 0.82f, 0.6f));
+            bloom.highQualityFiltering.Override(false);
+            bloom.downscale.Override(BloomDownscaleMode.Quarter); // cheap on phones
+            EditorUtility.SetDirty(profile);
+            return profile;
+        }
+
+        private static void AddGrade(Camera camera)
+        {
+            camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+            var go = new GameObject("Grade");
+            Volume volume = go.AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.sharedProfile = GradeProfile();
+            Set(go.AddComponent<Grade>(), "_volume", volume);
         }
 
         private static Material Lit(string name, Color baseColor, Color? emission = null, bool ignoreMask = false)
@@ -394,6 +457,8 @@ namespace Wick.Editor
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = Color.black;
             camera.fieldOfView = 40f;
+            AddGrade(camera);
+            cameraGo.AddComponent<AudioListener>(); // without one the game is silent
             camera.nearClipPlane = 0.3f;
             camera.farClipPlane = 60f;
             RaidCamera raidCamera = cameraGo.AddComponent<RaidCamera>();
@@ -486,8 +551,10 @@ namespace Wick.Editor
             var cameraGo = new GameObject("Editor Camera") { tag = "MainCamera" };
             Camera camera = cameraGo.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.05f, 0.05f, 0.07f);
+            camera.backgroundColor = new Color(0.03f, 0.025f, 0.02f);
             camera.fieldOfView = 40f;
+            AddGrade(camera);
+            cameraGo.AddComponent<AudioListener>(); // without one the game is silent
             camera.nearClipPlane = 0.3f;
             camera.farClipPlane = 80f;
             EditorCamera editorCamera = cameraGo.AddComponent<EditorCamera>();

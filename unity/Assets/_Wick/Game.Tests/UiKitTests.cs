@@ -47,6 +47,12 @@ namespace Wick.Game.Tests
             foreach (Match m in urls)
             {
                 string path = AssetDatabase.GUIDToAssetPath(m.Groups[1].Value);
+                if (path.Contains("ui_icon_") || path.Contains("ui_round") || path.Contains("ui_avatar") || path.EndsWith("title_v1.png"))
+                {
+                    Assert.IsTrue(File.Exists(path), path); // icons, round buttons and art scale whole; no 9-slice
+                    continue;
+                }
+
                 var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
                 Assert.IsNotNull(sprite, path + " is not a sprite");
                 Assert.Greater(sprite.border.x, 0f, path + " has no 9-slice border");

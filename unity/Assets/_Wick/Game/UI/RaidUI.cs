@@ -65,6 +65,9 @@ namespace Wick.Game
         public event Action DoubleLootPressed;
         public event Action<string> HomeScreenPressed;
 
+        /// <summary>The title screen was tapped.</summary>
+        public event Action TitleTapped;
+
         public static bool DevBuild => Debug.isDebugBuild;
 
         public void Bind(RaidRunner runner, RaidInput input, DevOverlay overlay)
@@ -130,6 +133,23 @@ namespace Wick.Game
             _root.Q<Button>("share-link").clicked += () => ShareLinkPressed?.Invoke();
             _root.Q<Button>("sheet-back").clicked += () => SheetBackPressed?.Invoke();
             _root.Q<Button>("double-loot").clicked += () => DoubleLootPressed?.Invoke();
+
+            // Home: one big Raid button, Build, the upgrade chip and the round menu icons.
+            _root.Q<Button>("home-raid").clicked += () => RaidPressed?.Invoke();
+            _root.Q<Button>("home-build").clicked += () => EditorPressed?.Invoke();
+            _root.Q<Button>("home-upgrade").clicked += () => HomeScreenPressed?.Invoke("upgrades");
+            foreach ((string button, string screen) in new[]
+                     { ("home-shop", "shop"), ("home-pass", "pass"), ("home-skins", "skins"), ("home-settings", "settings"), ("home-trophies", "achievements") })
+            {
+                _root.Q<Button>(button).clicked += () => HomeScreenPressed?.Invoke(screen);
+            }
+
+            _root.Q<Button>("home-log").clicked += () => DefencePressed?.Invoke();
+            _root.Q<Button>("home-share").clicked += () => ShareMyVaultPressed?.Invoke();
+            _root.Q<Button>("home-dev").clicked += () => Show(_root.Q("home-more"), true);
+            _root.Q<Button>("more-close").clicked += () => Show(_root.Q("home-more"), false);
+            Show(_root.Q("home-dev"), DevBuild);
+            _root.Q("title-screen").RegisterCallback<ClickEvent>(_ => TitleTapped?.Invoke());
             _scrub.RegisterValueChangedCallback(e => ReplayScrubbed?.Invoke(Mathf.RoundToInt(e.newValue)));
             _scrub.RegisterCallback<PointerDownEvent>(_ => _scrubbing = true, TrickleDown.TrickleDown);
             _scrub.RegisterCallback<PointerUpEvent>(_ => _scrubbing = false, TrickleDown.TrickleDown);
@@ -159,27 +179,18 @@ namespace Wick.Game
 
         // ---- Screens ----------------------------------------------------------------
 
-        /// <summary>Home: Raid, Raids on your vault, the editor, and (dev builds) test vaults and tools.</summary>
+        /// <summary>
+        /// Home: the vault behind (3D), wallet and Crowns on plaques, the round menu icons, RAID and
+        /// Build. Development builds add a Test icon for the offline vaults and raid-by-id.
+        /// </summary>
         public void ShowPicker(IReadOnlyList<string> vaultNames)
         {
             EnsureReady();
-            VisualElement list = _picker.Q("picker-list");
+            Show(_root.Q("home-more"), false);
+            VisualElement list = _root.Q("more-list");
             list.Clear();
-            list.Add(WideButton("Raid", () => RaidPressed?.Invoke()));
-            list.Add(WideButton("Raids on your vault", () => DefencePressed?.Invoke(), "secondary"));
-            list.Add(WideButton("Upgrades", () => HomeScreenPressed?.Invoke("upgrades"), "secondary"));
-            list.Add(WideButton("Heist Pass", () => HomeScreenPressed?.Invoke("pass"), "secondary"));
-            list.Add(WideButton("Achievements", () => HomeScreenPressed?.Invoke("achievements"), "secondary"));
-            list.Add(WideButton("Shop", () => HomeScreenPressed?.Invoke("shop"), "secondary"));
-            list.Add(WideButton("Skins", () => HomeScreenPressed?.Invoke("skins"), "secondary"));
-            list.Add(WideButton("Settings", () => HomeScreenPressed?.Invoke("settings"), "secondary"));
-            list.Add(WideButton("Vault editor", () => EditorPressed?.Invoke(), "secondary"));
-            list.Add(WideButton("Share my vault", () => ShareMyVaultPressed?.Invoke(), "secondary"));
-
             if (DevBuild)
             {
-                list.Add(new Label("Development") { name = "dev-section" });
-                list.Q<Label>("dev-section").AddToClassList("section");
                 for (int i = 0; i < vaultNames.Count; i++)
                 {
                     int index = i;
@@ -203,9 +214,49 @@ namespace Wick.Game
                 list.Add(mine);
             }
 
-
             ShowPickerMessage(null);
             ShowOnly(_picker);
+        }
+
+        /// <summary>The wallet and Crowns on Home's plaques.</summary>
+        public void SetWallet(long gold, long wax, long gems, int crowns)
+        {
+            EnsureReady();
+            _picker.Q<Label>("home-gold").text = gold.ToString("N0");
+            _picker.Q<Label>("home-wax").text = wax.ToString("N0");
+            _picker.Q<Label>("home-gems").text = gems.ToString("N0");
+            _picker.Q<Label>("home-crowns").text = crowns.ToString("N0");
+        }
+
+        /// <summary>A red count on a Home icon ("pass", "trophies"); 0 hides it.</summary>
+        public void SetBadge(string icon, int count)
+        {
+            EnsureReady();
+            var badge = _picker.Q<Label>("badge-" + icon);
+            if (badge != null)
+            {
+                badge.text = count.ToString();
+                Show(badge, count > 0);
+            }
+        }
+
+        /// <summary>The title screen over everything, with a load bar until `ready`, then "Tap to play".</summary>
+        public void ShowTitle(string version, float progress, bool ready)
+        {
+            EnsureReady();
+            VisualElement title = _root.Q("title-screen");
+            Show(title, true);
+            title.BringToFront();
+            _root.Q<Label>("title-version").text = version;
+            _root.Q("title-fill").style.width = Length.Percent(Mathf.Clamp01(progress) * 100f);
+            Show(_root.Q("title-tap"), ready);
+            Show(_root.Q(className: "title-bar"), !ready);
+        }
+
+        public void HideTitle()
+        {
+            EnsureReady();
+            Show(_root.Q("title-screen"), false);
         }
 
         /// <summary>A row on a list screen: a line of text and its buttons.</summary>
@@ -354,7 +405,7 @@ namespace Wick.Game
         {
             EnsureReady();
             _picker.Q<Label>("home-stats").text = text ?? "";
-            var mine = _picker.Q<Label>("my-vault-id");
+            var mine = _root.Q<Label>("my-vault-id");
             if (mine != null)
             {
                 mine.text = "Your vault id: " + (WickBackend.MyVaultId ?? "sign in first");
@@ -442,6 +493,8 @@ namespace Wick.Game
             {
                 var coin = new VisualElement { pickingMode = PickingMode.Ignore };
                 coin.AddToClassList("fly-coin");
+                coin.AddToClassList("icon");
+                coin.AddToClassList("icon-coin");
                 _root.Add(coin);
                 Vector2 jitter = new Vector2(UnityEngine.Random.Range(-40f, 40f), UnityEngine.Random.Range(-30f, 30f));
                 float start = Time.unscaledTime + i * 0.05f;
@@ -688,6 +741,7 @@ namespace Wick.Game
             Show(_sheet, screen == _sheet);
             Show(_results, screen == _results);
             Show(_replayBar, false);
+            Show(_root.Q("home-more"), false);
         }
 
         private static void Show(VisualElement e, bool visible)

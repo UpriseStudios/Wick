@@ -530,6 +530,12 @@ namespace Wick.Game
                         Haptics.Play(HapticStrength.Medium); // a taste of it when turned on
                         DrawSettings();
                     }),
+                new RaidUI.SheetRow { Text = "Glow on flames: " + (Grade.Glow ? "on" : "off") + "\nTurn off if the game runs slowly." }
+                    .Button(Grade.Glow ? "Turn off" : "Turn on", () =>
+                    {
+                        Grade.Glow = !Grade.Glow;
+                        DrawSettings();
+                    }),
             };
             rows.AddRange(PrivacyRows());
             _ui.ShowSheet("Settings", Consent.Personalised ? "Ads may be personalised." : "Ads are not personalised.", rows);
