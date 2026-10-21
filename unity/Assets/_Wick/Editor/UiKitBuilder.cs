@@ -54,12 +54,12 @@ namespace Wick.Editor
             {
                 ["plaque"] = Sliced("ui_plaque", 120, 40, Plaque(120, trim: true, rivets: false)),
                 ["panel"] = Sliced("ui_panel", 180, 66, Plaque(180, trim: true, rivets: true)),
-                ["gold"] = Sliced("ui_button_gold", 120, 44, Button(120, GoldHi, Gold, GoldLo)),
+                ["gold"] = Sliced("ui_button_gold", 120, 46, Button(120, GoldHi, Gold, GoldLo)),
                 ["crimson"] = Sliced("ui_button_crimson", 120, 44, Button(120, CrimsonHi, Crimson, CrimsonLo)),
                 ["wood"] = Sliced("ui_button_wood", 120, 44, Button(120, WoodHi, Wood, WoodLo)),
                 ["round"] = Sliced("ui_round", 150, 0, RoundButton(150)),
                 ["card"] = Sliced("ui_card", 120, 40, Card(120)),
-                ["ribbon"] = Sliced("ui_ribbon", 120, 40, Button(120, CrimsonHi, Crimson, CrimsonLo, radius: 18)),
+                ["ribbon"] = Sliced("ui_ribbon", 200, 64, Ribbon(200)),
                 ["bar"] = Sliced("ui_bar", 60, 26, Bar(60, false)),
                 ["bar_fill"] = Sliced("ui_bar_fill", 60, 26, Bar(60, true)),
                 ["avatar"] = Sliced("ui_avatar", 120, 0, Avatar(120)),
@@ -121,16 +121,17 @@ namespace Wick.Editor
                 u.AppendLine("}");
             }
 
-            Bg(".plaque, .wide-button.secondary, .bar-button", s["plaque"]);
-            Bg(".panel-card", s["panel"]);
-            Bg(".btn-gold, .wide-button, .log-button, .share-button, .action, .small-button, .sel-button, .tab", s["gold"]);
-            Bg(".btn-crimson, .log-button.revenge, .close-button", s["crimson"]);
-            Bg(".btn-wood", s["wood"]);
+            Bg(".plaque, .bar-button, .toast, .selection-bar", s["plaque"]);
+            Bg(".panel-card, .issues-panel", s["panel"]);
+            // Gold for the main action, wood for the rest, crimson for danger. Two-class selectors win over one.
+            Bg(".btn-wood, .wide-button.secondary, .action, .small-button, .tiny-button, .sel-button, .tab, .tool", s["wood"]);
+            Bg(".btn-gold, .wide-button, .log-button, .action.primary, .tab.selected, .tool.selected, .pill", s["gold"]);
+            Bg(".btn-crimson, .log-button.revenge, .close-button, .sel-button.danger, .pill.bad", s["crimson"]);
             Bg(".round, .round-button", s["round"], "-unity-background-scale-mode: scale-to-fit;");
             Bg(".card, .log-row, .draft-row, .issue-row", s["card"]);
             Bg(".ribbon", s["ribbon"]);
-            Bg(".bar", s["bar"]);
-            Bg(".bar-fill", s["bar_fill"]);
+            Bg(".bar, .budget-track", s["bar"]);
+            Bg(".bar-fill, .budget-fill", s["bar_fill"]);
             Bg(".avatar", s["avatar"], "-unity-background-scale-mode: scale-to-fit;");
             Bg(".title-screen", title, "-unity-background-scale-mode: scale-and-crop;");
             u.AppendLine(".icon { -unity-background-scale-mode: scale-to-fit; }");
@@ -158,7 +159,8 @@ namespace Wick.Editor
         private static string Sliced(string id, int size, int border, UiPainter painted)
         {
             string path = ArtBudgets.IncomingRoot + "/ui/" + id + "/" + id + "@3x.png";
-            if (!File.Exists(path))
+            bool standIn = !File.Exists(path);
+            if (standIn)
             {
                 path = StandInDir + "/" + id + ".png";
                 Texture2D tex = painted.ToTexture();
@@ -172,7 +174,7 @@ namespace Wick.Editor
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.mipmapEnabled = false;
             importer.alphaIsTransparency = true;
-            if (border > 0 && importer.spriteBorder == Vector4.zero)
+            if (border > 0 && (standIn || importer.spriteBorder == Vector4.zero)) // the artist's slices win on real art
             {
                 importer.GetSourceTextureWidthAndHeight(out int w, out int h);
                 float b = Mathf.Round(Mathf.Min(w, h) * border / (float)size);
@@ -184,57 +186,101 @@ namespace Wick.Editor
             return "url(\"project://database/" + path + "?fileID=21300000&guid=" + guid + "&type=3#" + Path.GetFileNameWithoutExtension(path) + "\")";
         }
 
+        /// <summary>Carved dark timber with grain, a gold inlay, and (on big panels) gold corner brackets.</summary>
         private static UiPainter Plaque(int n, bool trim, bool rivets)
         {
             var p = new UiPainter(n);
             float h = n / 2f;
-            p.Fill(RoundRect(h, h, h - 1, h - 1, n * 0.2f), WoodHi, WoodLo, outline: 6);
+            Func<float, float, float> body = RoundRect(h, h, h - 1, h - 1, n * 0.18f);
+            p.Fill(body, WoodHi, WoodLo, outline: 6);
+            p.Grain(Inset(body, 6), Hex(0x140A05), 0.35f, spacing: n / 14f);
+            // A bevel: light on the top edge, shade on the bottom.
+            p.Solid(Subtract(Inset(body, 6), RoundRect(h, h - 3, h - 7, h - 8, n * 0.16f)), Hex(0xF6D27A, 0.18f));
+            p.Solid(Subtract(Inset(body, 6), RoundRect(h, h + 3, h - 7, h - 8, n * 0.16f)), Hex(0x000000, 0.28f));
             if (trim)
             {
-                // A thin gold inlay inside the outline.
-                p.Solid(Subtract(RoundRect(h, h, h - 10, h - 10, n * 0.14f), RoundRect(h, h, h - 13, h - 13, n * 0.12f)), GoldLo);
-                p.Solid(Subtract(RoundRect(h, h + 1, h - 10, h - 10, n * 0.14f), RoundRect(h, h - 1, h - 11, h - 11, n * 0.13f)), Hex(0xF6D27A, 0.35f));
+                float t = n * 0.1f;
+                p.Solid(Subtract(RoundRect(h, h, h - t, h - t, n * 0.12f), RoundRect(h, h, h - t - 3, h - t - 3, n * 0.1f)), GoldLo);
+                p.Solid(Subtract(RoundRect(h, h + 1, h - t, h - t, n * 0.12f), RoundRect(h, h, h - t - 1.5f, h - t - 1.5f, n * 0.11f)), Hex(0xF6D27A, 0.5f));
             }
 
             if (rivets)
             {
-                foreach (Vector2 c in new[] { new Vector2(24, 24), new Vector2(n - 24, 24), new Vector2(24, n - 24), new Vector2(n - 24, n - 24) })
+                // Gold corner brackets with a rivet: the panel looks bound like a chest.
+                float a = 10, l = n * 0.24f, w = 9;
+                foreach ((float sx, float sy) in new[] { (1f, 1f), (-1f, 1f), (1f, -1f), (-1f, -1f) })
                 {
-                    p.Fill(Circle(c.x, c.y, 7), GoldHi, GoldLo, outline: 2);
+                    float cx = sx > 0 ? a : n - a, cy = sy > 0 ? a : n - a;
+                    Func<float, float, float> bracket = Union(
+                        RoundRect(cx + sx * l / 2, cy + sy * w / 2, l / 2, w / 2, 3),
+                        RoundRect(cx + sx * w / 2, cy + sy * l / 2, w / 2, l / 2, 3));
+                    p.Fill(bracket, GoldHi, GoldLo, outline: 2.5f);
+                    p.Fill(Circle(cx + sx * w * 0.9f, cy + sy * w * 0.9f, 4.5f), GoldHi, GoldLo, outline: 1.5f);
                 }
             }
 
             return p;
         }
 
+        /// <summary>
+        /// A chunky raised button: a darker base with the face sitting on it (so it looks pressable),
+        /// a bright inner rim on the face and a curved highlight. Ink outline round the lot.
+        /// </summary>
         private static UiPainter Button(int n, Color hi, Color mid, Color lo, float radius = 26)
         {
             var p = new UiPainter(n);
             float h = n / 2f;
-            Func<float, float, float> body = RoundRect(h, h, h - 1, h - 1, radius);
-            p.Fill(body, Color.Lerp(mid, hi, 0.4f), lo, outline: 7);
-            // The pressed lip at the bottom and a glossy band at the top.
-            p.Solid(Subtract(RoundRect(h, h, h - 8, h - 8, radius - 6), RoundRect(h, h + 8, h - 8, h - 8, radius - 6)), Hex(0x000000, 0.22f));
-            p.Solid(RoundRect(h, n * 0.76f, h - 16, n * 0.09f, n * 0.08f), new Color(1f, 1f, 1f, 0.32f));
+            p.Fill(RoundRect(h, h, h - 1, h - 1, radius), Color.Lerp(lo, Color.black, 0.15f), Color.Lerp(lo, Color.black, 0.35f), outline: 7);
+            Func<float, float, float> face = RoundRect(h, h + 5, h - 9, h - 14, radius - 6);
+            p.Fill(face, Color.Lerp(mid, hi, 0.55f), Color.Lerp(mid, lo, 0.35f));
+            p.Solid(Subtract(face, RoundRect(h, h + 3, h - 12, h - 15, radius - 8)), Color.Lerp(hi, Color.white, 0.35f) * new Color(1, 1, 1, 0.7f));
+            p.Solid(Ellipse(h, n * 0.74f, h - 22, n * 0.075f), new Color(1f, 1f, 1f, 0.3f));
             return p;
         }
 
+        /// <summary>Round icon button: a brass rim with highlight around a carved wooden face.</summary>
         private static UiPainter RoundButton(int n)
         {
             var p = new UiPainter(n);
             float h = n / 2f;
-            p.Fill(Circle(h, h, h - 2), Hex(0x5A3824), WoodLo, outline: 7);
-            p.Solid(Subtract(Circle(h, h, h - 11), Circle(h, h, h - 15)), GoldLo);
-            p.Solid(Subtract(Circle(h, h + 1, h - 11), Circle(h, h - 1, h - 13)), Hex(0xF6D27A, 0.3f));
+            p.Fill(Circle(h, h, h - 2), GoldHi, GoldLo, outline: 6);
+            Func<float, float, float> face = Circle(h, h, h - 15);
+            p.Fill(face, Hex(0x5A3824), WoodLo, outline: 3);
+            p.Grain(face, Hex(0x140A05), 0.3f, spacing: 10f);
+            p.Solid(Subtract(face, Circle(h, h - 4, h - 17)), Hex(0x000000, 0.35f)); // inner shadow under the rim
+            p.Solid(Ellipse(h - h * 0.3f, h + h * 0.55f, h * 0.35f, h * 0.12f), new Color(1f, 1f, 1f, 0.35f)); // shine on the brass
             return p;
         }
 
+        /// <summary>Leather with a stitched groove.</summary>
         private static UiPainter Card(int n)
         {
             var p = new UiPainter(n);
             float h = n / 2f;
-            p.Fill(RoundRect(h, h, h - 1, h - 1, 22), LeatherHi, Leather, outline: 6);
-            p.Solid(Subtract(RoundRect(h, h, h - 12, h - 12, 14), RoundRect(h, h, h - 14, h - 14, 12)), Hex(0x2A170C, 0.55f)); // stitching groove
+            Func<float, float, float> body = RoundRect(h, h, h - 1, h - 1, 20);
+            p.Fill(body, LeatherHi, Leather, outline: 6);
+            p.Grain(Inset(body, 6), Hex(0x2A170C), 0.12f, spacing: 5f);
+            p.Solid(Subtract(Inset(body, 6), RoundRect(h, h - 2, h - 7, h - 8, 16)), Hex(0xFFD9A0, 0.14f));
+            // Stitches: short dashes along an inset outline.
+            Func<float, float, float> seam = Subtract(RoundRect(h, h, h - 12, h - 12, 12), RoundRect(h, h, h - 14, h - 14, 10));
+            p.Solid((x, y) => Mathf.Max(seam(x, y), Mathf.Sin((x + y) * 0.55f) * 3f), Hex(0xD9B98A, 0.6f));
+            return p;
+        }
+
+        /// <summary>A crimson banner with folded, notched tails (the tails sit in the 9-slice borders).</summary>
+        private static UiPainter Ribbon(int n)
+        {
+            var p = new UiPainter(n);
+            float h = n / 2f;
+            float t = n * 0.3f; // tail width
+            Func<float, float, float> tails = Union(
+                Polygon(new Vector2(2, h + 26), new Vector2(t + 4, h + 26), new Vector2(t + 4, h - 34), new Vector2(2, h - 34), new Vector2(18, h - 4)),
+                Polygon(new Vector2(n - 2, h + 26), new Vector2(n - t - 4, h + 26), new Vector2(n - t - 4, h - 34), new Vector2(n - 2, h - 34), new Vector2(n - 18, h - 4)));
+            p.Fill(tails, Color.Lerp(Crimson, Color.black, 0.25f), Color.Lerp(CrimsonLo, Color.black, 0.3f), outline: 6);
+            Func<float, float, float> band = RoundRect(h, h + 6, h - t * 0.6f, h - 18, 8);
+            p.Fill(band, CrimsonHi, CrimsonLo, outline: 6);
+            p.Solid(Subtract(Inset(band, 6), RoundRect(h, h + 3, h - t * 0.6f - 7, h - 25, 6)), Hex(0xFFB0A0, 0.35f));
+            p.Solid(Subtract(RoundRect(h, h + 6, h - t * 0.6f - 12, h - 30, 4), RoundRect(h, h + 6, h - t * 0.6f - 14, h - 32, 3)), Hex(0xF6D27A, 0.55f)); // gold stitch line
             return p;
         }
 

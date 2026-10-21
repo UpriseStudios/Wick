@@ -132,6 +132,8 @@ namespace Wick.Game
             _root.Q<Button>("share-clip").clicked += () => ShareClipPressed?.Invoke();
             _root.Q<Button>("share-link").clicked += () => ShareLinkPressed?.Invoke();
             _root.Q<Button>("sheet-back").clicked += () => SheetBackPressed?.Invoke();
+            _root.Q<Button>("ladder-close").clicked += () => SheetBackPressed?.Invoke();
+            _root.Q<Button>("ladder-buy").clicked += () => _ladderBuy?.Invoke();
             _root.Q<Button>("double-loot").clicked += () => DoubleLootPressed?.Invoke();
 
             // Home: one big Raid button, Build, the upgrade chip and the round menu icons.
@@ -259,6 +261,121 @@ namespace Wick.Game
             Show(_root.Q("title-screen"), false);
         }
 
+        /// <summary>One tier of the Heist Pass ladder.</summary>
+        public sealed class LadderTier
+        {
+            public int Tier;
+            public string FreeIcon, FreeText, PremiumIcon, PremiumText;
+            public bool Reached, FreeClaimed, PremiumClaimed;
+            public Action ClaimFree, ClaimPremium;
+        }
+
+        private Action _ladderBuy;
+
+        /// <summary>
+        /// The Heist Pass as a ladder: a track of tier nodes (gold where reached), premium rewards above it
+        /// (locked until bought), free rewards below, each with its claim button. Opens at your tier.
+        /// </summary>
+        public void ShowLadder(string season, int tier, int tiers, float xpFraction, string xpText, bool premium, string buyLabel, Action buy,
+            IReadOnlyList<LadderTier> list)
+        {
+            EnsureReady();
+            VisualElement ladder = _root.Q("ladder");
+            ShowOnly(ladder);
+            ladder.Q<Label>("ladder-season").text = season;
+            ladder.Q<Label>("ladder-tier").text = "Tier " + tier + " / " + tiers;
+            ladder.Q("ladder-xp-fill").style.width = Length.Percent(Mathf.Clamp01(xpFraction) * 100f);
+            ladder.Q<Label>("ladder-xp-text").text = xpText;
+            var buyButton = ladder.Q<Button>("ladder-buy");
+            buyButton.text = buyLabel ?? "";
+            _ladderBuy = buy;
+            Show(buyButton, !premium && buy != null);
+
+            var track = ladder.Q<ScrollView>("ladder-track");
+            track.horizontalScrollerVisibility = ScrollerVisibility.Hidden; // swipe the track; no bar
+            track.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+            track.Clear();
+            VisualElement current = null;
+            foreach (LadderTier t in list)
+            {
+                var col = new VisualElement();
+                col.AddToClassList("ladder-col");
+                col.Add(Reward(t.PremiumIcon, t.PremiumText, t.Reached, t.PremiumClaimed, premium, true, t.ClaimPremium));
+                var nodeRow = new VisualElement();
+                nodeRow.AddToClassList("ladder-node-row");
+                var line = new VisualElement();
+                line.AddToClassList("ladder-line");
+                line.EnableInClassList("reached", t.Reached);
+                nodeRow.Add(line);
+                var node = new VisualElement();
+                node.AddToClassList("ladder-node");
+                node.EnableInClassList("reached", t.Reached);
+                node.EnableInClassList("current", t.Tier == Mathf.Max(1, tier));
+                var number = new Label(t.Tier.ToString());
+                number.AddToClassList("lettering");
+                number.AddToClassList("ladder-node-label");
+                node.Add(number);
+                nodeRow.Add(node);
+                col.Add(nodeRow);
+                col.Add(Reward(t.FreeIcon, t.FreeText, t.Reached, t.FreeClaimed, true, false, t.ClaimFree));
+                track.Add(col);
+                if (t.Tier == Mathf.Max(1, tier))
+                {
+                    current = col;
+                }
+            }
+
+            if (current != null)
+            {
+                track.schedule.Execute(() => track.ScrollTo(current)).StartingIn(50);
+            }
+        }
+
+        private VisualElement Reward(string icon, string text, bool reached, bool claimed, bool unlocked, bool premium, Action claim)
+        {
+            var card = new VisualElement();
+            card.AddToClassList("ladder-reward");
+            card.AddToClassList("card");
+            card.EnableInClassList("premium", premium);
+            if (string.IsNullOrEmpty(icon))
+            {
+                card.style.opacity = 0.35f; // no reward on this row at this tier
+                return card;
+            }
+
+            var art = new VisualElement();
+            art.AddToClassList("icon");
+            art.AddToClassList("icon-" + icon);
+            art.AddToClassList("ladder-reward-icon");
+            card.Add(art);
+            var label = new Label(text);
+            label.AddToClassList("lettering");
+            label.AddToClassList("ladder-reward-text");
+            card.Add(label);
+            if (claimed)
+            {
+                var done = new Label("Claimed");
+                done.AddToClassList("lettering");
+                done.AddToClassList("ladder-done");
+                card.Add(done);
+            }
+            else if (!unlocked)
+            {
+                var locked = new Label("Pass only");
+                locked.AddToClassList("ladder-lock");
+                card.Add(locked);
+            }
+            else if (reached && claim != null)
+            {
+                var b = new Button(claim) { text = "Claim" };
+                b.AddToClassList("btn-gold");
+                b.AddToClassList("ladder-claim");
+                card.Add(b);
+            }
+
+            return card;
+        }
+
         /// <summary>A row on a list screen: a line of text and its buttons.</summary>
         public sealed class SheetRow
         {
@@ -318,6 +435,11 @@ namespace Wick.Game
         public void SetSheetMessage(string text, bool? ok)
         {
             EnsureReady();
+            var ladderMessage = _root.Q<Label>("ladder-message");
+            ladderMessage.text = text ?? "";
+            ladderMessage.EnableInClassList("good", ok == true);
+            ladderMessage.EnableInClassList("bad", ok == false);
+            Show(ladderMessage, !string.IsNullOrEmpty(text));
             var label = _sheet.Q<Label>("sheet-message");
             label.text = text ?? "";
             label.EnableInClassList("good", ok == true);
@@ -325,16 +447,24 @@ namespace Wick.Game
             Show(label, !string.IsNullOrEmpty(text));
         }
 
+        /// <summary>What the server paid for the raid: gold, wax and the Crowns change, as reward plaques.</summary>
+        public void SetResultRewards(long gold, long wax, int crowns)
+        {
+            EnsureReady();
+            _results.Q<Label>("result-loot").text = "+" + gold.ToString("N0");
+            _results.Q<Label>("result-wax").text = "+" + wax.ToString("N0");
+            Show(_results.Q("reward-wax"), wax > 0);
+            _results.Q<Label>("result-crowns").text = (crowns > 0 ? "+" : "") + crowns;
+            Show(_results.Q("reward-crowns"), crowns != 0);
+        }
+
         /// <summary>Shows or hides the results screen's "double your loot" ad offer.</summary>
         public void SetDoubleLoot(bool offered, string label = null)
         {
             EnsureReady();
             var b = _root.Q<Button>("double-loot");
-            if (label != null)
-            {
-                b.text = label;
-            }
-
+            b.Q<Label>("double-label").text = label ?? "×2 LOOT";
+            Show(b.Q<Label>("double-sub"), label == null);
             b.SetEnabled(offered);
             Show(b, offered || label != null);
         }
@@ -642,7 +772,9 @@ namespace Wick.Game
                 _stars[i].EnableInClassList("on", i < result.Stars);
             }
 
-            _results.Q<Label>("result-loot").text = "Loot " + result.Loot;
+            _results.Q<Label>("result-loot").text = "+" + result.Loot.ToString("N0");
+            Show(_results.Q("reward-wax"), false);
+            Show(_results.Q("reward-crowns"), false);
             SetServerVerdict(null, null);
             SetShare(false, false, null);
             SetDoubleLoot(false);
@@ -742,6 +874,7 @@ namespace Wick.Game
             Show(_results, screen == _results);
             Show(_replayBar, false);
             Show(_root.Q("home-more"), false);
+            Show(_root.Q("ladder"), screen != null && screen == _root.Q("ladder"));
         }
 
         private static void Show(VisualElement e, bool visible)

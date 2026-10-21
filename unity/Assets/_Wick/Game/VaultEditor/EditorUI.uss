@@ -1,3 +1,7 @@
+/* Layout and sizes for the vault editor (panel units: 1080 x 1920 reference).
+   The look (wood, leather, gold, crimson, lettering) comes from ../UI/UiKit.uss: wood buttons for
+   ordinary actions, gold for the main one (Test, Publish, the selected tab or tool), crimson for Remove. */
+
 .root {
     position: absolute;
     left: 0; right: 0; top: 0; bottom: 0;
@@ -7,90 +11,103 @@
     display: none;
 }
 
-/* ---- Shared ---------------------------------------------------------------- */
+/* ---- Your vaults ------------------------------------------------------------------- */
 
 .panel {
     position: absolute;
     left: 0; right: 0; top: 0; bottom: 0;
-    background-color: rgb(14, 12, 18);
+    background-color: rgba(10, 6, 3, 0.9);
     align-items: center;
-    padding: 80px 56px 56px 56px;
+    justify-content: center;
 }
 
-.title {
-    font-size: 84px;
-    color: rgb(255, 200, 110);
-    -unity-font-style: bold;
-    margin-bottom: 24px;
+.drafts-card {
+    width: 92%;
+    max-height: 84%;
+    padding: 120px 40px 40px 40px;
+    margin-top: 60px;
+    align-items: center;
+}
+
+.ribbon {
+    position: absolute;
+    top: -50px;
+    left: 12%;
+    right: 12%;
+    height: 150px;
+    font-size: 64px;
+    -unity-text-align: middle-center;
+    padding-bottom: 10px;
+}
+
+.close-button {
+    position: absolute;
+    top: -40px;
+    right: -14px;
+    width: 116px;
+    height: 116px;
+    font-size: 62px;
+    padding: 0 0 10px 0;
+    margin: 0;
 }
 
 .section {
-    font-size: 40px;
-    color: rgb(255, 200, 110);
-    margin: 28px 0 12px 0;
+    font-size: 42px;
+    color: rgb(246, 210, 122);
+    margin: 24px 0 10px 0;
 }
 
 .list {
-    width: 90%;
+    width: 100%;
 }
 
 .wide-button {
-    height: 120px;
-    margin: 10px 0;
-    font-size: 42px;
-    border-radius: 22px;
-    color: rgb(30, 22, 12);
-    background-color: rgb(255, 200, 110);
-    border-width: 0;
+    height: 130px;
+    margin: 8px 0;
+    padding: 0 0 12px 0;
+    font-size: 44px;
     flex-grow: 1;
 }
 
-.wide-button.secondary {
-    width: 90%;
-    flex-grow: 0;
-    margin-top: 32px;
-    background-color: rgba(255, 255, 255, 0.15);
-    color: rgb(230, 230, 230);
-}
-
-.small-button {
-    height: 88px;
-    padding: 0 22px;
-    margin: 0 6px;
-    font-size: 32px;
-    border-radius: 16px;
-    border-width: 0;
-    color: rgb(235, 235, 235);
-    background-color: rgba(255, 255, 255, 0.14);
-}
-
-.tiny-button {
-    width: 72px;
-    height: 72px;
-    font-size: 40px;
-    border-radius: 36px;
-    border-width: 0;
-    color: rgb(235, 235, 235);
-    background-color: rgba(255, 255, 255, 0.14);
-}
-
 .draft-list {
-    width: 90%;
-    max-height: 760px;
+    width: 100%;
+    max-height: 720px;
 }
 
 .draft-row {
     flex-direction: row;
     align-items: center;
+    padding: 14px 16px;
+    margin: 6px 0;
+}
+
+.draft-row .wide-button {
+    margin: 0 6px;
 }
 
 #empty {
     font-size: 36px;
-    color: rgb(180, 180, 180);
+    color: rgb(222, 200, 160);
     margin: 20px 0;
+    -unity-text-align: middle-center;
+    white-space: normal;
 }
 
-/* ---- Editor top ------------------------------------------------------------- */
+.small-button {
+    height: 96px;
+    padding: 0 26px 10px 26px;
+    margin: 0 6px;
+    font-size: 34px;
+}
+
+.tiny-button {
+    width: 88px;
+    height: 88px;
+    padding: 0 0 10px 0;
+    font-size: 44px;
+}
+
+/* ---- Editor top ------------------------------------------------------------------ */
 
 .editor {
     position: absolute;
@@ -100,30 +117,28 @@
 .topbar {
     flex-direction: row;
     align-items: center;
-    padding: 36px 20px 8px 20px;
-    background-color: rgba(10, 8, 14, 0.88);
+    margin: 30px 16px 0 16px;
+    padding: 14px 16px;
 }
 
 .vault-name {
-    font-size: 34px;
-    color: rgb(240, 236, 225);
-    -unity-font-style: bold;
+    font-size: 40px;
     flex-grow: 1;
-    margin: 0 10px;
+    margin: 0 12px;
     overflow: hidden;
 }
 
 .level {
-    font-size: 34px;
-    color: rgb(255, 200, 110);
-    margin: 0 10px;
+    font-size: 38px;
+    color: rgb(246, 210, 122);
+    margin: 0 12px;
 }
 
 .infobar {
     flex-direction: row;
     align-items: center;
-    padding: 6px 24px 14px 24px;
-    background-color: rgba(10, 8, 14, 0.88);
+    margin: 10px 16px 0 16px;
+    padding: 12px 18px;
 }
 
 .budget {
@@ -132,73 +147,57 @@
 }
 
 .budget-label {
-    font-size: 28px;
-    color: rgb(225, 225, 225);
+    font-size: 30px;
     margin-bottom: 6px;
 }
 
 .budget-track {
-    height: 22px;
-    border-radius: 11px;
-    background-color: rgba(255, 255, 255, 0.15);
-    overflow: hidden;
+    height: 44px;
+    padding: 7px;
 }
 
 .budget-fill {
     height: 100%;
     width: 0;
-    background-color: rgb(120, 220, 130);
 }
 
 .budget-fill.over {
-    background-color: rgb(255, 80, 60);
+    -unity-background-image-tint-color: rgb(255, 110, 100);
 }
 
 .pill {
-    height: 76px;
-    padding: 0 28px;
-    font-size: 30px;
-    border-radius: 38px;
-    border-width: 0;
-    color: rgb(20, 40, 24);
-    -unity-font-style: bold;
-    background-color: rgb(120, 220, 130);
-}
-
-.pill.bad {
-    color: rgb(255, 255, 255);
-    background-color: rgb(220, 60, 50);
+    height: 96px;
+    padding: 0 30px 10px 30px;
+    font-size: 34px;
 }
 
 .status {
-    font-size: 28px;
-    color: rgb(225, 220, 205);
-    padding: 8px 24px;
-    background-color: rgba(10, 8, 14, 0.6);
+    font-size: 30px;
+    margin: 8px 24px 0 24px;
+    padding: 10px 20px;
+    border-radius: 18px;
+    background-color: rgba(14, 8, 4, 0.78);
+    -unity-text-align: middle-center;
+    white-space: normal;
 }
 
 .toast {
     position: absolute;
-    top: 300px;
-    left: 40px;
-    right: 40px;
-    padding: 22px;
-    border-radius: 20px;
-    font-size: 34px;
+    top: 320px;
+    left: 50px;
+    right: 50px;
+    padding: 30px;
+    font-size: 36px;
     -unity-text-align: middle-center;
     white-space: normal;
-    color: rgb(255, 255, 255);
-    background-color: rgba(40, 40, 60, 0.92);
 }
 
 .issues-panel {
     position: absolute;
-    top: 260px;
+    top: 300px;
     left: 30px;
     right: 30px;
-    padding: 24px;
-    border-radius: 24px;
-    background-color: rgba(18, 14, 22, 0.96);
+    padding: 40px 30px 30px 30px;
 }
 
 .issue-list {
@@ -208,65 +207,53 @@
 
 .issue-row {
     font-size: 32px;
-    color: rgb(255, 170, 150);
+    color: rgb(255, 180, 160);
     white-space: normal;
     -unity-text-align: middle-left;
     margin: 6px 0;
-    padding: 18px 20px;
-    border-width: 0;
-    border-radius: 14px;
-    background-color: rgba(255, 255, 255, 0.07);
+    padding: 22px 26px;
 }
 
-/* ---- Selection bar (floats above the selected item) ----------------------------- */
+/* ---- Selection bar (floats above the selected item) ------------------------------ */
 
 .selection-bar {
     position: absolute;
     left: 0;
     top: 0;
-    padding: 12px 14px;
-    border-radius: 22px;
-    background-color: rgba(24, 20, 34, 0.96);
-    border-width: 3px;
-    border-color: rgb(255, 200, 110);
+    padding: 18px 18px 14px 18px;
     align-items: center;
 }
 
 .selection-name {
-    font-size: 28px;
-    color: rgb(255, 220, 160);
-    margin-bottom: 8px;
+    font-size: 32px;
+    color: rgb(246, 210, 122);
+    margin-bottom: 10px;
 }
 
 .sel-button {
-    height: 88px;
-    min-width: 150px;
-    padding: 0 22px;
+    height: 100px;
+    min-width: 160px;
+    padding: 0 22px 10px 22px;
     margin: 0 6px;
-    font-size: 30px;
-    border-radius: 16px;
-    border-width: 0;
-    color: rgb(235, 235, 235);
-    background-color: rgba(255, 255, 255, 0.16);
+    font-size: 32px;
 }
 
-.sel-button.danger {
-    background-color: rgb(170, 50, 45);
-}
-
-/* ---- Editor bottom ------------------------------------------------------------ */
+/* ---- Editor bottom --------------------------------------------------------------- */
 
 .bottom {
     position: absolute;
     left: 0; right: 0; bottom: 0;
+    background-color: rgba(14, 8, 4, 0.9);
+    border-top-width: 6px;
+    border-color: rgb(26, 15, 8);
 }
 
 .hint {
-    font-size: 28px;
-    color: rgb(215, 210, 195);
+    font-size: 30px;
+    color: rgb(222, 200, 160);
     white-space: normal;
-    padding: 8px 24px;
-    background-color: rgba(10, 8, 14, 0.6);
+    padding: 12px 24px 0 24px;
+    -unity-text-align: middle-center;
 }
 
 .row {
@@ -277,123 +264,86 @@
 
 .tabs {
     flex-direction: row;
-    padding: 10px 12px 0 12px;
-    background-color: rgba(10, 8, 14, 0.92);
+    padding: 14px 14px 0 14px;
 }
 
 .tab {
     flex-grow: 1;
-    height: 84px;
+    height: 100px;
     margin: 0 6px;
-    font-size: 32px;
-    border-width: 0;
-    border-radius: 18px 18px 0 0;
-    color: rgb(200, 195, 185);
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
-.tab.selected {
-    color: rgb(30, 22, 12);
-    -unity-font-style: bold;
-    background-color: rgb(255, 200, 110);
+    padding: 0 0 10px 0;
+    font-size: 38px;
 }
 
 .shop {
     flex-direction: row;
     flex-wrap: wrap;
-    padding: 10px 12px;
-    background-color: rgba(10, 8, 14, 0.92);
+    justify-content: center;
+    padding: 12px 10px;
 }
 
 .card {
-    width: 196px;
-    height: 128px;
-    margin: 4px;
-    border-radius: 18px;
-    background-color: rgb(70, 60, 90);
+    width: 200px;
+    height: 150px;
+    margin: 5px;
     align-items: center;
     justify-content: center;
+    padding: 8px;
 }
 
 .card Label {
-    font-size: 27px;
-    color: rgb(240, 240, 240);
-    -unity-font-style: bold;
+    font-size: 30px;
     white-space: normal;
     -unity-text-align: middle-center;
 }
 
 .card .card-sub {
-    font-size: 24px;
-    -unity-font-style: normal;
-    color: rgb(255, 210, 120);
+    font-size: 26px;
+    color: rgb(246, 210, 122);
 }
 
 .card.blocked {
-    background-color: rgba(255, 255, 255, 0.07);
-}
-
-.card.blocked Label {
-    color: rgba(255, 255, 255, 0.4);
+    opacity: 0.45;
 }
 
 .card.dragging {
-    background-color: rgb(120, 100, 160);
+    scale: 1.08 1.08;
 }
 
 .room-tools {
     flex-direction: row;
     flex-wrap: wrap;
-    padding: 10px 12px;
-    background-color: rgba(10, 8, 14, 0.92);
+    justify-content: center;
+    padding: 12px 10px;
 }
 
 .tool {
-    width: 196px;
-    height: 100px;
-    margin: 4px;
-    font-size: 30px;
-    border-radius: 16px;
-    border-width: 0;
-    color: rgb(230, 230, 230);
-    background-color: rgba(255, 255, 255, 0.12);
-}
-
-.tool.selected {
-    background-color: rgb(255, 200, 110);
-    color: rgb(30, 22, 12);
-    -unity-font-style: bold;
+    width: 200px;
+    height: 110px;
+    margin: 5px;
+    padding: 0 0 10px 0;
+    font-size: 32px;
 }
 
 .actions {
     flex-direction: row;
-    padding: 10px 12px 40px 12px;
-    background-color: rgba(10, 8, 14, 0.95);
+    padding: 12px 12px 44px 12px;
 }
 
 .action {
     flex-grow: 1;
-    height: 110px;
+    height: 130px;
     margin: 0 6px;
-    font-size: 36px;
-    border-radius: 20px;
-    border-width: 0;
-    color: rgb(235, 235, 235);
-    background-color: rgba(255, 255, 255, 0.14);
-}
-
-.action.primary {
-    background-color: rgb(255, 200, 110);
-    color: rgb(30, 22, 12);
-    -unity-font-style: bold;
+    padding: 0 0 12px 0;
+    font-size: 40px;
 }
 
 .action:disabled {
-    opacity: 0.35;
+    opacity: 0.4;
 }
 
 .action.dev {
     flex-grow: 0;
-    width: 120px;
-    font-size: 26px;
+    width: 130px;
+    font-size: 28px;
 }

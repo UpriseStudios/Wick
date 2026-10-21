@@ -62,6 +62,22 @@ namespace Wick.PlayTests
             yield return Frames(20);
             Capture("ui-3-menu");
 
+            var tiers = new List<RaidUI.LadderTier>();
+            string[] icons = { "coin", "wax", "gem", "coin", "skins", "wax", "coin", "gem", "build", "skins" };
+            for (int t = 1; t <= 10; t++)
+            {
+                tiers.Add(new RaidUI.LadderTier
+                {
+                    Tier = t, FreeIcon = icons[(t + 2) % 10], FreeText = icons[(t + 2) % 10] == "skins" ? "Twist" : (t * 150).ToString("N0"),
+                    PremiumIcon = icons[t - 1], PremiumText = icons[t - 1] == "skins" ? "Gilded Twist" : (t * 40).ToString("N0"),
+                    Reached = t <= 4, FreeClaimed = t <= 2, ClaimFree = () => { }, ClaimPremium = () => { },
+                });
+            }
+
+            ui.ShowLadder("Season 1", 4, 40, 0.62f, "620 / 1000 XP to tier 5", false, "Unlock premium  £4.99", () => { }, tiers);
+            yield return Frames(30);
+            Capture("ui-6-pass");
+
             TextAsset vault = Resources.LoadAll<TextAsset>("DevVaults")[1];
             runner.LoadLive(VaultJson.Parse(vault.text), 7);
             runner.StartClock();
@@ -69,18 +85,35 @@ namespace Wick.PlayTests
             yield return Frames(40);
             Capture("ui-4-raid");
 
+            // Results after a live raid, with everything it can show.
+            ui.ShowResults(new RaidResult(Outcome.Escaped, 1490, 0, null, 3, 260, 2), "a1b2c3d4", "a1b2c3d4", true);
+            ui.SetResultRewards(260, 12, 18);
+            ui.SetServerVerdict("Server check passed  ·  12,740 gold in your vault", true);
+            ui.SetShare(true, true, null);
+            ui.SetDoubleLoot(true);
+            yield return Frames(20);
+            Capture("ui-5-results");
+
+            // The vault editor, in its own scene.
+            SceneManager.LoadScene("Editor");
+            yield return Frames(30);
+            Setup(Object.FindAnyObjectByType<VaultEditorController>().GetComponentInChildren<UIDocument>() ??
+                Object.FindAnyObjectByType<UIDocument>());
+            yield return Frames(30);
+            Capture("ui-7-editor");
+
             Object.DestroyImmediate(_world);
             Object.DestroyImmediate(_ui);
         }
 
-        private void Setup()
+        private void Setup(UIDocument doc = null)
         {
             _camera = Camera.main;
             _world = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32);
             _ui = new RenderTexture(Width, Height, 0, RenderTextureFormat.ARGB32);
             _camera.targetTexture = _world;
             _camera.aspect = Width / (float)Height;
-            _doc = Object.FindAnyObjectByType<RaidUI>().GetComponent<UIDocument>();
+            _doc = doc != null ? doc : Object.FindAnyObjectByType<RaidUI>().GetComponent<UIDocument>();
             PanelSettings copy = Object.Instantiate(_doc.panelSettings); // never touch the asset
             copy.targetTexture = _ui;
             copy.clearColor = true;

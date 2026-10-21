@@ -540,9 +540,8 @@ namespace Wick.Game
                 SubmitReply reply = await _backend.SubmitRaidAsync(raid.Token, log, result);
                 if (reply.Verified)
                 {
-                    string crowns = reply.CrownsDelta == 0 ? "" : "  " + (reply.CrownsDelta > 0 ? "+" : "") + reply.CrownsDelta + " Crowns";
-                    string wax = reply.WaxEarned > 0 ? ", +" + reply.WaxEarned + " wax" : "";
-                    _ui.SetServerVerdict("Server check passed: +" + reply.Paid + " gold" + wax + " (" + reply.Gold + " gold total)" + crowns, true);
+                    _ui.SetResultRewards(reply.Paid, reply.WaxEarned, reply.CrownsDelta);
+                    _ui.SetServerVerdict("Server check passed  ·  " + reply.Gold.ToString("N0") + " gold in your vault", true);
                     _lastRaidId = "r_" + raid.Token;
                     if (reply.Paid > 0 && reply.Outcome == "Escaped")
                     {
@@ -691,7 +690,7 @@ namespace Wick.Game
         {
             _ui.SetDoubleLoot(false, "Watching...");
             AdOutcome o = await _ads.ShowAsync("raid_double_loot", _lastRaidId);
-            _ui.SetDoubleLoot(false, o.Granted ? "Loot doubled: +" + (o.Grant?.Gold ?? 0) + " gold" : o.Reason);
+            _ui.SetDoubleLoot(false, o.Granted ? "+" + (o.Grant?.Gold ?? 0) + " DOUBLED" : o.Reason);
         }
 
         private string SnuffCause(VaultDef vault)

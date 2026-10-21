@@ -5,23 +5,25 @@
 
         <!-- Drafts list. -->
         <ui:VisualElement name="drafts" class="panel blocks-input">
-            <ui:Label text="Your vaults" class="title" />
-            <ui:ScrollView name="draft-list" class="draft-list" />
-            <ui:Label text="Start from a template" class="section" />
-            <ui:VisualElement name="template-list" class="list" />
-            <ui:Button name="back-raids" text="Back to raids" class="wide-button secondary" />
+            <ui:VisualElement class="drafts-card panel-card">
+                <ui:Label text="YOUR VAULTS" class="ribbon" />
+                <ui:Button name="back-raids" text="×" class="close-button" />
+                <ui:ScrollView name="draft-list" class="draft-list" />
+                <ui:Label text="Start from a template" class="section" />
+                <ui:VisualElement name="template-list" class="list" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Editor. Containers ignore touches so the grid gets them; controls block. -->
         <ui:VisualElement name="editor" class="editor" picking-mode="Ignore">
-            <ui:VisualElement class="topbar blocks-input">
+            <ui:VisualElement class="topbar plaque blocks-input">
                 <ui:Button name="to-drafts" text="&lt; Vaults" class="small-button" />
                 <ui:Label name="vault-name" class="vault-name" />
                 <ui:Button name="level-down" text="-" class="tiny-button" />
                 <ui:Label name="level-label" text="Lv 1" class="level" />
                 <ui:Button name="level-up" text="+" class="tiny-button" />
             </ui:VisualElement>
-            <ui:VisualElement class="infobar blocks-input">
+            <ui:VisualElement class="infobar plaque blocks-input">
                 <ui:VisualElement class="budget">
                     <ui:Label name="budget-label" text="Build points 0 / 60" class="budget-label" />
                     <ui:VisualElement class="budget-track">

@@ -121,6 +121,33 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <!-- The Heist Pass ladder: premium rewards above the track, free below, scrolled to your tier. -->
+        <ui:VisualElement name="ladder" class="overlay blocks-input hidden">
+            <ui:VisualElement class="sheet-card panel-card">
+                <ui:Label text="HEIST PASS" class="ribbon" />
+                <ui:Button name="ladder-close" text="×" class="close-button" />
+                <ui:VisualElement class="ladder-head">
+                    <ui:Label name="ladder-season" class="lettering ladder-season" />
+                    <ui:VisualElement class="ladder-xp-row">
+                        <ui:Label name="ladder-tier" class="lettering ladder-tier" />
+                        <ui:VisualElement class="bar ladder-xp">
+                            <ui:VisualElement name="ladder-xp-fill" class="bar-fill ladder-xp-fill" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label name="ladder-xp-text" class="ladder-xp-text" />
+                    <ui:Button name="ladder-buy" class="ladder-buy btn-crimson hidden" />
+                </ui:VisualElement>
+                <ui:Label name="ladder-message" class="server-verdict hidden" />
+                <ui:VisualElement class="ladder-body">
+                    <ui:VisualElement class="ladder-rows">
+                        <ui:Label text="PREMIUM" class="lettering ladder-row-label premium" />
+                        <ui:Label text="FREE" class="lettering ladder-row-label" />
+                    </ui:VisualElement>
+                    <ui:ScrollView name="ladder-track" mode="Horizontal" class="ladder-track" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
         <!-- Raids on your vault. -->
         <ui:VisualElement name="defence" class="overlay blocks-input">
             <ui:VisualElement class="sheet-card panel-card">
@@ -131,35 +158,57 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Results. -->
+        <!-- Results: a ribbon over the stars, rewards as icon plaques, then the actions. -->
         <ui:VisualElement name="results" class="overlay blocks-input">
             <ui:VisualElement class="results-card panel-card">
-                <ui:Label name="result-title" text="ESCAPED" class="title" />
+                <ui:Label name="result-title" text="ESCAPED" class="ribbon result-ribbon" />
                 <ui:VisualElement name="stars" class="stars">
                     <ui:VisualElement class="star" />
-                    <ui:VisualElement class="star" />
+                    <ui:VisualElement class="star big" />
                     <ui:VisualElement class="star" />
                 </ui:VisualElement>
-                <ui:VisualElement class="loot-row">
-                    <ui:VisualElement class="icon icon-coin res-icon" />
-                    <ui:Label name="result-loot" text="Loot 0" class="lettering result-loot" />
+                <ui:VisualElement class="reward-row">
+                    <ui:VisualElement class="reward plaque">
+                        <ui:VisualElement class="icon icon-coin reward-icon" />
+                        <ui:Label name="result-loot" text="+0" class="lettering reward-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="reward-wax" class="reward plaque hidden">
+                        <ui:VisualElement class="icon icon-wax reward-icon" />
+                        <ui:Label name="result-wax" text="+0" class="lettering reward-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="reward-crowns" class="reward plaque hidden">
+                        <ui:VisualElement class="icon icon-crown reward-icon" />
+                        <ui:Label name="result-crowns" text="+0" class="lettering reward-label" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:Label name="result-server" class="server-verdict hidden" />
+                <ui:Label name="result-server" class="server-verdict result-verdict hidden" />
                 <ui:Label name="result-server-detail" class="mono hidden" />
                 <ui:VisualElement name="result-dev" class="dev-block">
                     <ui:Label name="result-live-hash" class="mono" />
                     <ui:Label name="result-replay-hash" class="mono" />
                     <ui:Label name="result-match" class="match" />
                 </ui:VisualElement>
+                <ui:Button name="double-loot" class="double-loot btn-gold hidden">
+                    <ui:VisualElement class="icon icon-coin double-icon" picking-mode="Ignore" />
+                    <ui:VisualElement picking-mode="Ignore">
+                        <ui:Label name="double-label" text="×2 LOOT" class="double-label" picking-mode="Ignore" />
+                        <ui:Label name="double-sub" text="Watch an ad" class="double-sub" picking-mode="Ignore" />
+                    </ui:VisualElement>
+                </ui:Button>
                 <ui:VisualElement name="share-row" class="share-row">
-                    <ui:Button name="share-clip" text="Share clip" class="share-button" />
-                    <ui:Button name="share-link" text="Share link" class="share-button" />
+                    <ui:Button name="share-clip" class="share-button btn-wood">
+                        <ui:VisualElement class="icon icon-share share-icon" picking-mode="Ignore" />
+                        <ui:Label text="Clip" class="share-label" picking-mode="Ignore" />
+                    </ui:Button>
+                    <ui:Button name="share-link" class="share-button btn-wood">
+                        <ui:VisualElement class="icon icon-share share-icon" picking-mode="Ignore" />
+                        <ui:Label text="Link" class="share-label" picking-mode="Ignore" />
+                    </ui:Button>
                 </ui:VisualElement>
                 <ui:Label name="clip-status" class="mono hidden" />
-                <ui:Button name="double-loot" text="Double your loot (watch an ad)" class="wide-button btn-crimson hidden" />
                 <ui:VisualElement class="result-buttons">
-                    <ui:Button name="retry-button" text="Retry" class="wide-button secondary result-button" />
-                    <ui:Button name="menu-button" text="Home" class="wide-button result-button" />
+                    <ui:Button name="retry-button" text="Retry" class="result-button btn-wood" />
+                    <ui:Button name="menu-button" text="Home" class="result-button btn-gold" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

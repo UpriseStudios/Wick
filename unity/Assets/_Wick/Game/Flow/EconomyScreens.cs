@@ -141,7 +141,7 @@ namespace Wick.Game
                     _ui.ShowSheet("Upgrades", wallet + "\n" + (_state.Running?.Count ?? 0) + " of " + _state.Workshops + " workshops busy", Upgrades(cfg));
                     break;
                 case "pass":
-                    _ui.ShowSheet("Heist Pass", PassHeader(cfg), Pass(cfg));
+                    ShowLadder(cfg);
                     break;
                 case "achievements":
                     _ui.ShowSheet("Achievements", wallet, Achievements(cfg));
@@ -203,46 +203,58 @@ namespace Wick.Game
 
         // ---- Heist Pass -----------------------------------------------------------------------
 
-        private string PassHeader(EconomyConfig cfg)
+        /// <summary>The Heist Pass as a ladder of tiers (RaidUI.ShowLadder).</summary>
+        private void ShowLadder(EconomyConfig cfg)
         {
             PassConfig p = cfg.Pass;
             long intoTier = _state.PassXp - (long)_state.PassTier * p.XpPerTier;
-            return "Season " + p.Season + "  |  tier " + _state.PassTier + " of " + p.Tiers + "  |  " +
-                (_state.PassTier >= p.Tiers ? "complete" : intoTier + "/" + p.XpPerTier + " XP to the next") +
-                (_state.PassPremium ? "  |  Premium" : "");
+            bool complete = _state.PassTier >= p.Tiers;
+            var tiers = new List<RaidUI.LadderTier>();
+            foreach (PassReward r in p.Rewards)
+            {
+                tiers.Add(new RaidUI.LadderTier
+                {
+                    Tier = r.Tier,
+                    FreeIcon = r.Free.IsEmpty ? null : IconFor(r.Free),
+                    FreeText = Short(r.Free),
+                    PremiumIcon = r.Premium.IsEmpty ? null : IconFor(r.Premium),
+                    PremiumText = Short(r.Premium),
+                    Reached = r.Tier <= _state.PassTier,
+                    FreeClaimed = _state.PassClaimedFree?.Contains(r.Tier) == true,
+                    PremiumClaimed = _state.PassClaimedPremium?.Contains(r.Tier) == true,
+                    ClaimFree = () => ClaimTier(r.Tier, false, cfg),
+                    ClaimPremium = () => ClaimTier(r.Tier, true, cfg),
+                });
+            }
+
+            string id = "heist_pass_" + p.Season;
+            _ui.ShowLadder("Season " + p.Season, _state.PassTier, p.Tiers, complete ? 1f : intoTier / (float)p.XpPerTier,
+                complete ? "Season complete" : intoTier + " / " + p.XpPerTier + " XP to tier " + (_state.PassTier + 1),
+                _state.PassPremium, "Unlock premium  " + Shop.Price(id), () => Buy(id), tiers);
         }
 
-        private List<RaidUI.SheetRow> Pass(EconomyConfig cfg)
+        /// <summary>Which icon shows a reward on the ladder.</summary>
+        private static string IconFor(Grant g)
         {
-            var rows = new List<RaidUI.SheetRow>();
-            if (!_state.PassPremium)
-            {
-                string id = "heist_pass_" + cfg.Pass.Season;
-                rows.Add(new RaidUI.SheetRow { Text = "Unlock the premium row: every tier you've passed unlocks too." }
-                    .Button("Buy Heist Pass (" + Shop.Price(id) + ")", () => Buy(id)));
-            }
+            if (g.Cosmetics != null && g.Cosmetics.Count > 0) return "skins";
+            if (g.Gems > 0) return "gem";
+            if (g.Wax > 0) return "wax";
+            if (g.Gold > 0) return "coin";
+            if (g.Workshops > 0) return "build";
+            if (g.Club) return "crown";
+            return "pass";
+        }
 
-            foreach (PassReward r in cfg.Pass.Rewards)
-            {
-                bool reached = r.Tier <= _state.PassTier;
-                bool freeClaimed = _state.PassClaimedFree?.Contains(r.Tier) == true;
-                bool premiumClaimed = _state.PassClaimedPremium?.Contains(r.Tier) == true;
-                var row = new RaidUI.SheetRow
-                {
-                    Text = "Tier " + r.Tier + (reached ? "" : " (locked)") + "\nFree: " + Describe(r.Free) + "\nPremium: " + Describe(r.Premium),
-                    Style = reached ? "held" : null,
-                };
-                if (!r.Free.IsEmpty)
-                {
-                    row.Button(freeClaimed ? "Claimed" : "Claim", () => ClaimTier(r.Tier, false, cfg), reached && !freeClaimed);
-                }
-
-                row.Button(premiumClaimed ? "Claimed" : "Claim premium", () => ClaimTier(r.Tier, true, cfg),
-                    reached && !premiumClaimed && _state.PassPremium);
-                rows.Add(row);
-            }
-
-            return rows;
+        /// <summary>A reward in a few words for a ladder card ("500", "Pip").</summary>
+        private static string Short(Grant g)
+        {
+            if (g == null || g.IsEmpty) return "";
+            if (g.Cosmetics != null && g.Cosmetics.Count > 0) return Pretty(g.Cosmetics[0]);
+            if (g.Gems > 0) return g.Gems.ToString("N0");
+            if (g.Wax > 0) return g.Wax.ToString("N0");
+            if (g.Gold > 0) return g.Gold.ToString("N0");
+            if (g.Workshops > 0) return "+" + g.Workshops + " workshop";
+            return Describe(g);
         }
 
         private void ClaimTier(int tier, bool premium, EconomyConfig cfg)

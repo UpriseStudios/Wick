@@ -11,32 +11,32 @@
     text-shadow: 0 7px 0 rgb(26, 15, 8);
 }
 
-.plaque, .wide-button.secondary, .bar-button {
+.plaque, .bar-button, .toast, .selection-bar {
     background-image: url("project://database/Assets/_Wick/Art/StandIns/UI/ui_plaque.png?fileID=21300000&guid=d92952523227b6143a4933d2a858e592&type=3#ui_plaque");
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     border-radius: 0;
 }
-.panel-card {
+.panel-card, .issues-panel {
     background-image: url("project://database/Assets/_Wick/Art/StandIns/UI/ui_panel.png?fileID=21300000&guid=c252dfb75f8233445966e73073a29ea1&type=3#ui_panel");
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     border-radius: 0;
 }
-.btn-gold, .wide-button, .log-button, .share-button, .action, .small-button, .sel-button, .tab {
+.btn-wood, .wide-button.secondary, .action, .small-button, .tiny-button, .sel-button, .tab, .tool {
+    background-image: url("project://database/Assets/_Wick/Art/StandIns/UI/ui_button_wood.png?fileID=21300000&guid=c7097add4f9ed79479053279643157c1&type=3#ui_button_wood");
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    border-radius: 0;
+}
+.btn-gold, .wide-button, .log-button, .action.primary, .tab.selected, .tool.selected, .pill {
     background-image: url("project://database/Assets/_Wick/Art/StandIns/UI/ui_button_gold.png?fileID=21300000&guid=e8943df74e323e04db83d70aeb1d4885&type=3#ui_button_gold");
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     border-radius: 0;
 }
-.btn-crimson, .log-button.revenge, .close-button {
+.btn-crimson, .log-button.revenge, .close-button, .sel-button.danger, .pill.bad {
     background-image: url("project://database/Assets/_Wick/Art/StandIns/UI/ui_button_crimson.png?fileID=21300000&guid=20475328269bd4e438162e9cbc5102b7&type=3#ui_button_crimson");
-    background-color: rgba(0, 0, 0, 0);
-    border-width: 0;
-    border-radius: 0;
-}
-.btn-wood {
-    background-image: url("project://database/Assets/_Wick/Art/StandIns/UI/ui_button_wood.png?fileID=21300000&guid=c7097add4f9ed79479053279643157c1&type=3#ui_button_wood");
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     border-radius: 0;
@@ -60,13 +60,13 @@
     border-width: 0;
     border-radius: 0;
 }
-.bar {
+.bar, .budget-track {
     background-image: url("project://database/Assets/_Wick/Art/StandIns/UI/ui_bar.png?fileID=21300000&guid=d9707e01914436548a83a5db52bc2a51&type=3#ui_bar");
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;
     border-radius: 0;
 }
-.bar-fill {
+.bar-fill, .budget-fill {
     background-image: url("project://database/Assets/_Wick/Art/StandIns/UI/ui_bar_fill.png?fileID=21300000&guid=737e4355586994746b005b309850d97e&type=3#ui_bar_fill");
     background-color: rgba(0, 0, 0, 0);
     border-width: 0;

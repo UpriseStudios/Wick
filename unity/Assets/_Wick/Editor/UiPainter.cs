@@ -47,6 +47,52 @@ namespace Wick.Editor
             return this;
         }
 
+        /// <summary>
+        /// Wood grain inside a shape: soft streaks along x, wobbling with value noise, darkening up to
+        /// `strength`. Gives plaques and round buttons a carved-timber feel instead of a flat fill.
+        /// </summary>
+        public UiPainter Grain(Func<float, float, float> sdf, Color dark, float strength, float spacing = 9f)
+        {
+            for (int y = 0; y < _size; y++)
+            {
+                for (int x = 0; x < _size; x++)
+                {
+                    float d = sdf(x + 0.5f, y + 0.5f);
+                    if (d > 0f)
+                    {
+                        continue;
+                    }
+
+                    float wobble = Noise(x * 0.035f, y * 0.11f) * 6f;
+                    float streak = 0.5f + 0.5f * Mathf.Sin((y + wobble) / spacing * Mathf.PI * 2f);
+                    float a = strength * Mathf.Pow(streak, 6f) * Mathf.Clamp01(-d / 3f);
+                    Blend(x, y, dark, a);
+                }
+            }
+
+            return this;
+        }
+
+        /// <summary>Smooth value noise in 0..1 (deterministic, for texture only).</summary>
+        public static float Noise(float x, float y)
+        {
+            int xi = Mathf.FloorToInt(x), yi = Mathf.FloorToInt(y);
+            float xf = x - xi, yf = y - yi;
+            float u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+            float a = Hash(xi, yi), b = Hash(xi + 1, yi), c = Hash(xi, yi + 1), d = Hash(xi + 1, yi + 1);
+            return Mathf.Lerp(Mathf.Lerp(a, b, u), Mathf.Lerp(c, d, u), v);
+        }
+
+        private static float Hash(int x, int y)
+        {
+            unchecked
+            {
+                uint h = (uint)(x * 374761393 + y * 668265263);
+                h = (h ^ (h >> 13)) * 1274126177u;
+                return (h ^ (h >> 16)) / (float)uint.MaxValue;
+            }
+        }
+
         /// <summary>A flat-coloured shape, no outline.</summary>
         public UiPainter Solid(Func<float, float, float> sdf, Color colour)
         {
