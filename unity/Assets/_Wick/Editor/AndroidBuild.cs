@@ -22,6 +22,7 @@ namespace Wick.Editor
         public static void BuildDev()
         {
             GoldenSync.Sync(true);
+            AppIcons.Apply();
             EditorUserBuildSettings.buildAppBundle = false;
             AddressablesSetup.UseProfile(AddressablesSetup.Development); // remote groups ride along in dev APKs
 
