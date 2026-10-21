@@ -86,3 +86,7 @@ __pycache__/
 /unity/Assets/Resources.meta
 /unity/ServerData/
 /tools/blender/previews/
+
+# Signing keys (the upload keystore stays on the developer machine)
+*.keystore
+*.jks

@@ -166,7 +166,7 @@ Pages); see `web/README.md`.
 build, IL2CPP, ARM64). From the command line:
 
 ```
-"C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe" -batchmode -quit -projectPath unity -buildTarget Android -executeMethod Wick.Editor.AndroidBuild.BuildDev
+"C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe" -batchmode -quit -projectPath unity -buildTarget Android -executeMethod Wick.Editor.AndroidBuild.BuildDev  (or BuildReleaseApk, BuildRelease)
 adb install -r unity/Builds/Wick-dev.apk
 ```
 
