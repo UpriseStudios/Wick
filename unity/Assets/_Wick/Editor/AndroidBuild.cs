@@ -21,6 +21,14 @@ namespace Wick.Editor
         public const string ReleaseApkPath = "Builds/Wick-release.apk";
         public const string ReleaseBundlePath = "Builds/Wick-release.aab";
 
+        /// <summary>
+        /// False until the CDN (Cloudflare R2, after M10) serves the remote groups: until then release builds
+        /// carry every skin and theme inside the app, like dev builds. Set true to load them from the CDN.
+        /// </summary>
+        public const bool ContentOnCdn = false;
+
+        private static string ReleaseContent => ContentOnCdn ? AddressablesSetup.Release : AddressablesSetup.Development;
+
         /// <summary>The install-size budget (tech design, Testing and performance budgets).</summary>
         public const long InstallBudgetMb = 150;
 
@@ -42,7 +50,7 @@ namespace Wick.Editor
         [MenuItem("Wick/Build Android Release APK (debug-signed)")]
         public static void BuildReleaseApk()
         {
-            Build(ReleaseApkPath, AddressablesSetup.Release, BuildOptions.None, false);
+            Build(ReleaseApkPath, ReleaseContent, BuildOptions.None, false);
         }
 
         [MenuItem("Wick/Build Android Release AAB")]
@@ -63,7 +71,7 @@ namespace Wick.Editor
             PlayerSettings.Android.keyaliasPass = Environment.GetEnvironmentVariable(KeyPassVar);
             try
             {
-                Build(ReleaseBundlePath, AddressablesSetup.Release, BuildOptions.None, true);
+                Build(ReleaseBundlePath, ReleaseContent, BuildOptions.None, true);
             }
             finally
             {
