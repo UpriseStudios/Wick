@@ -14,8 +14,8 @@ namespace Wick.Services
     {
         private static Task _signIn;
 
-        /// <summary>Development builds talk to the development environment, release builds to production.</summary>
-        public static string EnvironmentName => Debug.isDebugBuild ? "development" : "production";
+        /// <summary>Development builds talk to the development environment; release builds to the one services.json names.</summary>
+        public static string EnvironmentName => Debug.isDebugBuild ? "development" : ServicesSettings.Current.ReleaseEnvironment;
 
         public static bool IsSignedIn =>
             UnityServices.State == ServicesInitializationState.Initialized && AuthenticationService.Instance.IsSignedIn;

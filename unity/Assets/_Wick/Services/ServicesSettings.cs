@@ -24,6 +24,13 @@ namespace Wick.Services
         /// <summary>Optional: a test device's hashed id, to see the EEA consent form while testing.</summary>
         public string umpTestDeviceHash = "";
 
+        /// <summary>
+        /// The UGS environment release builds use (development builds always use "development").
+        /// "development" while store builds are on internal testing; "production" once production has
+        /// Cloud Code, Remote Config and the share-link site set up. Empty means production.
+        /// </summary>
+        public string releaseEnvironment = "";
+
         private static ServicesSettings _loaded;
 
         public static ServicesSettings Current
@@ -39,6 +46,8 @@ namespace Wick.Services
                 return _loaded;
             }
         }
+
+        public string ReleaseEnvironment => string.IsNullOrEmpty(releaseEnvironment) ? "production" : releaseEnvironment;
 
         public bool AdsConfigured => !string.IsNullOrEmpty(levelPlayAppKeyAndroid) && !string.IsNullOrEmpty(rewardedAdUnitAndroid);
     }
