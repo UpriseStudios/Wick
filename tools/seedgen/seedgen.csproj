@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Sim is linked, never copied: one source for Unity, server and tools. -->
-    <Compile Include="../../unity/Assets/_Wick/Sim/**/*.cs" LinkBase="Sim" />
+    <!-- The sim comes through Wick.Bots, which links it (one source for Unity, server and tools). -->
+    <ProjectReference Include="../Wick.Bots/Wick.Bots.csproj" />
   </ItemGroup>
 
 </Project>

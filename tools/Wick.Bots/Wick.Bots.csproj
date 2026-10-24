@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>Wick.Bots</AssemblyName>
+    <RootNamespace>Wick.Bots</RootNamespace>
+    <!-- Match Unity's compiler so sim code that builds here also builds in Unity. -->
+    <LangVersion>9.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Sim is linked, never copied: one source for Unity, server and tools. Tools that
+         reference this project get the sim through it, so they don't link it again. -->
+    <Compile Include="../../unity/Assets/_Wick/Sim/**/*.cs" LinkBase="Sim" />
+  </ItemGroup>
+
+</Project>
