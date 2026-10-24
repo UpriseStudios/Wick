@@ -24,7 +24,7 @@ namespace Wick.Game
                 {
                     case ObjectType.DripPipe:
                     case ObjectType.SpikeFloor:
-                        if (RaidSim.IsTrapActive(shownTick, o))
+                        if (RaidSim.IsTrapActive(shownTick, o, vault.LevelOf(o.Type)))
                         {
                             nearest = Mathf.Min(nearest, Distance(at, o.Pos));
                         }
@@ -32,7 +32,7 @@ namespace Wick.Game
                         break;
 
                     case ObjectType.Bellows:
-                        if (RaidSim.IsTrapActive(shownTick, o))
+                        if (RaidSim.IsTrapActive(shownTick, o, vault.LevelOf(o.Type)))
                         {
                             TilePos t = o.Pos;
                             while (true)

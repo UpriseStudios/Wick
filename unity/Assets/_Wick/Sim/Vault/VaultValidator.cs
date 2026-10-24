@@ -28,6 +28,7 @@ namespace Wick.Sim
         BellowsNotOnWall,
         BellowsFacesWall,
         CrateInDoorway,
+        DefenceLevelTooHigh,
     }
 
     /// <summary>One problem with a vault. ObjectId is 0 when the issue is not about an object.</summary>
@@ -82,6 +83,17 @@ namespace Wick.Sim
             if (!vault.IsWalkable(vault.Entrance))
             {
                 issues.Add(new VaultIssue(VaultIssueCode.EntranceBlocked, 0, vault.Entrance, "The entrance must be open floor"));
+            }
+
+            int cap = DefenceLevels.Cap(level);
+            for (int i = 0; i < ObjectTypes.Count; i++)
+            {
+                var type = (ObjectType)i;
+                if (vault.LevelOf(type) > cap)
+                {
+                    issues.Add(new VaultIssue(VaultIssueCode.DefenceLevelTooHigh, 0, none,
+                        type + " is at level " + vault.LevelOf(type) + "; Vault Level " + level + " allows up to " + cap));
+                }
             }
 
             CheckObjects(vault, level, issues);

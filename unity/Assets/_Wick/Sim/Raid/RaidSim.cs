@@ -270,7 +270,7 @@ namespace Wick.Sim
             }
 
             // Ice tiles are plain floor in the vertical slice (Ice Tiles trap is Vault Level 3).
-            w.Progress += WickSpeed(in w);
+            w.Progress += w.KnockTiles > 0 ? SimTuning.KnockSpeed : PuddleSlowed(WickSpeed(in w), in w);
             if (w.Progress < SubTile.PerTile)
             {
                 return;
@@ -281,10 +281,26 @@ namespace Wick.Sim
             w.Tile = w.Tile.Step(w.MoveDir);
             w.Progress = 0;
             w.Moving = false;
-            _arrivedThisTick = true;
             if (w.Tile != _vault.Entrance)
             {
                 w.LeftEntrance = true;
+            }
+
+            if (w.KnockTiles > 0)
+            {
+                // A knockback slide isn't an arrival: it can't count as escaping.
+                if (--w.KnockTiles > 0)
+                {
+                    w.Moving = true;
+                    w.Progress = leftover;
+                    return;
+                }
+
+                leftover = 0;
+            }
+            else
+            {
+                _arrivedThisTick = true;
             }
 
             // A queued dash wins over continuing a run.
@@ -302,6 +318,12 @@ namespace Wick.Sim
                     w.Progress = leftover;
                 }
             }
+        }
+
+        /// <summary>A Drip Pipe level 5 puddle under Wick slows him to tiptoe speed.</summary>
+        private int PuddleSlowed(int speed, in WickState w)
+        {
+            return !w.Tiptoe && IsPuddle(w.Occupied) ? speed / SimTuning.TiptoeSpeedDivisor : speed;
         }
 
         private void UpdateLight()

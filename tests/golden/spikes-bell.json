@@ -75,7 +75,7 @@
     "ticks": 73,
     "stars": 0,
     "loot": 0,
-    "hash": "8b35860328697d12"
+    "hash": "e25dcfd460fa77d2"
   },
   "expectedEvents": {
     "TrapWarning": [

@@ -35,12 +35,13 @@ namespace Wick.Sim
             {
                 ref GuardianState guardian = ref State.Guardians[g];
                 ObjectDef def = _vault.GetObject(guardian.ObjectIndex);
+                int level = _vault.LevelOf(guardian.Kind);
                 if (guardian.Kind == ObjectType.NightOwl)
                 {
                     PerceiveOwl(ref guardian, def);
                     Advance(ref guardian, guardian.Mode == GuardianMode.Patrol
                         ? SimTuning.OwlPatrolSpeed
-                        : SimTuning.OwlChaseSpeed);
+                        : DefenceStats.OwlChaseSpeed(level));
                     if (guardian.Mode == GuardianMode.Patrol)
                     {
                         AdvanceWaypoint(ref guardian, def);
@@ -49,7 +50,7 @@ namespace Wick.Sim
                 else
                 {
                     PerceiveMoths(ref guardian);
-                    Advance(ref guardian, SimTuning.MothSpeed);
+                    Advance(ref guardian, DefenceStats.MothSpeed(level));
                 }
             }
         }
@@ -119,7 +120,7 @@ namespace Wick.Sim
             int dy = wick.Y - from.Y;
             int forward = dx * owl.Facing.Dx() + dy * owl.Facing.Dy();
             int lateral = dx * owl.Facing.Dy() - dy * owl.Facing.Dx();
-            if (forward <= 0 || Math.Abs(lateral) > forward)
+            if (forward <= 0 || 2 * Math.Abs(lateral) > forward * DefenceStats.OwlConeHalves(_vault.LevelOf(ObjectType.NightOwl)))
             {
                 return false;
             }
@@ -310,7 +311,7 @@ namespace Wick.Sim
                 return false;
             }
 
-            if (++g.ContactTicks >= SimTuning.MothDrainTicks)
+            if (++g.ContactTicks >= DefenceStats.MothDrainTicks(_vault.LevelOf(g.Kind)))
             {
                 g.ContactTicks = 0;
                 return true;

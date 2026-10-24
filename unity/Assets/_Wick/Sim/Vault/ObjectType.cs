@@ -18,6 +18,9 @@ namespace Wick.Sim
 
     public static class ObjectTypes
     {
+        /// <summary>How many object types there are (the enum's values are 0 to Count - 1).</summary>
+        public const int Count = (int)ObjectType.Crate + 1;
+
         public static ObjectType Parse(string name)
         {
             switch (name)
@@ -65,6 +68,12 @@ namespace Wick.Sim
         public static bool IsGuardian(ObjectType type)
         {
             return type == ObjectType.NightOwl || type == ObjectType.WaxMoths;
+        }
+
+        /// <summary>Traps and guardians have defence upgrade levels; treasure, braziers and crates don't.</summary>
+        public static bool IsUpgradable(ObjectType type)
+        {
+            return IsTrap(type) || IsGuardian(type);
         }
 
         /// <summary>Smallest valid cycle for a timed trap, so its phases never overlap.</summary>

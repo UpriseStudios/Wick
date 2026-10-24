@@ -197,11 +197,11 @@ B3.
 
 | Defence | Level 1 (base) | Levels 2 to 4, each | Level 5 | Level 5 perk |
 | --- | --- | --- | --- | --- |
-| Drip Pipe | Cycle as built (default 45 ticks, 1.5 s) | -2 ticks | -3 ticks | Puddle: the hit tile slows Wick to tiptoe speed for 1 s |
+| Drip Pipe | Cycle as built (default 45 ticks, 1.5 s) | -2 ticks | -3 ticks | Puddle: the hit tile slows Wick to tiptoe speed for 0.5 s |
 | Bellows | Cycle as built (default 75 ticks), gust reaches 6 tiles | -2 ticks | -3 ticks | 1-tile knockback |
 | Spike Floor | Cycle as built (default 60 ticks), 15-tick rumble | -2 ticks | -3 ticks | Rumble shortens to 10 ticks (the floor) |
-| Snuffer Bell | Drops once when Wick steps on its plate, then is spent | Level 2 re-arms 10 s after dropping; levels 3 and 4 re-arm 2 s sooner each | Re-arms after 4 s | Plate grows to 2 tiles |
-| Night Owl | Chase speed 100, sight 5 tiles | +5 chase speed | +10 | Sight range 6 tiles |
+| Snuffer Bell | Drops once when Wick steps on its plate, then is spent | Open question (see below) | Open question | Plate grows to 2 tiles |
+| Night Owl | Chase speed 100, 90-degree sight cone | +5 chase speed | +10 | Wider sight cone (about 112 degrees) |
 | Wax Moths | Speed 40, drain every 60 ticks | +3 speed | +5 | Drain every 45 ticks |
 | Ice Tiles | Wick slides until he hits something | +10% slide speed | +15% | Sliding dims the flame by half a tile |
 | Swing Axe | Swings on its cycle | -2 ticks | -3 ticks | The arc covers one more tile |
@@ -211,9 +211,18 @@ B3.
 | Lever Doors | A door stays open for its timer after its lever is pulled | -0.5 s open time | -1 s | One lever can work two doors |
 | Sir Whiskers | His spec section | none in M10 | none | none |
 
-Upgrades are vault-wide: upgrading Drip Pipe upgrades every drip pipe in your vault. Today the
-Snuffer Bell is one-shot, so its upgrades add re-arming (a new rule, with a visible lift-back-up
-animation as its tell).
+Upgrades are vault-wide: upgrading Drip Pipe upgrades every drip pipe in your vault.
+
+Changes found while building (24 October 2026):
+
+- **Night Owl:** the owl only sees Wick by his own light, which reaches 4 tiles, so a sixth tile
+  of sight would never matter. Its perk is a wider sight cone instead (the design notes' other
+  suggestion).
+- **Drip Pipe:** at level 5 the default cycle is 36 ticks, so a 1-second puddle plus the drip
+  would cover the whole cycle. The puddle lasts 0.5 s, leaving a dry gap.
+- **Snuffer Bell levels 2 to 4:** open. A bell drop is always an instant snuff, which ends the
+  raid, so re-arming can never matter. Level 5's two-tile plate is built; levels 2 to 4 need a
+  different improvement.
 
 ## Decisions (24 October 2026)
 

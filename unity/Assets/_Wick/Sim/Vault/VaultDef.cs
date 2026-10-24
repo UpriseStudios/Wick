@@ -33,9 +33,11 @@ namespace Wick.Sim
         private readonly bool[] _blocked;
 
         public VaultDef(int schema, string vaultId, int version, int vaultLevel, int width, int height,
-            TileType[] tiles, TilePos entrance, ObjectDef[] objects, bool hasHoard, TileRect hoard, string theme = "crypt")
+            TileType[] tiles, TilePos entrance, ObjectDef[] objects, bool hasHoard, TileRect hoard, string theme = "crypt",
+            DefenceLevels defenceLevels = null)
         {
             Theme = theme;
+            DefenceLevels = defenceLevels ?? DefenceLevels.Base;
             Schema = schema;
             VaultId = vaultId;
             Version = version;
@@ -71,6 +73,22 @@ namespace Wick.Sim
         public int Width { get; }
         public int Height { get; }
         public TilePos Entrance { get; }
+
+        /// <summary>The owner's defence upgrade levels when the vault was published.</summary>
+        public DefenceLevels DefenceLevels { get; }
+
+        /// <summary>The upgrade level of a type in this vault.</summary>
+        public int LevelOf(ObjectType type)
+        {
+            return DefenceLevels.Level(type);
+        }
+
+        /// <summary>A copy of this vault with other defence levels (Cloud Code stamps the owner's on publish).</summary>
+        public VaultDef WithDefenceLevels(DefenceLevels levels)
+        {
+            return new VaultDef(Schema, VaultId, Version, VaultLevel, Width, Height, (TileType[])_tiles.Clone(), Entrance,
+                (ObjectDef[])_objects.Clone(), HasHoard, Hoard, Theme, levels);
+        }
 
         /// <summary>Whether the vault marks a hoard room (star 1).</summary>
         public bool HasHoard { get; }

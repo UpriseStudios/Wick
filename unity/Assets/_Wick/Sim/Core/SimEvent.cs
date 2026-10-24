@@ -25,6 +25,9 @@ namespace Wick.Sim
 
         /// <summary>A trap fired right next to Wick without hitting him.</summary>
         NearMiss,
+
+        /// <summary>Wick was knocked back. Value = tiles he will slide; Tile = where he slides from.</summary>
+        KnockedBack,
     }
 
     /// <summary>

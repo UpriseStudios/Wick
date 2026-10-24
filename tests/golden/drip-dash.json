@@ -79,7 +79,7 @@
     "ticks": 45,
     "stars": 0,
     "loot": 0,
-    "hash": "e28cd26e63b337d2"
+    "hash": "8e14ab4b7b7944e2"
   },
   "expectedEvents": {
     "TrapFired": [

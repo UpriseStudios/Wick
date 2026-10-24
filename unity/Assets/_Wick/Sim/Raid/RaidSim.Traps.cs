@@ -7,15 +7,16 @@ namespace Wick.Sim
         /// <summary>Per object: whether its timed trap is in its damaging phase this tick.</summary>
         private bool[] _trapActive;
 
-        public static int Phase(int tick, ObjectDef trap)
+        /// <summary>Where a timed trap is in its cycle; upgrade levels shorten the cycle (DefenceStats).</summary>
+        public static int Phase(int tick, ObjectDef trap, int level)
         {
-            return (tick + trap.Offset) % trap.Cycle;
+            return (tick + trap.Offset) % DefenceStats.Cycle(trap, level);
         }
 
-        /// <summary>Whether a timed trap is in its damaging phase on this tick.</summary>
-        public static bool IsTrapActive(int tick, ObjectDef trap)
+        /// <summary>Whether a timed trap at this upgrade level is in its damaging phase on this tick.</summary>
+        public static bool IsTrapActive(int tick, ObjectDef trap, int level)
         {
-            int phase = Phase(tick, trap);
+            int phase = Phase(tick, trap, level);
             switch (trap.Type)
             {
                 case ObjectType.DripPipe: return phase < SimTuning.DripWindowTicks;
@@ -49,6 +50,68 @@ namespace Wick.Sim
             return false;
         }
 
+        /// <summary>
+        /// Drip Pipe level 5: for a moment after each drip its tile is a puddle that slows Wick to
+        /// tiptoe speed.
+        /// </summary>
+        public bool IsPuddle(TilePos p)
+        {
+            for (int i = 0; i < _vault.ObjectCount; i++)
+            {
+                ObjectDef o = _vault.GetObject(i);
+                if (o.Type != ObjectType.DripPipe || o.Pos != p)
+                {
+                    continue;
+                }
+
+                int level = _vault.LevelOf(o.Type);
+                int phase = Phase(State.Tick, o, level);
+                if (phase >= SimTuning.DripWindowTicks && phase < SimTuning.DripWindowTicks + DefenceStats.DripPuddleTicks(level))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>Whether p is the plate of a Snuffer Bell that hasn't dropped (two tiles at level 5).</summary>
+        public bool IsArmedBellPlate(TilePos p)
+        {
+            return ArmedBellAt(p) >= 0;
+        }
+
+        /// <summary>The object index of an armed Snuffer Bell whose plate covers p, or -1.</summary>
+        private int ArmedBellAt(TilePos p)
+        {
+            for (int i = 0; i < _vault.ObjectCount; i++)
+            {
+                ObjectDef o = _vault.GetObject(i);
+                if (o.Type == ObjectType.SnufferBell && !State.Spent[i] && BellPlateCovers(o, p))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private bool BellPlateCovers(ObjectDef bell, TilePos p)
+        {
+            if (bell.Pos == p)
+            {
+                return true;
+            }
+
+            if (!DefenceStats.BellWidePlate(_vault.LevelOf(bell.Type)))
+            {
+                return false;
+            }
+
+            TilePos second = bell.Pos.Step(bell.Facing);
+            return second == p && _vault.IsWalkable(second);
+        }
+
         private void AdvanceTraps()
         {
             TilePos wick = State.Wick.Occupied;
@@ -60,10 +123,11 @@ namespace Wick.Sim
                     continue;
                 }
 
-                _trapActive[i] = IsTrapActive(State.Tick, o);
-                int phase = Phase(State.Tick, o);
+                int level = _vault.LevelOf(o.Type);
+                _trapActive[i] = IsTrapActive(State.Tick, o, level);
+                int phase = Phase(State.Tick, o, level);
 
-                if (o.Type == ObjectType.SpikeFloor && phase == o.Cycle - SimTuning.SpikeWarnTicks)
+                if (o.Type == ObjectType.SpikeFloor && phase == DefenceStats.Cycle(o, level) - DefenceStats.SpikeWarnTicks(level))
                 {
                     Emit(SimEventType.TrapWarning, o.Id, o.Pos, 0);
                 }

@@ -83,7 +83,8 @@ namespace Wick.Sim
                 objects,
                 hasHoard,
                 hoard,
-                root.GetString("theme", "crypt"));
+                root.GetString("theme", "crypt"),
+                DefenceLevels.FromNode(root.Find("defenceLevels")));
 
             if (!vault.InBounds(entrance))
             {
@@ -206,6 +207,13 @@ namespace Wick.Sim
             {
                 TileRect r = vault.Hoard;
                 w.Name("hoard").BeginArray().Value(r.MinX).Value(r.MinY).Value(r.MaxX).Value(r.MaxY).EndArray();
+            }
+
+            // Only upgraded vaults carry levels, so vaults from before M10 read and write unchanged.
+            if (!vault.DefenceLevels.IsBase)
+            {
+                w.Name("defenceLevels");
+                vault.DefenceLevels.Write(w);
             }
 
             w.Name("objects").BeginArray();

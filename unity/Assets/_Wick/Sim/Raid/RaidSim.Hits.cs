@@ -22,11 +22,12 @@ namespace Wick.Sim
 
             int flickersBefore = w.Flickers;
 
-            // Snuffer Bells: instant snuff, ignoring invulnerability. Each drops once.
+            // Snuffer Bells: instant snuff, ignoring invulnerability. Each drops once. A knockback
+            // never ends on a plate (see StartKnockback), so being knocked can't set one off.
             for (int i = 0; i < _vault.ObjectCount; i++)
             {
                 ObjectDef o = _vault.GetObject(i);
-                if (o.Type == ObjectType.SnufferBell && !State.Spent[i] && o.Pos == at)
+                if (o.Type == ObjectType.SnufferBell && !State.Spent[i] && BellPlateCovers(o, at))
                 {
                     State.Spent[i] = true;
                     w.Flickers = 0;
@@ -35,6 +36,8 @@ namespace Wick.Sim
             }
 
             bool hitLanded = false;
+            Dir knockDir = Dir.N;
+            int knockTiles = 0;
             for (int i = 0; i < _vault.ObjectCount && w.Flickers > 0; i++)
             {
                 ObjectDef o = _vault.GetObject(i);
@@ -67,13 +70,57 @@ namespace Wick.Sim
                     w.Flickers--;
                     w.InvulnTicks = SimTuning.InvulnTicks;
                     Emit(SimEventType.FlickerLost, o.Id, at, w.Flickers);
+                    if (o.Type == ObjectType.Bellows)
+                    {
+                        knockDir = o.Facing;
+                        knockTiles = DefenceStats.BellowsKnockback(_vault.LevelOf(o.Type));
+                    }
                 }
+            }
+
+            if (knockTiles > 0 && w.Flickers > 0)
+            {
+                StartKnockback(knockDir, knockTiles);
             }
 
             if (flickersBefore > 0 && w.Flickers <= 0)
             {
                 Emit(SimEventType.Snuffed, 0, at, 0);
             }
+        }
+
+        /// <summary>
+        /// Pushes Wick up to `tiles` tiles in `dir` from the tile he occupies. He stops on the last
+        /// free tile before a wall, crate, the grid edge or an armed Snuffer Bell plate, so a
+        /// knockback can never set off an instant-snuff trap. The slide is a forced move at
+        /// KnockSpeed: inputs during it queue up as usual, and it can't end the raid by escaping.
+        /// </summary>
+        private void StartKnockback(Dir dir, int tiles)
+        {
+            ref WickState w = ref State.Wick;
+            TilePos from = w.Occupied;
+            int free = 0;
+            TilePos p = from;
+            while (free < tiles)
+            {
+                p = p.Step(dir);
+                if (!_vault.IsWalkable(p) || IsArmedBellPlate(p))
+                {
+                    break;
+                }
+
+                free++;
+            }
+
+            w.Tile = from;
+            w.Progress = 0;
+            w.Running = false;
+            w.HasQueued = false;
+            w.MoveIsRun = false;
+            w.Moving = free > 0;
+            w.MoveDir = dir;
+            w.KnockTiles = free;
+            Emit(SimEventType.KnockedBack, 0, from, free);
         }
     }
 }

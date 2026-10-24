@@ -98,8 +98,8 @@ namespace Wick.Sim
         }
 
         /// <summary>
-        /// FNV-1a over everything that affects play: grid, tiles, entrance, hoard, level and every
-        /// object. Not the vault id, version, name or theme.
+        /// FNV-1a over everything that affects play: grid, tiles, entrance, hoard, level, every
+        /// object and any defence above level 1. Not the vault id, version, name or theme.
         /// </summary>
         public static string LayoutHashOf(VaultDef vault)
         {
@@ -140,6 +140,16 @@ namespace Wick.Sim
                 {
                     h.AddInt(p.X);
                     h.AddInt(p.Y);
+                }
+            }
+
+            for (int i = 0; i < ObjectTypes.Count; i++)
+            {
+                int level = vault.LevelOf((ObjectType)i);
+                if (level > DefenceLevels.MinLevel)
+                {
+                    h.AddByte((byte)i);
+                    h.AddInt(level);
                 }
             }
 

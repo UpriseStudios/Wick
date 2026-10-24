@@ -83,7 +83,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void Corpus_CombinedHash_IsStable()
         {
-            const string expected = "8bf5ddfdebcc6a11";
+            const string expected = "b2133470df12e4aa";
 
             var rng = new Pcg32(2026, 77);
             var combined = new Fnv1a64();
@@ -229,9 +229,21 @@ namespace Wick.Sim.Tests
             }
 
             string hoard = rng.NextInt(2) == 0 ? "" : ",\"hoard\":[1,1," + (w - 2) + "," + (1 + rng.NextInt(h - 2)) + "]";
+
+            // Half the corpus has upgraded defences, so every level's rules get fuzzed too.
+            var levels = new List<string>();
+            if (rng.NextInt(2) == 0)
+            {
+                foreach (string type in new[] { "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths" })
+                {
+                    levels.Add("\"" + type + "\":" + (1 + rng.NextInt(DefenceLevels.MaxLevel)));
+                }
+            }
+
+            string defence = levels.Count == 0 ? "" : ",\"defenceLevels\":{" + string.Join(",", levels) + "}";
             return "{\"schema\":1,\"grid\":{\"w\":" + w + ",\"h\":" + h + "},\"tiles\":\"" +
                 Convert.ToBase64String(bytes) + "\",\"entrance\":[" + entrance.X + "," + entrance.Y + "]," +
-                "\"objects\":[" + string.Join(",", objects) + "]" + hoard + "}";
+                "\"objects\":[" + string.Join(",", objects) + "]" + hoard + defence + "}";
         }
 
         private static InputLog RandomLog(ref Pcg32 rng)

@@ -123,13 +123,13 @@ namespace Wick.CloudCode.Tests
 
         private static bool JustSafe(ObjectDef trap, int t)
         {
-            return t > 0 && RaidSim.IsTrapActive(t - 1, trap) && !RaidSim.IsTrapActive(t, trap);
+            return t > 0 && RaidSim.IsTrapActive(t - 1, trap, 1) && !RaidSim.IsTrapActive(t, trap, 1);
         }
 
         private static int SafeSince(ObjectDef trap, int t)
         {
             int n = 0;
-            while (t - n > 0 && !RaidSim.IsTrapActive(t - n - 1, trap))
+            while (t - n > 0 && !RaidSim.IsTrapActive(t - n - 1, trap, 1))
             {
                 n++;
             }
@@ -141,7 +141,7 @@ namespace Wick.CloudCode.Tests
         {
             for (int i = 0; i <= ticks; i++)
             {
-                if (RaidSim.IsTrapActive(t + i, trap))
+                if (RaidSim.IsTrapActive(t + i, trap, 1))
                 {
                     return false;
                 }

@@ -83,7 +83,7 @@ namespace Wick.CloudCode
                 if (ObjectTypes.IsTimedTrap(o.Type) && o.Type != ObjectType.Bellows && o.Pos == into)
                 {
                     intoTrap = true;
-                    onSafeFrame |= TurnedSafe(o, tick) || TurnedSafe(o, tick - 1);
+                    onSafeFrame |= TurnedSafe(vault, o, tick) || TurnedSafe(vault, o, tick - 1);
                 }
             }
 
@@ -95,9 +95,10 @@ namespace Wick.CloudCode
         }
 
         /// <summary>Was the trap active on the tick before t and safe on t?</summary>
-        private static bool TurnedSafe(ObjectDef trap, int t)
+        private static bool TurnedSafe(VaultDef vault, ObjectDef trap, int t)
         {
-            return t > 0 && RaidSim.IsTrapActive(t - 1, trap) && !RaidSim.IsTrapActive(t, trap);
+            int level = vault.LevelOf(trap.Type);
+            return t > 0 && RaidSim.IsTrapActive(t - 1, trap, level) && !RaidSim.IsTrapActive(t, trap, level);
         }
 
         private static bool IsBell(VaultDef vault, int id)

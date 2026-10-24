@@ -50,7 +50,7 @@ namespace Wick.Game
         public override void Sync()
         {
             SetVisible(IsVisible(Def.Pos));
-            bool active = Ctx.ClockRunning && RaidSim.IsTrapActive(Ctx.ShownTick, Def);
+            bool active = Ctx.ClockRunning && RaidSim.IsTrapActive(Ctx.ShownTick, Def, Ctx.Vault.LevelOf(Def.Type));
             if (_active != null)
             {
                 _active.gameObject.SetActive(active);

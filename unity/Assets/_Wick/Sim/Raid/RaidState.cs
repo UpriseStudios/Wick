@@ -47,6 +47,9 @@ namespace Wick.Sim
         public int GustDimTicks;
         public bool ReachedHoard;
 
+        /// <summary>Tiles of knockback still to slide (Moving is set and MoveDir is the push).</summary>
+        public int KnockTiles;
+
         /// <summary>The tile Wick counts as standing on for hits, contacts and pickups.</summary>
         public TilePos Occupied => Motion.OccupiedTile(Tile, Moving, MoveDir, Progress);
     }
