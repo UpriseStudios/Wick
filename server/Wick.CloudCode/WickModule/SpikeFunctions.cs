@@ -31,7 +31,7 @@ namespace Wick.CloudCode
             for (int i = 0; i < runs; i++)
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                last = RaidRunner.RunToEnd(file.Vault, file.Seed, file.Log);
+                last = RaidRunner.RunToEnd(file.Vault, file.Seed, file.Log, file.Params);
                 times[i] = sw.Elapsed.TotalMilliseconds;
             }
 

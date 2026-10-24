@@ -807,7 +807,7 @@ namespace Wick.Game
             }
 
             WickState w = _runner.Current.Wick;
-            int ticksLeft = SimTuning.RaidTicks - _runner.Sim.State.Tick;
+            int ticksLeft = _runner.Sim.Params.RaidTicks - _runner.Sim.State.Tick;
             int seconds = Mathf.CeilToInt(ticksLeft / (float)SimTuning.TicksPerSecond);
             _timer.text = seconds.ToString();
             _timer.EnableInClassList("urgent", seconds <= 10 && _runner.Mode != RaidMode.Scout);

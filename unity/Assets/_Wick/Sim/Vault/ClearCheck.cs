@@ -11,7 +11,13 @@ namespace Wick.Sim
     public sealed class ClearCheck
     {
         public ClearCheck(int seed, InputLog log, string hash, int stars, int simVersion, string layoutHash)
+            : this(seed, log, hash, stars, simVersion, layoutHash, RaidParams.Default)
         {
+        }
+
+        public ClearCheck(int seed, InputLog log, string hash, int stars, int simVersion, string layoutHash, RaidParams raidParams)
+        {
+            Params = raidParams;
             Seed = seed;
             Log = log ?? throw new ArgumentNullException(nameof(log));
             Hash = hash;
@@ -32,9 +38,17 @@ namespace Wick.Sim
         /// <summary>LayoutHashOf the vault it was played on; any edit makes it stale.</summary>
         public string LayoutHash { get; }
 
+        /// <summary>The raid settings the run was played with (its raid length).</summary>
+        public RaidParams Params { get; }
+
         public static ClearCheck FromRun(VaultDef vault, int seed, InputLog log, RaidResult result)
         {
-            return new ClearCheck(seed, log, result.HashHex, result.Stars, SimInfo.Version, LayoutHashOf(vault));
+            return FromRun(vault, seed, log, result, RaidParams.Default);
+        }
+
+        public static ClearCheck FromRun(VaultDef vault, int seed, InputLog log, RaidResult result, RaidParams raidParams)
+        {
+            return new ClearCheck(seed, log, result.HashHex, result.Stars, SimInfo.Version, LayoutHashOf(vault), raidParams);
         }
 
         /// <summary>Whether this clear-check was made on this exact layout (cheap; no re-sim).</summary>
@@ -64,7 +78,7 @@ namespace Wick.Sim
                 return ClearCheckResult.Fail("The vault changed after the clear-check run");
             }
 
-            RaidResult replay = RaidRunner.RunToEnd(vault, cc.Seed, cc.Log);
+            RaidResult replay = RaidRunner.RunToEnd(vault, cc.Seed, cc.Log, cc.Params);
             if (replay.Outcome != Outcome.Escaped)
             {
                 return ClearCheckResult.Fail("The run did not escape (" + replay.Outcome + ")", replay);
@@ -141,7 +155,9 @@ namespace Wick.Sim
                 .Field("stars", Stars)
                 .Field("simVersion", SimVersion)
                 .Field("layoutHash", LayoutHash)
-                .EndObject();
+                .Name("params");
+            Params.Write(w);
+            w.EndObject();
         }
 
         public static ClearCheck FromNode(JsonNode node)
@@ -152,7 +168,8 @@ namespace Wick.Sim
                 node.GetString("hash"),
                 node.GetInt("stars"),
                 node.GetInt("simVersion", 0),
-                node.GetString("layoutHash", ""));
+                node.GetString("layoutHash", ""),
+                RaidParams.FromNode(node.Find("params")));
         }
     }
 

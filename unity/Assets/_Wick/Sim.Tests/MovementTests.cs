@@ -196,6 +196,23 @@ namespace Wick.Sim.Tests
         }
 
         [Test]
+        public void RaidParams_SetTheRaidLength()
+        {
+            RaidResult r = RaidRunner.RunToEnd(Vault(), 1, InputLog.Empty, RaidParams.ForSeconds(90));
+            Assert.AreEqual(Outcome.TimedOut, r.Outcome);
+            Assert.AreEqual(90 * SimTuning.TicksPerSecond, r.Ticks);
+            Assert.AreEqual(90, r.Checkpoints.Length);
+        }
+
+        [Test]
+        public void RaidParams_RejectLengthsOutsideTheRange()
+        {
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => RaidParams.ForSeconds(29));
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => RaidParams.ForSeconds(301));
+            Assert.Throws<System.ArgumentException>(() => new RaidSim(Vault(), 1, InputLog.Empty, default(RaidParams)));
+        }
+
+        [Test]
         public void EndBetweenIntervals_AddsFinalCheckpoint()
         {
             RaidResult r = RaidRunner.RunToEnd(Vault(), 1, Log(Command.Dash(40, Dir.N), Command.Dash(45, Dir.S)));

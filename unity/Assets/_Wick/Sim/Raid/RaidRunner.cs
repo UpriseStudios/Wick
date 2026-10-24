@@ -44,7 +44,12 @@ namespace Wick.Sim
     {
         public static RaidResult RunToEnd(VaultDef vault, int seed, InputLog log)
         {
-            var sim = new RaidSim(vault, seed, log);
+            return RunToEnd(vault, seed, log, RaidParams.Default);
+        }
+
+        public static RaidResult RunToEnd(VaultDef vault, int seed, InputLog log, RaidParams raidParams)
+        {
+            var sim = new RaidSim(vault, seed, log, raidParams);
             while (!sim.IsOver)
             {
                 sim.Step();

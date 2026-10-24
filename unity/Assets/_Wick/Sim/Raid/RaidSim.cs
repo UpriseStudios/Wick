@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Wick.Sim
 {
     /// <summary>
-    /// One raid as a pure function of (vault, seed, input log). Step() runs the fixed tick
+    /// One raid as a pure function of (vault, seed, input log, params). Step() runs the fixed tick
     /// order from the tech design; never reorder it (see CLAUDE.md). The steps live in the
     /// RaidSim.*.cs partial files.
     /// </summary>
@@ -26,8 +26,19 @@ namespace Wick.Sim
         }
 
         public RaidSim(VaultDef vault, int seed, InputLog log)
+            : this(vault, seed, log, RaidParams.Default)
+        {
+        }
+
+        public RaidSim(VaultDef vault, int seed, InputLog log, RaidParams raidParams)
         {
             _vault = vault ?? throw new ArgumentNullException(nameof(vault));
+            if (raidParams.RaidTicks < RaidParams.MinRaidTicks)
+            {
+                throw new ArgumentException("Raid params are unset", nameof(raidParams));
+            }
+
+            Params = raidParams;
             if (log == null)
             {
                 throw new ArgumentNullException(nameof(log));
@@ -53,6 +64,8 @@ namespace Wick.Sim
         }
 
         public RaidState State { get; }
+
+        public RaidParams Params { get; }
 
         public bool IsOver => State.Outcome != Outcome.Running;
 
@@ -328,7 +341,7 @@ namespace Wick.Sim
             {
                 State.Outcome = Outcome.Escaped;
             }
-            else if (State.Tick + 1 >= SimTuning.RaidTicks)
+            else if (State.Tick + 1 >= Params.RaidTicks)
             {
                 State.Outcome = Outcome.TimedOut;
             }

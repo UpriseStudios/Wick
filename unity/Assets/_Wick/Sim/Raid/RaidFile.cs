@@ -4,12 +4,13 @@ namespace Wick.Sim
 {
     /// <summary>
     /// A replayable raid on disk (golden replays, replay-cli):
-    /// { "simVersion", "seed", "vault": {vault JSON}, "log": base64 | "commands": [{tick,type,dir}],
+    /// { "simVersion", "seed", "params"?: {raidTicks}, "vault": {vault JSON},
+    ///   "log": base64 | "commands": [{tick,type,dir}],
     ///   "expected": { "outcome", "ticks", "hash", "stars"?, "loot"? } (optional) }.
     /// </summary>
     public sealed class RaidFile
     {
-        private RaidFile(JsonNode root, int simVersion, int seed, VaultDef vault, InputLog log,
+        private RaidFile(JsonNode root, int simVersion, int seed, RaidParams raidParams, VaultDef vault, InputLog log,
             bool hasExpected, Outcome expectedOutcome, int expectedTicks, string expectedHash,
             int? expectedStars = null, int? expectedLoot = null)
         {
@@ -18,6 +19,7 @@ namespace Wick.Sim
             Root = root;
             SimVersion = simVersion;
             Seed = seed;
+            Params = raidParams;
             Vault = vault;
             Log = log;
             HasExpected = hasExpected;
@@ -31,6 +33,10 @@ namespace Wick.Sim
 
         public int SimVersion { get; }
         public int Seed { get; }
+
+        /// <summary>The raid's settings; the default 60-second raid when the file has none.</summary>
+        public RaidParams Params { get; }
+
         public VaultDef Vault { get; }
         public InputLog Log { get; }
         public bool HasExpected { get; }
@@ -61,13 +67,14 @@ namespace Wick.Sim
             JsonNode root = JsonReader.Parse(json);
             int simVersion = root.GetInt("simVersion");
             int seed = root.GetInt("seed");
+            RaidParams raidParams = RaidParams.FromNode(root.Find("params"));
             VaultDef vault = VaultJson.FromNode(root.Get("vault"));
             InputLog log = ReadLog(root);
 
             JsonNode expected = root.Find("expected");
             if (expected == null || expected.Kind == JsonKind.Null)
             {
-                return new RaidFile(root, simVersion, seed, vault, log, false, Outcome.Running, 0, null);
+                return new RaidFile(root, simVersion, seed, raidParams, vault, log, false, Outcome.Running, 0, null);
             }
 
             string hash = expected.GetString("hash").ToLowerInvariant();
@@ -78,7 +85,7 @@ namespace Wick.Sim
 
             JsonNode stars = expected.Find("stars");
             JsonNode loot = expected.Find("loot");
-            return new RaidFile(root, simVersion, seed, vault, log, true,
+            return new RaidFile(root, simVersion, seed, raidParams, vault, log, true,
                 ParseOutcome(expected.GetString("outcome")), expected.GetInt("ticks"), hash,
                 stars == null ? (int?)null : stars.AsInt(),
                 loot == null ? (int?)null : loot.AsInt());

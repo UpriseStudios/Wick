@@ -117,5 +117,25 @@ namespace Wick.Sim.Tests
             Assert.IsTrue(ClearCheck.Verify(vault, back).Ok, "a stored clear-check re-verifies from the document");
             Assert.IsNull(VaultJson.ReadClearCheck(JsonReader.Parse(VaultJson.WriteDocument(vault, null))));
         }
+
+        [Test]
+        public void TheRaidLength_IsStored_AndUsedWhenVerifying()
+        {
+            RaidFile heist = Golden("full-heist.json");
+            RaidParams longer = RaidParams.ForSeconds(90);
+            RaidResult r = RaidRunner.RunToEnd(heist.Vault, heist.Seed, heist.Log, longer);
+            ClearCheck cc = ClearCheck.FromRun(heist.Vault, heist.Seed, heist.Log, r, longer);
+
+            ClearCheck back = VaultJson.ReadClearCheck(JsonReader.Parse(VaultJson.WriteDocument(heist.Vault, cc)));
+            Assert.AreEqual(longer.RaidTicks, back.Params.RaidTicks);
+            Assert.IsTrue(ClearCheck.Verify(heist.Vault, back).Ok);
+        }
+
+        [Test]
+        public void AClearCheckWithoutParams_ReadsAsTheDefaultRaid()
+        {
+            var node = JsonReader.Parse("{\"seed\":1,\"log\":\"\",\"hash\":\"0000000000000000\",\"stars\":1}");
+            Assert.AreEqual(SimTuning.RaidTicks, ClearCheck.FromNode(node).Params.RaidTicks);
+        }
     }
 }

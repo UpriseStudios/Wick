@@ -65,7 +65,7 @@ namespace Wick.ReplayCli
                 return 2;
             }
 
-            var sim = new RaidSim(raid.Vault, raid.Seed, raid.Log);
+            var sim = new RaidSim(raid.Vault, raid.Seed, raid.Log, raid.Params);
             while (!sim.IsOver)
             {
                 int tick = sim.State.Tick;

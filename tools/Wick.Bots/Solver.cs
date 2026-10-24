@@ -54,7 +54,7 @@ namespace Wick.Bots
                     }
                 }
 
-                if (!stepped || tick >= SimTuning.RaidTicks)
+                if (!stepped || tick >= RaidParams.Default.RaidTicks)
                 {
                     return null;
                 }

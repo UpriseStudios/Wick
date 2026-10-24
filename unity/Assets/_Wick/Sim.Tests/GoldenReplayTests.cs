@@ -35,7 +35,7 @@ namespace Wick.Sim.Tests
                 "Golden was recorded for another sim version; re-record it deliberately (see CLAUDE.md)");
             Assert.IsTrue(raid.HasExpected, "golden replays must have an expected block");
 
-            RaidResult r = RaidRunner.RunToEnd(raid.Vault, raid.Seed, raid.Log);
+            RaidResult r = RaidRunner.RunToEnd(raid.Vault, raid.Seed, raid.Log, raid.Params);
             Assert.AreEqual(raid.ExpectedOutcome, r.Outcome, "outcome");
             Assert.AreEqual(raid.ExpectedTicks, r.Ticks, "ticks");
             if (raid.ExpectedStars != null)
@@ -71,7 +71,7 @@ namespace Wick.Sim.Tests
                 ticks[i] = new List<int>();
             }
 
-            var sim = new RaidSim(raid.Vault, raid.Seed, raid.Log);
+            var sim = new RaidSim(raid.Vault, raid.Seed, raid.Log, raid.Params);
             while (!sim.IsOver)
             {
                 int tick = sim.State.Tick;
@@ -163,7 +163,7 @@ namespace Wick.Sim.Tests
             for (int i = 0; i < 1000; i++)
             {
                 RaidFile raid = RaidFile.Parse(json);
-                ulong hash = RaidRunner.RunToEnd(raid.Vault, raid.Seed, raid.Log).FinalHash;
+                ulong hash = RaidRunner.RunToEnd(raid.Vault, raid.Seed, raid.Log, raid.Params).FinalHash;
                 if (i == 0)
                 {
                     first = hash;
