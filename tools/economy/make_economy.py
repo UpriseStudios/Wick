@@ -130,7 +130,7 @@ ECONOMY = {
     },
     "achievements": [
         {"id": "vault_snuffer", "stat": "snuffs", "title": "Snuff raiders with your vault",
-         "tiers": [10, 50, 100], "grants": [{"gems": 10}, {"gems": 30}, {"gems": 60, "cosmetics": ["trophy_snuffer"]}]},
+         "tiers": [10, 50, 100], "grants": [{"gems": 10}, {"gems": 30}, {"gems": 60}]},
         {"id": "flawless", "stat": "perfectEscapes", "title": "Escape with all 3 flickers",
          "tiers": [5, 20, 50], "grants": [{"wax": 50}, {"gems": 25}, {"gems": 50, "cosmetics": ["title_flawless"]}]},
         {"id": "raider", "stat": "raids", "title": "Raid vaults",
@@ -141,6 +141,17 @@ ECONOMY = {
          "tiers": [3, 10, 25], "grants": [{"gems": 15}, {"gems": 40, "cosmetics": ["clip_frame_gold"]}, {"gems": 80}]},
     ],
 }
+
+
+def add_trophies(economy):
+    """Every achievement tier unlocks a trophy prop for the vault's hoard room (M10, decorations):
+    trophy_<achievement>_bronze, _silver and _gold, placed as prop_trophy_<...> in the editor."""
+    for a in economy["achievements"]:
+        for grant, tier in zip(a["grants"], ("bronze", "silver", "gold")):
+            grant.setdefault("cosmetics", []).append("trophy_" + a["id"] + "_" + tier)
+
+
+add_trophies(ECONOMY)
 
 
 def write(path, text):

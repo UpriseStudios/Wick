@@ -17,6 +17,7 @@ namespace Wick.Sim
         private static readonly int[] Budgets = { 80, 110, 150, 180, 230, 270, 330, 380, 430, 520 };
         private static readonly int[] Braziers = { 1, 1, 2, 2, 2, 3, 3, 3, 3, 4 };
         private static readonly int[] TreasurePiles = { 3, 4, 4, 5, 5, 6, 6, 7, 7, 8 };
+        private static readonly int[] DecorationLimits = { 4, 6, 8, 10, 12, 14, 16, 18, 20, 22 };
 
         /// <summary>The largest grid a Vault Level allows, in tiles.</summary>
         public static int GridWidth(int level) => GridWidths[Index(level)];
@@ -77,6 +78,9 @@ namespace Wick.Sim
         public static int BrazierLimit(int level) => Braziers[Index(level)];
 
         public static int MaxTreasurePiles(int level) => TreasurePiles[Index(level)];
+
+        /// <summary>Decorations (cosmetic props, trophies included) a vault at this level can hold.</summary>
+        public static int MaxDecorations(int level) => DecorationLimits[Index(level)];
 
         /// <summary>Every treasure pile is worth this much at a Vault Level.</summary>
         public static int TreasureValue(int level)

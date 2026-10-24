@@ -678,15 +678,21 @@
       ],
       "grants": [
         {
-          "gems": 10
+          "gems": 10,
+          "cosmetics": [
+            "trophy_vault_snuffer_bronze"
+          ]
         },
         {
-          "gems": 30
+          "gems": 30,
+          "cosmetics": [
+            "trophy_vault_snuffer_silver"
+          ]
         },
         {
           "gems": 60,
           "cosmetics": [
-            "trophy_snuffer"
+            "trophy_vault_snuffer_gold"
           ]
         }
       ]
@@ -702,15 +708,22 @@
       ],
       "grants": [
         {
-          "wax": 50
+          "wax": 50,
+          "cosmetics": [
+            "trophy_flawless_bronze"
+          ]
         },
         {
-          "gems": 25
+          "gems": 25,
+          "cosmetics": [
+            "trophy_flawless_silver"
+          ]
         },
         {
           "gems": 50,
           "cosmetics": [
-            "title_flawless"
+            "title_flawless",
+            "trophy_flawless_gold"
           ]
         }
       ]
@@ -726,14 +739,21 @@
       ],
       "grants": [
         {
-          "gold": 500
+          "gold": 500,
+          "cosmetics": [
+            "trophy_raider_bronze"
+          ]
         },
         {
-          "gems": 40
+          "gems": 40,
+          "cosmetics": [
+            "trophy_raider_silver"
+          ]
         },
         {
           "cosmetics": [
-            "skin_ember"
+            "skin_ember",
+            "trophy_raider_gold"
           ]
         }
       ]
@@ -749,13 +769,22 @@
       ],
       "grants": [
         {
-          "gold": 300
+          "gold": 300,
+          "cosmetics": [
+            "trophy_builder_bronze"
+          ]
         },
         {
-          "wax": 100
+          "wax": 100,
+          "cosmetics": [
+            "trophy_builder_silver"
+          ]
         },
         {
-          "workshops": 1
+          "workshops": 1,
+          "cosmetics": [
+            "trophy_builder_gold"
+          ]
         }
       ]
     },
@@ -770,16 +799,23 @@
       ],
       "grants": [
         {
-          "gems": 15
+          "gems": 15,
+          "cosmetics": [
+            "trophy_word_of_mouth_bronze"
+          ]
         },
         {
           "gems": 40,
           "cosmetics": [
-            "clip_frame_gold"
+            "clip_frame_gold",
+            "trophy_word_of_mouth_silver"
           ]
         },
         {
-          "gems": 80
+          "gems": 80,
+          "cosmetics": [
+            "trophy_word_of_mouth_gold"
+          ]
         }
       ]
     }

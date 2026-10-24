@@ -110,6 +110,27 @@ namespace Wick.Game
                 _objects.Add(go);
             }
 
+            foreach (DraftDecoration d in draft.Decorations)
+            {
+                GameObject go = DecorationProps.Spawn(d.Kind, d.Pos, d.Rot, draft.TileAt, _assets.Registry, _objectRoot);
+                if (go == null)
+                {
+                    continue;
+                }
+
+                if (d.Id == marks.Moving)
+                {
+                    go.transform.position += Vector3.up * 0.3f;
+                    Tint(go, marks.MovingOk ? Ok : Color.red, false);
+                }
+                else if (badObjects.Contains(d.Id) || d.Id == marks.Selected)
+                {
+                    Tint(go, badObjects.Contains(d.Id) ? Color.red : (Color?)null, d.Id == marks.Selected);
+                }
+
+                _objects.Add(go);
+            }
+
             Clear(_markers);
             Marker(_assets.EntranceMarker, SimPose.TileCenter(draft.Entrance), Quaternion.identity);
             if (marks.HoardPreview.HasValue)

@@ -29,6 +29,10 @@ namespace Wick.Sim
         BellowsFacesWall,
         CrateInDoorway,
         DefenceLevelTooHigh,
+        DecorationUnknown,
+        DecorationPlacement,
+        TooManyDecorations,
+        TrophyOutsideHoard,
     }
 
     /// <summary>One problem with a vault. ObjectId is 0 when the issue is not about an object.</summary>
@@ -97,6 +101,7 @@ namespace Wick.Sim
             }
 
             CheckObjects(vault, level, issues);
+            CheckDecorations(vault, level, issues);
             CheckTreasureAndHoard(vault, level, issues);
             CheckReachability(vault, issues);
 
@@ -200,6 +205,91 @@ namespace Wick.Sim
                 issues.Add(new VaultIssue(VaultIssueCode.TooManyBraziers, 0, new TilePos(-1, -1),
                     "Vault Level " + level + " allows " + VaultRules.BrazierLimit(level) + " brazier(s)"));
             }
+        }
+
+        /// <summary>
+        /// Decorations are cosmetic, so their rules are only about looks: wall props hang on a wall
+        /// beside floor, floor props stand on open floor clear of the entrance and every object, one
+        /// per tile, and trophies stand in the hoard room for raiders who get that far.
+        /// </summary>
+        private static void CheckDecorations(VaultDef vault, int level, List<VaultIssue> issues)
+        {
+            if (vault.DecorationCount > VaultRules.MaxDecorations(level))
+            {
+                issues.Add(new VaultIssue(VaultIssueCode.TooManyDecorations, 0, new TilePos(-1, -1),
+                    "Vault Level " + level + " allows " + VaultRules.MaxDecorations(level) + " decorations"));
+            }
+
+            for (int i = 0; i < vault.DecorationCount; i++)
+            {
+                DecorationDef d = vault.GetDecoration(i);
+                if (!Decorations.IsKnown(d.Kind))
+                {
+                    issues.Add(new VaultIssue(VaultIssueCode.DecorationUnknown, d.Id, d.Pos, "Unknown decoration " + d.Kind));
+                    continue;
+                }
+
+                string problem = DecorationProblem(vault, i);
+                if (problem != null)
+                {
+                    issues.Add(new VaultIssue(VaultIssueCode.DecorationPlacement, d.Id, d.Pos, problem));
+                }
+
+                if (Decorations.IsTrophy(d.Kind) && !(vault.HasHoard && vault.Hoard.Contains(d.Pos)))
+                {
+                    issues.Add(new VaultIssue(VaultIssueCode.TrophyOutsideHoard, d.Id, d.Pos, "Trophies go in the hoard room"));
+                }
+            }
+        }
+
+        private static string DecorationProblem(VaultDef vault, int index)
+        {
+            DecorationDef d = vault.GetDecoration(index);
+            for (int j = 0; j < index; j++)
+            {
+                if (vault.GetDecoration(j).Pos == d.Pos)
+                {
+                    return "Another decoration is already here";
+                }
+            }
+
+            if (Decorations.IsWallMounted(d.Kind))
+            {
+                if (vault.TileAt(d.Pos) != TileType.Wall || !HasWalkableNeighbour(vault, d.Pos))
+                {
+                    return "Hang it on a wall beside open floor";
+                }
+
+                for (int i = 0; i < vault.ObjectCount; i++)
+                {
+                    if (vault.GetObject(i).Pos == d.Pos && IsWallMounted(vault.GetObject(i).Type))
+                    {
+                        return "A wall fitting is already here";
+                    }
+                }
+
+                return null;
+            }
+
+            if (!vault.IsWalkable(d.Pos) || vault.TileAt(d.Pos) != TileType.Floor)
+            {
+                return "Stand it on open floor";
+            }
+
+            if (d.Pos == vault.Entrance)
+            {
+                return "Keep the entrance clear";
+            }
+
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                if (vault.GetObject(i).Pos == d.Pos)
+                {
+                    return "Keep it clear of traps, guardians and treasure";
+                }
+            }
+
+            return null;
         }
 
         private static void CheckTreasureAndHoard(VaultDef vault, int level, List<VaultIssue> issues)

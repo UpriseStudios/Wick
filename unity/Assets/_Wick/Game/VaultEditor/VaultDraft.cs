@@ -23,6 +23,20 @@ namespace Wick.Game
         }
     }
 
+    /// <summary>A decoration placed in a draft (cosmetic; the sim never reads it).</summary>
+    public sealed class DraftDecoration
+    {
+        public int Id;
+        public string Kind;
+        public TilePos Pos;
+        public int Rot;
+
+        public DraftDecoration Clone()
+        {
+            return (DraftDecoration)MemberwiseClone();
+        }
+    }
+
     /// <summary>What Expand did: how far the old layout moved, and the doorway tiles it opened.</summary>
     public sealed class ExpandResult
     {
@@ -53,6 +67,9 @@ namespace Wick.Game
         public bool HasHoard;
         public TileRect Hoard;
         public List<DraftObject> Objects = new List<DraftObject>();
+        public List<DraftDecoration> Decorations = new List<DraftDecoration>();
+
+        /// <summary>Ids for objects and decorations come from one counter, so they never clash.</summary>
         public int NextId = 1;
 
         /// <summary>
@@ -103,6 +120,12 @@ namespace Wick.Game
             foreach (DraftObject o in Objects)
             {
                 c.Objects.Add(o.Clone());
+            }
+
+            c.Decorations = new List<DraftDecoration>(Decorations.Count);
+            foreach (DraftDecoration d in Decorations)
+            {
+                c.Decorations.Add(d.Clone());
             }
 
             return c;
@@ -256,7 +279,81 @@ namespace Wick.Game
 
         public bool Delete(int id)
         {
-            return Objects.RemoveAll(o => o.Id == id) > 0;
+            return Objects.RemoveAll(o => o.Id == id) + Decorations.RemoveAll(d => d.Id == id) > 0;
+        }
+
+        // ---- Decorations ------------------------------------------------------------------
+
+        public DraftDecoration PlaceDecoration(string kind, TilePos p)
+        {
+            var d = new DraftDecoration { Id = NextId++, Kind = kind, Pos = p };
+            Decorations.Add(d);
+            return d;
+        }
+
+        public DraftDecoration FindDecoration(int id)
+        {
+            return Decorations.Find(d => d.Id == id);
+        }
+
+        public DraftDecoration DecorationAt(TilePos p)
+        {
+            return Decorations.Find(d => d.Pos == p);
+        }
+
+        public bool MoveDecoration(int id, TilePos p)
+        {
+            DraftDecoration d = FindDecoration(id);
+            if (d == null || !InBounds(p) || d.Pos == p)
+            {
+                return false;
+            }
+
+            d.Pos = p;
+            return true;
+        }
+
+        public bool RotateDecoration(int id)
+        {
+            DraftDecoration d = FindDecoration(id);
+            if (d == null)
+            {
+                return false;
+            }
+
+            d.Rot = (d.Rot + 1) % 4;
+            return true;
+        }
+
+        /// <summary>Why this decoration can't come out of the tray, or null if it can.</summary>
+        public string DecorationBlock(string kind)
+        {
+            return Decorations.Count >= VaultRules.MaxDecorations(Level) ? "No more decorations at this Vault Level" : null;
+        }
+
+        /// <summary>Why placing this decoration on p would be refused, or null if it can go there.</summary>
+        public string DecorationPlaceProblem(string kind, TilePos p)
+        {
+            string block = DecorationBlock(kind);
+            if (block != null)
+            {
+                return block;
+            }
+
+            VaultDraft trial = Clone();
+            trial.PlaceDecoration(kind, p);
+            return NewProblem(this, trial);
+        }
+
+        public string DecorationMoveProblem(int id, TilePos p)
+        {
+            VaultDraft trial = Clone();
+            if (!trial.MoveDecoration(id, p))
+            {
+                return InBounds(p) ? null : "Off the vault";
+            }
+
+            return NewProblem(this, trial);
         }
 
         public bool AddWaypoint(int owlId, TilePos p)
@@ -351,6 +448,11 @@ namespace Wick.Game
                 {
                     o.Patrol[i] = Shift(o.Patrol[i], offset);
                 }
+            }
+
+            foreach (DraftDecoration d in Decorations)
+            {
+                d.Pos = Shift(d.Pos, offset);
             }
 
             // The doorway: through the old wall on the side the new rows were added, at the
@@ -510,8 +612,16 @@ namespace Wick.Game
             }
 
             Array.Sort(objects, (a, b) => a.Id.CompareTo(b.Id));
+            var decorations = new DecorationDef[Decorations.Count];
+            for (int i = 0; i < Decorations.Count; i++)
+            {
+                DraftDecoration d = Decorations[i];
+                decorations[i] = new DecorationDef(d.Id, d.Kind, d.Pos, d.Rot);
+            }
+
+            Array.Sort(decorations, (a, b) => a.Id.CompareTo(b.Id));
             return new VaultDef(1, PublishedVaultId, PublishedVersion, Level, Width, Height, (TileType[])Tiles.Clone(),
-                Entrance, objects, HasHoard, Hoard, "crypt", DefenceLevels);
+                Entrance, objects, HasHoard, Hoard, "crypt", DefenceLevels, decorations);
         }
 
         public static VaultDraft FromVault(VaultDef vault, string name)
@@ -539,6 +649,13 @@ namespace Wick.Game
                     Patrol = new List<TilePos>(o.Patrol),
                 });
                 d.NextId = Math.Max(d.NextId, o.Id + 1);
+            }
+
+            for (int i = 0; i < vault.DecorationCount; i++)
+            {
+                DecorationDef dec = vault.GetDecoration(i);
+                d.Decorations.Add(new DraftDecoration { Id = dec.Id, Kind = dec.Kind, Pos = dec.Pos, Rot = dec.Rot });
+                d.NextId = Math.Max(d.NextId, dec.Id + 1);
             }
 
             return d;

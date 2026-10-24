@@ -31,13 +31,15 @@ namespace Wick.Sim
         private readonly TileType[] _tiles;
         private readonly ObjectDef[] _objects;
         private readonly bool[] _blocked;
+        private readonly DecorationDef[] _decorations;
 
         public VaultDef(int schema, string vaultId, int version, int vaultLevel, int width, int height,
             TileType[] tiles, TilePos entrance, ObjectDef[] objects, bool hasHoard, TileRect hoard, string theme = "crypt",
-            DefenceLevels defenceLevels = null)
+            DefenceLevels defenceLevels = null, DecorationDef[] decorations = null)
         {
             Theme = theme;
             DefenceLevels = defenceLevels ?? DefenceLevels.Base;
+            _decorations = decorations ?? new DecorationDef[0];
             Schema = schema;
             VaultId = vaultId;
             Version = version;
@@ -87,7 +89,15 @@ namespace Wick.Sim
         public VaultDef WithDefenceLevels(DefenceLevels levels)
         {
             return new VaultDef(Schema, VaultId, Version, VaultLevel, Width, Height, (TileType[])_tiles.Clone(), Entrance,
-                (ObjectDef[])_objects.Clone(), HasHoard, Hoard, Theme, levels);
+                (ObjectDef[])_objects.Clone(), HasHoard, Hoard, Theme, levels, (DecorationDef[])_decorations.Clone());
+        }
+
+        /// <summary>Cosmetic props. The raid sim never reads these.</summary>
+        public int DecorationCount => _decorations.Length;
+
+        public DecorationDef GetDecoration(int index)
+        {
+            return _decorations[index];
         }
 
         /// <summary>Whether the vault marks a hoard room (star 1).</summary>

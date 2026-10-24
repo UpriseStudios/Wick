@@ -30,13 +30,24 @@ namespace Wick.CloudCode
             }
 
             // A vault can be built up to the level the player has raised (upgrades, star-gated).
-            var levels = await _store.GetProtectedAsync(playerId, new[] { EconomyKeys.Upgrades });
+            var levels = await _store.GetProtectedAsync(playerId, new[] { EconomyKeys.Upgrades, EconomyKeys.Inventory });
             Progression owned = Upgrades.Read(levels.TryGetValue(EconomyKeys.Upgrades, out StoredItem u) ? u.Json : null, _clock.NowMs).Levels;
+            Inventory inventory = Json.Read<Inventory>(levels.TryGetValue(EconomyKeys.Inventory, out StoredItem inv) ? inv.Json : null);
             EconomyConfig cfg = await _economy.GetAsync();
             VaultCheck.Passed passed = VaultCheck.Check(document, owned.VaultLevel, cfg.Raid, out PublishResult fail);
             if (passed == null)
             {
                 return fail;
+            }
+
+            // Trophies are earned from achievements: only ones the owner has can go on display.
+            for (int i = 0; i < passed.Vault.DecorationCount; i++)
+            {
+                string trophy = Decorations.CosmeticOf(passed.Vault.GetDecoration(i).Kind);
+                if (trophy != null && !inventory.Cosmetics.Contains(trophy))
+                {
+                    return PublishResult.Fail("You haven't earned that trophy yet");
+                }
             }
 
             // Defence levels come from the owner's upgrades, never from the client: the test run must

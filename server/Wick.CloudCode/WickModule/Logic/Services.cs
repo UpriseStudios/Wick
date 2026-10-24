@@ -89,8 +89,14 @@ namespace Wick.CloudCode
                 objects[i] = v.GetObject(i);
             }
 
+            var decorations = new DecorationDef[v.DecorationCount];
+            for (int i = 0; i < decorations.Length; i++)
+            {
+                decorations[i] = v.GetDecoration(i);
+            }
+
             return new VaultDef(v.Schema, vaultId, version, v.VaultLevel, v.Width, v.Height, tiles, v.Entrance, objects,
-                v.HasHoard, v.Hoard, v.Theme, v.DefenceLevels);
+                v.HasHoard, v.Hoard, v.Theme, v.DefenceLevels, decorations);
         }
     }
 }

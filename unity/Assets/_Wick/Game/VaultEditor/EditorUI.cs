@@ -38,6 +38,8 @@ namespace Wick.Game
         private VisualElement _selectionBar;
         private VisualElement _shop;
         private VisualElement _roomTools;
+        private VisualElement _decorShop;
+        private string _decorShown;
         private Label _toast;
         private float _toastUntil;
         private readonly List<Button> _roomButtons = new List<Button>();
@@ -85,6 +87,7 @@ namespace Wick.Game
             _selectionBar = _root.Q("selection-bar");
             _shop = _root.Q("shop");
             _roomTools = _root.Q("room-tools");
+            _decorShop = _root.Q("decor-shop");
             _toast = _root.Q<Label>("toast");
 
             _root.Q<Button>("back-raids").clicked += () => _controller.BackToRaids();
@@ -96,6 +99,7 @@ namespace Wick.Game
             _root.Q<Button>("issues-close").clicked += () => Show(_issuesPanel, false);
             _root.Q<Button>("tab-defences").clicked += () => _controller.SetTab(EditorTab.Defences);
             _root.Q<Button>("tab-rooms").clicked += () => _controller.SetTab(EditorTab.Rooms);
+            _root.Q<Button>("tab-decor").clicked += () => _controller.SetTab(EditorTab.Decor);
             _root.Q<Button>("undo").clicked += () => _controller.Undo();
             _root.Q<Button>("redo").clicked += () => _controller.Redo();
             _root.Q<Button>("test").clicked += () => _controller.Test();
@@ -273,10 +277,14 @@ namespace Wick.Game
                 Show(_issuesPanel, false);
             }
 
+            bool decor = c.Tab == EditorTab.Decor;
             _root.Q("tab-defences").EnableInClassList("selected", defences);
-            _root.Q("tab-rooms").EnableInClassList("selected", !defences);
+            _root.Q("tab-rooms").EnableInClassList("selected", c.Tab == EditorTab.Rooms);
+            _root.Q("tab-decor").EnableInClassList("selected", decor);
             Show(_shop, defences);
-            Show(_roomTools, !defences);
+            Show(_roomTools, c.Tab == EditorTab.Rooms);
+            Show(_decorShop, decor);
+            UpdateDecorShop(d);
             foreach (Button b in _roomButtons)
             {
                 b.EnableInClassList("selected", (RoomTool)b.userData == c.RoomTool);
@@ -318,6 +326,17 @@ namespace Wick.Game
 
         private void UpdateSelectionBar(VaultEditorController c)
         {
+            DraftDecoration dec = c.SelectedDecoration;
+            if (dec != null)
+            {
+                _root.Q<Label>("selection-name").text = DecorName(dec.Kind);
+                Show(_root.Q("sel-rotate"), true);
+                Show(_root.Q("sel-patrol"), false);
+                Show(_root.Q("sel-clear"), false);
+                Show(_root.Q("sel-remove"), true);
+                return;
+            }
+
             DraftObject o = c.SelectedObject;
             if (o == null)
             {
@@ -339,13 +358,90 @@ namespace Wick.Game
 
         private VisualElement Card(ObjectType type)
         {
-            var card = new VisualElement { userData = type };
+            VisualElement card = CardShell(Name(type), type);
+            AttachDrag(card,
+                () => _controller.Draft.ShopBlock(type),
+                screen => _controller.UpdatePlacement(type, screen),
+                (screen, overUi) => _controller.EndPlacement(type, screen, overUi),
+                () =>
+                {
+                    string block = _controller.Draft.ShopBlock(type);
+                    Toast(block != null ? Name(type) + ": " + block : Describe(type));
+                },
+                Name(type));
+            _cards.Add(card);
+            return card;
+        }
+
+        private VisualElement DecorCard(string kind)
+        {
+            VisualElement card = CardShell(DecorName(kind), kind);
+            card.Q<Label>("card-sub").text = Decorations.IsTrophy(kind) ? "Trophy" : "Free";
+            AttachDrag(card,
+                () => _controller.Draft.DecorationBlock(kind),
+                _ => { },
+                (screen, overUi) => _controller.EndDecorPlacement(kind, screen, overUi),
+                () => Toast(DecorName(kind) + ": " + (Decorations.IsTrophy(kind) ? "drag it into the hoard room"
+                    : Decorations.IsWallMounted(kind) ? "drag it onto a wall beside floor" : "drag it onto open floor")),
+                DecorName(kind));
+            return card;
+        }
+
+        /// <summary>Rebuilds the decor tray when the player's trophies change.</summary>
+        private void UpdateDecorShop(VaultDraft d)
+        {
+            List<string> kinds = VaultEditorController.DecorationTray();
+            string shown = string.Join(",", kinds);
+            if (shown != _decorShown)
+            {
+                _decorShown = shown;
+                _decorShop.Clear();
+                foreach (string kind in kinds)
+                {
+                    _decorShop.Add(DecorCard(kind));
+                }
+            }
+
+            foreach (VisualElement card in _decorShop.Children())
+            {
+                card.EnableInClassList("blocked", d.DecorationBlock((string)card.userData) != null);
+            }
+        }
+
+        public static string DecorName(string kind)
+        {
+            switch (kind)
+            {
+                case Decorations.Banner: return "Banner";
+                case Decorations.Torch: return "Torch";
+                case Decorations.GoldPile: return "Gold pile";
+                case Decorations.Statue: return "Statue";
+                default:
+                    // prop_trophy_vault_snuffer_gold -> "Vault snuffer (gold)"
+                    string rest = kind.StartsWith(Decorations.TrophyPrefix, System.StringComparison.Ordinal)
+                        ? kind.Substring(Decorations.TrophyPrefix.Length) : kind;
+                    int tier = rest.LastIndexOf('_');
+                    string name = (tier > 0 ? rest.Substring(0, tier) : rest).Replace('_', ' ');
+                    name = name.Length > 0 ? char.ToUpperInvariant(name[0]) + name.Substring(1) : name;
+                    return tier > 0 ? name + " (" + rest.Substring(tier + 1) + ")" : name;
+            }
+        }
+
+        private static VisualElement CardShell(string label, object userData)
+        {
+            var card = new VisualElement { userData = userData };
             card.AddToClassList("card");
-            card.Add(new Label(Name(type)) { name = "card-name", pickingMode = PickingMode.Ignore });
+            card.Add(new Label(label) { name = "card-name", pickingMode = PickingMode.Ignore });
             var sub = new Label { name = "card-sub", pickingMode = PickingMode.Ignore };
             sub.AddToClassList("card-sub");
             card.Add(sub);
+            return card;
+        }
 
+        /// <summary>A card becomes a drag once the finger moves off it; a tap explains it instead.</summary>
+        private void AttachDrag(VisualElement card, System.Func<string> blocked, System.Action<Vector2> update,
+            System.Action<Vector2, bool> end, System.Action tapped, string name)
+        {
             bool down = false;
             bool dragging = false;
             Vector2 start = default;
@@ -365,12 +461,12 @@ namespace Wick.Game
 
                 if (!dragging && Vector2.Distance(e.position, start) >= CardDragPx)
                 {
-                    string block = _controller.Draft.ShopBlock(type);
+                    string block = blocked();
                     if (block != null)
                     {
                         down = false;
                         card.ReleasePointer(e.pointerId);
-                        Toast(Name(type) + ": " + block);
+                        Toast(name + ": " + block);
                         return;
                     }
 
@@ -381,7 +477,7 @@ namespace Wick.Game
 
                 if (dragging)
                 {
-                    _controller.UpdatePlacement(type, PanelToScreen(e.position));
+                    update(PanelToScreen(e.position));
                 }
             });
             card.RegisterCallback<PointerUpEvent>(e =>
@@ -398,12 +494,11 @@ namespace Wick.Game
                 {
                     dragging = false;
                     Vector2 screen = PanelToScreen(e.position);
-                    _controller.EndPlacement(type, screen, IsOverUi(screen));
+                    end(screen, IsOverUi(screen));
                 }
                 else
                 {
-                    string block = _controller.Draft.ShopBlock(type);
-                    Toast(block != null ? Name(type) + ": " + block : Describe(type));
+                    tapped();
                 }
             });
             card.RegisterCallback<PointerCaptureOutEvent>(_ =>
@@ -413,12 +508,9 @@ namespace Wick.Game
                 if (dragging)
                 {
                     dragging = false;
-                    _controller.EndPlacement(type, Vector2.zero, true);
+                    end(Vector2.zero, true);
                 }
             });
-
-            _cards.Add(card);
-            return card;
         }
 
         private static void UpdateCard(VisualElement card, VaultDraft d)
@@ -503,6 +595,13 @@ namespace Wick.Game
                 return c.SelectedObject != null
                     ? "Drag it to move. Tap empty floor to deselect."
                     : "Drag from the shop to place. Drag an item to move it. Drag the floor to look around.";
+            }
+
+            if (c.Tab == EditorTab.Decor)
+            {
+                return c.SelectedDecoration != null
+                    ? "Drag it to move. Decorations are just for looks: raiders walk straight through them."
+                    : "Drag a decoration onto your vault. Trophies go in the hoard room, where raiders who make it see them.";
             }
 
             switch (c.RoomTool)

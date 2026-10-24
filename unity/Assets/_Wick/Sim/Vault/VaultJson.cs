@@ -84,7 +84,8 @@ namespace Wick.Sim
                 hasHoard,
                 hoard,
                 root.GetString("theme", "crypt"),
-                DefenceLevels.FromNode(root.Find("defenceLevels")));
+                DefenceLevels.FromNode(root.Find("defenceLevels")),
+                ReadDecorations(root.Find("decor"), w, h));
 
             if (!vault.InBounds(entrance))
             {
@@ -216,6 +217,24 @@ namespace Wick.Sim
                 vault.DefenceLevels.Write(w);
             }
 
+            if (vault.DecorationCount > 0)
+            {
+                w.Name("decor").BeginArray();
+                for (int i = 0; i < vault.DecorationCount; i++)
+                {
+                    DecorationDef d = vault.GetDecoration(i);
+                    w.BeginObject().Field("id", d.Id).Field("kind", d.Kind).Field("x", d.Pos.X).Field("y", d.Pos.Y);
+                    if (d.Rot != 0)
+                    {
+                        w.Field("rot", d.Rot);
+                    }
+
+                    w.EndObject();
+                }
+
+                w.EndArray();
+            }
+
             w.Name("objects").BeginArray();
             for (int i = 0; i < vault.ObjectCount; i++)
             {
@@ -294,6 +313,32 @@ namespace Wick.Sim
             // Ids are unique (checked by the caller), so this order is fully determined.
             Array.Sort(objects, (a, b) => a.Id.CompareTo(b.Id));
             return objects;
+        }
+
+        /// <summary>Decorations: the sim only needs them in bounds; VaultValidator checks the rest.</summary>
+        private static DecorationDef[] ReadDecorations(JsonNode list, int w, int h)
+        {
+            if (list == null || list.Kind == JsonKind.Null)
+            {
+                return new DecorationDef[0];
+            }
+
+            var decorations = new DecorationDef[list.Count];
+            for (int i = 0; i < list.Count; i++)
+            {
+                JsonNode d = list[i];
+                var pos = new TilePos(d.GetInt("x"), d.GetInt("y"));
+                int rot = d.GetInt("rot", 0);
+                if (pos.X < 0 || pos.Y < 0 || pos.X >= w || pos.Y >= h || rot < 0 || rot > 3)
+                {
+                    throw new FormatException("Decoration " + d.GetInt("id") + " is out of bounds or badly turned");
+                }
+
+                decorations[i] = new DecorationDef(d.GetInt("id"), d.GetString("kind"), pos, rot);
+            }
+
+            Array.Sort(decorations, (a, b) => a.Id.CompareTo(b.Id));
+            return decorations;
         }
 
         private static TilePos[] ReadPatrol(JsonNode list)

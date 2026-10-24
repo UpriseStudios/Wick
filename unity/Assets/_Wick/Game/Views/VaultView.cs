@@ -17,6 +17,7 @@ namespace Wick.Game
         [SerializeField] private RaidTuning _tuning;
 
         private readonly List<EntityView> _views = new List<EntityView>();
+        private readonly List<DecorView> _decor = new List<DecorView>();
         private EntityView[] _byObject = Array.Empty<EntityView>();
         private Transform _root;
 
@@ -87,6 +88,11 @@ namespace Wick.Game
             foreach (EntityView v in _views)
             {
                 v.Sync();
+            }
+
+            foreach (DecorView d in _decor)
+            {
+                d.Sync();
             }
         }
 
@@ -163,6 +169,20 @@ namespace Wick.Game
                 _views.Add(view);
             }
 
+            var decor = new GameObject("Decorations").transform;
+            decor.SetParent(_root, false);
+            for (int i = 0; i < vault.DecorationCount; i++)
+            {
+                DecorationDef d = vault.GetDecoration(i);
+                GameObject go = DecorationProps.Spawn(d, vault, _registry, decor);
+                if (go != null)
+                {
+                    DecorView view = go.AddComponent<DecorView>();
+                    view.Init(Context, d);
+                    _decor.Add(view);
+                }
+            }
+
             Wick = Instantiate(_registry.Wick, _root).GetComponent<WickView>();
             Wick.Init(Context);
             Decoy = Instantiate(_registry.Decoy, _root).GetComponent<DecoyView>();
@@ -195,6 +215,7 @@ namespace Wick.Game
         private void Clear()
         {
             _views.Clear();
+            _decor.Clear();
             _byObject = Array.Empty<EntityView>();
             Wick = null;
             Decoy = null;

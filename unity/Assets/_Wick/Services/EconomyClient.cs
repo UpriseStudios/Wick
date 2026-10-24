@@ -129,6 +129,9 @@ namespace Wick.Services
         /// <summary>The player's defence levels from the last economy state (all level 1 until one arrives).</summary>
         public static Dictionary<string, int> KnownDefences { get; private set; } = new Dictionary<string, int>();
 
+        /// <summary>The player's cosmetics from the last economy state (earned trophies among them).</summary>
+        public static List<string> KnownCosmetics { get; private set; } = new List<string>();
+
         public async Task<EconomyStateReply> StateAsync()
         {
             EconomyStateReply state = await Call<EconomyStateReply>("GetEconomyState");
@@ -136,6 +139,7 @@ namespace Wick.Services
             {
                 KnownVaultLevel = state.VaultLevel;
                 KnownDefences = state.Defences ?? new Dictionary<string, int>();
+                KnownCosmetics = state.Cosmetics ?? new List<string>();
             }
 
             return state;

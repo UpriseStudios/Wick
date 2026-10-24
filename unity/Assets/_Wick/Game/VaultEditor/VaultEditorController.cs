@@ -14,6 +14,7 @@ namespace Wick.Game
     {
         Defences,
         Rooms,
+        Decor,
     }
 
     public enum RoomTool
@@ -82,6 +83,22 @@ namespace Wick.Game
         public bool CanRedo => _undo.CanRedo;
         public DraftStore Store => _store;
         public DraftObject SelectedObject => Selected >= 0 && Draft != null ? Draft.Find(Selected) : null;
+        public DraftDecoration SelectedDecoration => Selected >= 0 && Draft != null ? Draft.FindDecoration(Selected) : null;
+
+        /// <summary>Decorations the player can place: the free set plus every trophy they've earned.</summary>
+        public static List<string> DecorationTray()
+        {
+            var kinds = new List<string>(Decorations.Free);
+            foreach (string cosmetic in EconomyClient.KnownCosmetics)
+            {
+                if (cosmetic.StartsWith("trophy_", StringComparison.Ordinal))
+                {
+                    kinds.Add(Decorations.TrophyKind(cosmetic));
+                }
+            }
+
+            return kinds;
+        }
 
         public bool ClearCheckCurrent =>
             Draft != null && Draft.ClearCheck != null && Draft.ClearCheck.MatchesLayout(Draft.ToVaultDef());
@@ -261,14 +278,17 @@ namespace Wick.Game
             {
                 Edit(d => d.Rotate(Selected));
             }
+            else if (SelectedDecoration != null)
+            {
+                Edit(d => d.RotateDecoration(Selected));
+            }
         }
 
         public void RemoveSelected()
         {
-            DraftObject o = SelectedObject;
-            if (o != null)
+            if (SelectedObject != null || SelectedDecoration != null)
             {
-                int id = o.Id;
+                int id = Selected;
                 ClearSelection();
                 Edit(d => d.Delete(id));
             }
@@ -318,9 +338,16 @@ namespace Wick.Game
         /// <summary>Where the selection bar floats: just above the selected object, in screen pixels.</summary>
         public bool SelectionScreenPoint(out Vector2 screen)
         {
-            DraftObject o = Moving < 0 ? SelectedObject : null;
             screen = default;
-            return o != null && _camera.WorldToScreen(SimPose.TileCenter(o.Pos) + Vector3.up * 1.2f, out screen);
+            if (Moving >= 0)
+            {
+                return false;
+            }
+
+            DraftObject o = SelectedObject;
+            DraftDecoration dec = SelectedDecoration;
+            TilePos? at = o != null ? o.Pos : dec?.Pos;
+            return at.HasValue && _camera.WorldToScreen(SimPose.TileCenter(at.Value) + Vector3.up * 1.2f, out screen);
         }
 
         private void ClearSelection()
@@ -374,6 +401,29 @@ namespace Wick.Game
             }
         }
 
+        // ---- Decor tray drag -----------------------------------------------------------------------
+
+        public void EndDecorPlacement(string kind, Vector2 screen, bool overUi)
+        {
+            if (overUi || !_camera.ScreenToTile(screen, Draft, out TilePos tile))
+            {
+                return;
+            }
+
+            string problem = Draft.DecorationPlaceProblem(kind, tile);
+            if (problem != null)
+            {
+                _ui.Toast("Can't go there: " + problem);
+                return;
+            }
+
+            Edit(d =>
+            {
+                Selected = d.PlaceDecoration(kind, tile).Id;
+                return true;
+            });
+        }
+
         // ---- Gestures ---------------------------------------------------------------------------
 
         private void OnGesture(EditorGesture g)
@@ -401,9 +451,69 @@ namespace Wick.Game
             {
                 DefencesGesture(g, onGrid, tile);
             }
+            else if (Tab == EditorTab.Decor)
+            {
+                DecorGesture(g, onGrid, tile);
+            }
             else
             {
                 RoomsGesture(g, onGrid, tile);
+            }
+        }
+
+        /// <summary>Like Defences: tap selects a decoration, dragging one moves it, dragging floor pans.</summary>
+        private void DecorGesture(EditorGesture g, bool onGrid, TilePos tile)
+        {
+            switch (g.Type)
+            {
+                case EditorGestureType.Tap:
+                case EditorGestureType.LongPress:
+                    DraftDecoration hit = onGrid ? Draft.DecorationAt(tile) : null;
+                    Selected = hit != null ? hit.Id : -1;
+                    Refresh();
+                    break;
+
+                case EditorGestureType.DragStart:
+                    BeginStroke();
+                    DraftDecoration target = onGrid ? Draft.DecorationAt(tile) : null;
+                    if (target != null)
+                    {
+                        Selected = target.Id;
+                        Moving = target.Id;
+                        MoveProblem = null;
+                        Refresh();
+                    }
+                    else
+                    {
+                        _panning = true;
+                    }
+
+                    break;
+
+                case EditorGestureType.DragMove:
+                    if (_panning)
+                    {
+                        _camera.Pan(g.Delta);
+                    }
+                    else if (Moving >= 0 && onGrid && Draft.MoveDecoration(Moving, tile))
+                    {
+                        _strokeChanged = true;
+                        MoveProblem = VaultDraft.NewProblem(_strokeBefore, Draft);
+                        Refresh();
+                    }
+
+                    break;
+
+                case EditorGestureType.DragEnd:
+                case EditorGestureType.DragCancel:
+                    bool refused = Moving >= 0 && MoveProblem != null;
+                    if (refused)
+                    {
+                        _ui.Toast("Can't go there: " + MoveProblem);
+                    }
+
+                    EndStroke(g.Type == EditorGestureType.DragEnd && !refused);
+                    break;
             }
         }
 
@@ -635,7 +745,7 @@ namespace Wick.Game
                 return;
             }
 
-            if (Selected >= 0 && Draft.Find(Selected) == null)
+            if (Selected >= 0 && Draft.Find(Selected) == null && Draft.FindDecoration(Selected) == null)
             {
                 ClearSelection();
             }

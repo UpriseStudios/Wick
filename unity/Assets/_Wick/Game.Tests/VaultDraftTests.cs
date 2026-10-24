@@ -114,6 +114,61 @@ namespace Wick.Game.Tests
             Assert.AreEqual(d.Entrance, back.Entrance);
         }
 
+        // ---- Decorations (M10) --------------------------------------------------------------
+
+        [Test]
+        public void Decorations_PlaceMoveTurnAndRemove_AsUndoableEdits()
+        {
+            VaultDraft d = Halls();
+            Assert.IsNull(d.DecorationPlaceProblem(Decorations.Statue, new TilePos(2, 6)));
+            Assert.IsNotNull(d.DecorationPlaceProblem(Decorations.Statue, new TilePos(0, 6)), "a floor prop on a wall");
+            Assert.IsNotNull(d.DecorationPlaceProblem("prop_trophy_raider_bronze", new TilePos(2, 6)), "trophies go in the hoard");
+
+            DraftDecoration statue = d.PlaceDecoration(Decorations.Statue, new TilePos(2, 6));
+            Assert.AreNotEqual(d.Objects[0].Id, statue.Id, "ids never clash with objects");
+            Assert.IsTrue(d.MoveDecoration(statue.Id, new TilePos(3, 6)));
+            Assert.IsTrue(d.RotateDecoration(statue.Id));
+            Assert.AreEqual(1, statue.Rot);
+
+            VaultDraft back = VaultDraft.FromJson(d.ToJson());
+            Assert.AreEqual(1, back.Decorations.Count);
+            Assert.AreEqual(new TilePos(3, 6), back.Decorations[0].Pos);
+
+            Assert.IsTrue(d.Delete(statue.Id));
+            Assert.AreEqual(0, d.Decorations.Count);
+        }
+
+        [Test]
+        public void Decorations_DontNeedANewTestRun()
+        {
+            VaultDraft d = Halls();
+            string before = ClearCheck.LayoutHashOf(d.ToVaultDef());
+            d.PlaceDecoration(Decorations.Banner, new TilePos(0, 6));
+            Assert.AreEqual(before, ClearCheck.LayoutHashOf(d.ToVaultDef()));
+        }
+
+        [Test]
+        public void Decorations_MoveWithTheLayoutWhenItExpands()
+        {
+            VaultDraft d = Halls();
+            DraftDecoration statue = d.PlaceDecoration(Decorations.Statue, new TilePos(2, 6));
+            d.SetLevel(3);
+            ExpandResult r = d.Expand();
+            Assert.AreEqual(new TilePos(2 + r.Offset.X, 6 + r.Offset.Y), statue.Pos);
+        }
+
+        [Test]
+        public void TheDecorationLimit_FollowsVaultLevel()
+        {
+            VaultDraft d = Halls();
+            for (int i = 0; i < VaultRules.MaxDecorations(1); i++)
+            {
+                d.PlaceDecoration(Decorations.Statue, new TilePos(1 + i, 6));
+            }
+
+            Assert.IsNotNull(d.DecorationBlock(Decorations.Statue));
+        }
+
         // ---- Edits ------------------------------------------------------------------------
 
         [Test]

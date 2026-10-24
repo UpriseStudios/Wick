@@ -58,9 +58,11 @@
                 <ui:VisualElement class="tabs blocks-input">
                     <ui:Button name="tab-defences" text="Defences" class="tab" />
                     <ui:Button name="tab-rooms" text="Rooms" class="tab" />
+                    <ui:Button name="tab-decor" text="Decor" class="tab" />
                 </ui:VisualElement>
                 <ui:VisualElement name="shop" class="shop blocks-input" />
                 <ui:VisualElement name="room-tools" class="room-tools blocks-input" />
+                <ui:VisualElement name="decor-shop" class="shop blocks-input" />
                 <ui:VisualElement class="actions blocks-input">
                     <ui:Button name="undo" text="Undo" class="action" />
                     <ui:Button name="redo" text="Redo" class="action" />
