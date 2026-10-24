@@ -316,6 +316,23 @@ GOLDENS = {
         "Escaped", 317, 3, 500,
         {"FlickerLost": [64], "TreasureTaken": [104, 119], "BrazierUsed": [113]},
     ),
+
+    # M10: new traps and guardians.
+    "ice-slide.json": raid(
+        "Ice on (2,1)-(4,1). A dash east reaches the ice on tick 4 and slides at 250 a tick "
+        "(4 ticks a tile): (3,1) t8, (4,1) t12, then off the ice onto (5,1) t16, where he stops. "
+        "A dash west reaches the ice on tick 24 and slides home: (3,1) t28, (2,1) t32, and onto "
+        "the entrance on tick 36, which counts as walking out. 1 star (all flickers), no loot.",
+        2026,
+        vault("v_golden_ice", [
+            "#######",
+            "#E~~~.#",
+            "#######",
+        ], [], level=3),
+        cmds((0, "Dash", "E"), (20, "Dash", "W")),
+        "Escaped", 37, 1, 0,
+        {"FlickerLost": []},
+    ),
 }
 
 

@@ -50,6 +50,9 @@ namespace Wick.Sim
         /// <summary>Tiles of knockback still to slide (Moving is set and MoveDir is the push).</summary>
         public int KnockTiles;
 
+        /// <summary>Sliding on ice: he keeps going in MoveDir until something stops him or the ice ends.</summary>
+        public bool Sliding;
+
         /// <summary>The tile Wick counts as standing on for hits, contacts and pickups.</summary>
         public TilePos Occupied => Motion.OccupiedTile(Tile, Moving, MoveDir, Progress);
     }

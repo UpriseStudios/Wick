@@ -50,6 +50,7 @@ namespace Wick.Sim
                 case ObjectType.NightOwl:
                     return 2;
                 case ObjectType.WaxMoths:
+                case ObjectType.IceTiles:
                     return 3;
                 default:
                     return 1;
@@ -68,6 +69,7 @@ namespace Wick.Sim
                 case ObjectType.SnufferBell: return 20;
                 case ObjectType.NightOwl: return 30;
                 case ObjectType.WaxMoths: return 25;
+                case ObjectType.IceTiles: return 3; // per tile
                 default: return 0;
             }
         }
@@ -97,7 +99,18 @@ namespace Wick.Sim
                 total += Cost(vault.GetObject(i).Type);
             }
 
-            return total;
+            return total + IceTileCount(vault) * Cost(ObjectType.IceTiles);
+        }
+
+        public static int IceTileCount(VaultDef vault)
+        {
+            int n = 0;
+            for (int i = 0; i < vault.Width * vault.Height; i++)
+            {
+                n += vault.TileAtIndex(i) == TileType.Ice ? 1 : 0;
+            }
+
+            return n;
         }
 
         private static int Clamp(int level)

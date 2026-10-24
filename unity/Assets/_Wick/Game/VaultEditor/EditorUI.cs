@@ -22,7 +22,7 @@ namespace Wick.Game
         private static readonly (RoomTool tool, string label)[] RoomTools =
         {
             (RoomTool.Wall, "Wall"), (RoomTool.Floor, "Floor"), (RoomTool.Door, "Door"),
-            (RoomTool.Entrance, "Entrance"), (RoomTool.Hoard, "Hoard room"),
+            (RoomTool.Entrance, "Entrance"), (RoomTool.Hoard, "Hoard room"), (RoomTool.Ice, "Ice"),
         };
 
         private static readonly ObjectType[] ShopItems =

@@ -269,8 +269,15 @@ namespace Wick.Sim
                 return;
             }
 
-            // Ice tiles are plain floor in the vertical slice (Ice Tiles trap is Vault Level 3).
-            w.Progress += w.KnockTiles > 0 ? SimTuning.KnockSpeed : PuddleSlowed(WickSpeed(in w), in w);
+            int ice = _vault.LevelOf(ObjectType.IceTiles);
+            if (w.Sliding && DefenceStats.IceDims(ice) && w.GustDimTicks < 2)
+            {
+                w.GustDimTicks = 2; // kept topped up while he slides; step 5 counts it down
+            }
+
+            w.Progress += w.KnockTiles > 0 ? SimTuning.KnockSpeed
+                : w.Sliding ? DefenceStats.IceSlideSpeed(ice)
+                : PuddleSlowed(WickSpeed(in w), in w);
             if (w.Progress < SubTile.PerTile)
             {
                 return;
@@ -301,6 +308,18 @@ namespace Wick.Sim
             else
             {
                 _arrivedThisTick = true;
+
+                // Ice: he slides on in the same direction until something stops him or the ice
+                // ends. Swipes made meanwhile wait until he stops.
+                if (_vault.TileAt(w.Tile) == TileType.Ice && _vault.IsWalkable(w.Tile.Step(w.MoveDir)))
+                {
+                    w.Sliding = true;
+                    w.Moving = true;
+                    w.Progress = leftover;
+                    return;
+                }
+
+                w.Sliding = false;
             }
 
             // A queued dash wins over continuing a run.

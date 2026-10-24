@@ -120,6 +120,7 @@ namespace Wick.Sim
             w.Moving = free > 0;
             w.MoveDir = dir;
             w.KnockTiles = free;
+            w.Sliding = false;
             Emit(SimEventType.KnockedBack, 0, from, free);
         }
     }

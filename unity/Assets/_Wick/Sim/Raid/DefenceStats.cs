@@ -102,6 +102,18 @@ namespace Wick.Sim
             return level >= 5 ? 45 : SimTuning.MothDrainTicks;
         }
 
+        /// <summary>Ice Tiles: sub-tile units per tick while sliding: 250, +10% a level, +15% more at level 5.</summary>
+        public static int IceSlideSpeed(int level)
+        {
+            return SimTuning.IceSlideSpeed * (100 + Steps(level, 10, 15)) / 100;
+        }
+
+        /// <summary>Ice Tiles level 5: sliding dims the flame like a Bellows gust.</summary>
+        public static bool IceDims(int level)
+        {
+            return level >= 5;
+        }
+
         /// <summary>Levels 2 to 4 add `small` each; level 5 adds `big` on top.</summary>
         private static int Steps(int level, int small, int big)
         {

@@ -520,6 +520,11 @@ namespace Wick.Game
                     total += VaultRules.Cost(o.Type);
                 }
 
+                foreach (TileType t in Tiles)
+                {
+                    total += t == TileType.Ice ? VaultRules.Cost(ObjectType.IceTiles) : 0; // ice is priced per tile
+                }
+
                 return total;
             }
         }

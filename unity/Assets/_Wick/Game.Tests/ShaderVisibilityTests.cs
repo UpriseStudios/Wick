@@ -65,6 +65,14 @@ namespace Wick.Game.Tests
                 checkedFrames++;
             }
 
+            if (checkedFrames == 0)
+            {
+                // A raid shorter than the sampling interval: check how it ended.
+                mask.Refresh();
+                AssertPixelsMatch(runner, vault, Render(camera, vault), "final tick " + runner.Sim.State.Tick);
+                checkedFrames++;
+            }
+
             Assert.Greater(checkedFrames, 0);
         }
 

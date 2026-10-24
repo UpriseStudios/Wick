@@ -1,0 +1,49 @@
+{
+  "_note": "Ice on (2,1)-(4,1). A dash east reaches the ice on tick 4 and slides at 250 a tick (4 ticks a tile): (3,1) t8, (4,1) t12, then off the ice onto (5,1) t16, where he stops. A dash west reaches the ice on tick 24 and slides home: (3,1) t28, (2,1) t32, and onto the entrance on tick 36, which counts as walking out. 1 star (all flickers), no loot.",
+  "simVersion": 4,
+  "seed": 2026,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_ice",
+    "version": 1,
+    "vaultLevel": 3,
+    "theme": "crypt",
+    "grid": {
+      "w": 7,
+      "h": 3
+    },
+    "_map": [
+      "#######",
+      "#E~~~.#",
+      "#######"
+    ],
+    "tiles": "AQEBAQEBAQEABAQEAAEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": []
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 20,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 37,
+    "stars": 1,
+    "loot": 0,
+    "hash": "04b1ed329269971b"
+  },
+  "expectedEvents": {
+    "FlickerLost": []
+  }
+}

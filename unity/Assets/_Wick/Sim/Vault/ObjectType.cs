@@ -14,12 +14,15 @@ namespace Wick.Sim
         Treasure,
         Brazier,
         Crate,
+
+        /// <summary>Ice is painted as tiles, never placed as an object; this type carries its cost, unlock and upgrade level.</summary>
+        IceTiles,
     }
 
     public static class ObjectTypes
     {
         /// <summary>How many object types there are (the enum's values are 0 to Count - 1).</summary>
-        public const int Count = (int)ObjectType.Crate + 1;
+        public const int Count = (int)ObjectType.IceTiles + 1;
 
         public static ObjectType Parse(string name)
         {
@@ -34,6 +37,7 @@ namespace Wick.Sim
                 case "treasure": return ObjectType.Treasure;
                 case "brazier": return ObjectType.Brazier;
                 case "crate": return ObjectType.Crate;
+                case "ice_tiles": return ObjectType.IceTiles;
                 default: throw new FormatException("Unknown object type '" + name + "'");
             }
         }
@@ -51,6 +55,7 @@ namespace Wick.Sim
                 case ObjectType.Treasure: return "treasure";
                 case ObjectType.Brazier: return "brazier";
                 case ObjectType.Crate: return "crate";
+                case ObjectType.IceTiles: return "ice_tiles";
                 default: throw new ArgumentOutOfRangeException(nameof(type));
             }
         }
@@ -62,7 +67,7 @@ namespace Wick.Sim
 
         public static bool IsTrap(ObjectType type)
         {
-            return IsTimedTrap(type) || type == ObjectType.SnufferBell;
+            return IsTimedTrap(type) || type == ObjectType.SnufferBell || type == ObjectType.IceTiles;
         }
 
         public static bool IsGuardian(ObjectType type)

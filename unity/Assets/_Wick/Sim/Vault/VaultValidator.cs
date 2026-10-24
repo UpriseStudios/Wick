@@ -100,6 +100,12 @@ namespace Wick.Sim
                 }
             }
 
+            if (VaultRules.IceTileCount(vault) > 0 && VaultRules.RequiredLevel(ObjectType.IceTiles) > level)
+            {
+                issues.Add(new VaultIssue(VaultIssueCode.LevelTooLow, 0, none,
+                    "Ice Tiles unlock at Vault Level " + VaultRules.RequiredLevel(ObjectType.IceTiles)));
+            }
+
             CheckObjects(vault, level, issues);
             CheckDecorations(vault, level, issues);
             CheckTreasureAndHoard(vault, level, issues);

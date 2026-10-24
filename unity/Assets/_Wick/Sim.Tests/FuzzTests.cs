@@ -83,7 +83,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void Corpus_CombinedHash_IsStable()
         {
-            const string expected = "b2133470df12e4aa";
+            const string expected = "59a13796ff9f0032";
 
             var rng = new Pcg32(2026, 77);
             var combined = new Fnv1a64();
@@ -225,7 +225,7 @@ namespace Wick.Sim.Tests
             var bytes = new byte[w * h];
             for (int i = 0; i < bytes.Length; i++)
             {
-                bytes[i] = walls[i] ? (byte)TileType.Wall : (byte)TileType.Floor;
+                bytes[i] = walls[i] ? (byte)TileType.Wall : rng.NextInt(8) == 0 ? (byte)TileType.Ice : (byte)TileType.Floor;
             }
 
             string hoard = rng.NextInt(2) == 0 ? "" : ",\"hoard\":[1,1," + (w - 2) + "," + (1 + rng.NextInt(h - 2)) + "]";

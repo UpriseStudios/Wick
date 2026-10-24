@@ -23,6 +23,9 @@ namespace Wick.Sim
         /// <summary>Sub-tile units per tick while Wick is knocked back (4 ticks per tile).</summary>
         public const int KnockSpeed = 250;
 
+        /// <summary>Sub-tile units per tick while Wick slides on ice at level 1 (4 ticks per tile).</summary>
+        public const int IceSlideSpeed = 250;
+
         /// <summary>Flame light radius in sub-tile units at 3, 2 and 1 flickers.</summary>
         public const int LightRadius3Flickers = 4 * SubTile.PerTile;
         public const int LightRadius2Flickers = 3 * SubTile.PerTile;

@@ -203,7 +203,7 @@ B3.
 | Snuffer Bell | Drops once when Wick steps on its plate, then is spent | Open question (see below) | Open question | Plate grows to 2 tiles |
 | Night Owl | Chase speed 100, 90-degree sight cone | +5 chase speed | +10 | Wider sight cone (about 112 degrees) |
 | Wax Moths | Speed 40, drain every 60 ticks | +3 speed | +5 | Drain every 45 ticks |
-| Ice Tiles | Wick slides until he hits something | +10% slide speed | +15% | Sliding dims the flame by half a tile |
+| Ice Tiles | Wick slides until he hits something | +10% slide speed | +15% | Sliding dims the flame like a gust |
 | Swing Axe | Swings on its cycle | -2 ticks | -3 ticks | The arc covers one more tile |
 | Mimic Chest | Bites for 2 flickers when Wick is adjacent | Lunges 2 ticks sooner | 3 ticks sooner | A bite steals one carried treasure pile |
 | Sleepy Troll | Wakes in bright light and stomps | Wakes at a slightly dimmer light | Dimmer again | The stomp also hits the 4 tiles around him |
@@ -223,6 +223,17 @@ Changes found while building (24 October 2026):
 - **Snuffer Bell levels 2 to 4:** open. A bell drop is always an instant snuff, which ends the
   raid, so re-arming can never matter. Level 5's two-tile plate is built; levels 2 to 4 need a
   different improvement.
+
+## Rules for the new defences, as built
+
+The spec gives each new trap one line; these are the exact sim rules, first-pass numbers for the
+balance simulator to tune.
+
+- **Ice Tiles** (Vault Level 3, 3 points per tile, painted on the Rooms tab): stepping onto ice,
+  Wick slides on in the same direction at 250 a tick (4 ticks a tile) until the next tile is
+  blocked or the ice ends. He can't turn mid-slide; swipes queue until he stops. Guardians don't
+  slide. Levels add 10% slide speed each (15% more at level 5); level 5 also dims his flame like a
+  gust while he slides.
 
 ## Decisions (24 October 2026)
 

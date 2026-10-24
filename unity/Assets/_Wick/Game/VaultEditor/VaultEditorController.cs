@@ -24,6 +24,7 @@ namespace Wick.Game
         Door,
         Entrance,
         Hoard,
+        Ice,
     }
 
     /// <summary>
@@ -674,6 +675,7 @@ namespace Wick.Game
                 case RoomTool.Wall: return d.PaintTile(tile, TileType.Wall);
                 case RoomTool.Door: return d.PaintTile(tile, TileType.Door);
                 case RoomTool.Floor: return d.PaintTile(tile, TileType.Floor);
+                case RoomTool.Ice: return d.PaintTile(tile, TileType.Ice);
                 default: return false;
             }
         }
