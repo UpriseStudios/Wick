@@ -161,6 +161,12 @@ namespace Wick.CloudCode
 
         /// <summary>VaultJson document including the owner's clear-check. Never sent to raiders.</summary>
         public string Document { get; set; }
+
+        /// <summary>
+        /// Set when the owner's newer defence levels made their stored clear-check fail: the vault
+        /// keeps its old levels until they test and publish again (decision C, docs/m10-plan.md).
+        /// </summary>
+        public bool NeedsRetest { get; set; }
     }
 
     /// <summary>

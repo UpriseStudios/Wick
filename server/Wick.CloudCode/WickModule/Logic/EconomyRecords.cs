@@ -41,6 +41,20 @@ namespace Wick.CloudCode
     {
         public int VaultLevel { get; set; } = 1;
         public int Lantern { get; set; }
+
+        /// <summary>Defence upgrade levels by type name ("drip_pipe"); missing types are level 1.</summary>
+        public Dictionary<string, int> Defences { get; set; } = new Dictionary<string, int>();
+
+        public int DefenceLevel(Wick.Sim.ObjectType type)
+        {
+            return OwnedDefences.Level(Defences, type);
+        }
+
+        /// <summary>The levels a vault built at vaultLevel gets: what the player owns, capped for that level.</summary>
+        public Wick.Sim.DefenceLevels DefenceLevelsFor(int vaultLevel)
+        {
+            return OwnedDefences.For(Defences, vaultLevel);
+        }
     }
 
     public sealed class RunningUpgrade
@@ -93,6 +107,10 @@ namespace Wick.CloudCode
             if (running.Kind == UpgradeKinds.VaultLevel)
             {
                 Levels.VaultLevel = Math.Max(Levels.VaultLevel, running.ToLevel);
+            }
+            else if (UpgradeKinds.TryParseDefence(running.Kind, out Wick.Sim.ObjectType type))
+            {
+                Levels.Defences[Wick.Sim.ObjectTypes.Name(type)] = Math.Max(Levels.DefenceLevel(type), running.ToLevel);
             }
             else
             {

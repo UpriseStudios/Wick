@@ -21,6 +21,8 @@ namespace Wick.Services
         public int Stars;
         public int VaultLevel;
         public int Lantern;
+        public Dictionary<string, int> Defences;
+        public bool VaultNeedsRetest;
         public int Workshops;
         public List<RunningUpgradeReply> Running;
         public VaultLevelStep NextVaultLevel;
@@ -124,12 +126,16 @@ namespace Wick.Services
         /// <summary>The player's Vault Level from the last economy state (1 until one arrives).</summary>
         public static int KnownVaultLevel { get; private set; } = 1;
 
+        /// <summary>The player's defence levels from the last economy state (all level 1 until one arrives).</summary>
+        public static Dictionary<string, int> KnownDefences { get; private set; } = new Dictionary<string, int>();
+
         public async Task<EconomyStateReply> StateAsync()
         {
             EconomyStateReply state = await Call<EconomyStateReply>("GetEconomyState");
             if (state != null && state.VaultLevel > 0)
             {
                 KnownVaultLevel = state.VaultLevel;
+                KnownDefences = state.Defences ?? new Dictionary<string, int>();
             }
 
             return state;

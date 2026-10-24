@@ -78,6 +78,32 @@
       "stars": 365
     }
   ],
+  "defenceUpgrades": [
+    {
+      "level": 2,
+      "gold": 300,
+      "wax": 10,
+      "minutes": 20
+    },
+    {
+      "level": 3,
+      "gold": 1200,
+      "wax": 40,
+      "minutes": 120
+    },
+    {
+      "level": 4,
+      "gold": 4000,
+      "wax": 120,
+      "minutes": 360
+    },
+    {
+      "level": 5,
+      "gold": 10000,
+      "wax": 300,
+      "minutes": 720
+    }
+  ],
   "lantern": [
     {
       "level": 1,

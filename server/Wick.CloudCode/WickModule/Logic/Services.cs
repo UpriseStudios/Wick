@@ -90,7 +90,7 @@ namespace Wick.CloudCode
             }
 
             return new VaultDef(v.Schema, vaultId, version, v.VaultLevel, v.Width, v.Height, tiles, v.Entrance, objects,
-                v.HasHoard, v.Hoard, v.Theme);
+                v.HasHoard, v.Hoard, v.Theme, v.DefenceLevels);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Wick.Economy;
 using Wick.Services;
 using Wick.Sim;
 
@@ -639,6 +640,8 @@ namespace Wick.Game
                 ClearSelection();
             }
 
+            // The draft is built and tested with the levels the server will stamp on it.
+            Draft.DefenceLevels = OwnedDefences.For(EconomyClient.KnownDefences, Draft.Level);
             Issues = VaultValidator.Validate(Draft.ToVaultDef());
             _view.Build(Drawn(), Issues, new EditorView.Marks
             {

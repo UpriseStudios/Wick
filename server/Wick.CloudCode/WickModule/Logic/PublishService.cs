@@ -31,12 +31,19 @@ namespace Wick.CloudCode
 
             // A vault can be built up to the level the player has raised (upgrades, star-gated).
             var levels = await _store.GetProtectedAsync(playerId, new[] { EconomyKeys.Upgrades });
-            int vaultLevel = Upgrades.Read(levels.TryGetValue(EconomyKeys.Upgrades, out StoredItem u) ? u.Json : null, _clock.NowMs).Levels.VaultLevel;
+            Progression owned = Upgrades.Read(levels.TryGetValue(EconomyKeys.Upgrades, out StoredItem u) ? u.Json : null, _clock.NowMs).Levels;
             EconomyConfig cfg = await _economy.GetAsync();
-            VaultCheck.Passed passed = VaultCheck.Check(document, vaultLevel, cfg.Raid, out PublishResult fail);
+            VaultCheck.Passed passed = VaultCheck.Check(document, owned.VaultLevel, cfg.Raid, out PublishResult fail);
             if (passed == null)
             {
                 return fail;
+            }
+
+            // Defence levels come from the owner's upgrades, never from the client: the test run must
+            // have been played with exactly the levels the vault will go live with.
+            if (!passed.Vault.DefenceLevels.SameAs(owned.DefenceLevelsFor(passed.Vault.VaultLevel)))
+            {
+                return PublishResult.Fail("Your defence levels changed since your test run; test the vault again");
             }
 
             string code = await VaultCodes.AssignAsync(_store, VaultIds.ForOwner(playerId));

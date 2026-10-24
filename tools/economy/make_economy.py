@@ -34,6 +34,16 @@ VAULT_LEVELS = [
 # fairness test decides whether bigger vaults get longer (docs/m10-plan.md, B3).
 RAID_SECONDS = [60] * 10
 
+# Defence upgrades: the same cost for every trap and guardian (docs/m10-design-notes.md). The
+# level is also capped at half the Vault Level, rounded up (DefenceLevels.Cap in the sim).
+DEFENCE_UPGRADES = [
+    # to level, gold, wax, minutes
+    (2, 300, 10, 20),
+    (3, 1_200, 40, 120),
+    (4, 4_000, 120, 360),
+    (5, 10_000, 300, 720),
+]
+
 # Lantern: a slightly bigger light radius per level (raid effect wired in M10). Each level needs a
 # Vault Level, so the most anyone can have at a given Vault Level is the same for everyone.
 LANTERN = [
@@ -81,6 +91,7 @@ ECONOMY = {
     },
     "raid": {"secondsByLevel": RAID_SECONDS},
     "vaultLevels": [{"level": l, "gold": g, "minutes": m, "stars": s} for (l, g, m, s) in VAULT_LEVELS],
+    "defenceUpgrades": [{"level": l, "gold": g, "wax": x, "minutes": m} for (l, g, x, m) in DEFENCE_UPGRADES],
     "lantern": [{"level": l, "wax": w, "minutes": m, "minVaultLevel": v, "lightBonus": b} for (l, w, m, v, b) in LANTERN],
     "workshops": {"base": 1, "max": 3},
     "speedUp": {"gemsPerHour": 20, "minGems": 1},

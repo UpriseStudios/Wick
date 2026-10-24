@@ -21,6 +21,9 @@ namespace Wick.Economy
         public RaidConfig Raid { get; set; } = new RaidConfig();
         public List<VaultLevelStep> VaultLevels { get; set; } = new List<VaultLevelStep>();
         public List<LanternStep> Lantern { get; set; } = new List<LanternStep>();
+
+        /// <summary>The cost of raising any defence to each level (2 to 5); the same for every defence.</summary>
+        public List<DefenceStep> DefenceUpgrades { get; set; } = new List<DefenceStep>();
         public WorkshopConfig Workshops { get; set; } = new WorkshopConfig();
         public SpeedUpConfig SpeedUp { get; set; } = new SpeedUpConfig();
         public AdsConfig Ads { get; set; } = new AdsConfig();
@@ -51,6 +54,12 @@ namespace Wick.Economy
             return Lantern.Find(s => s.Level == level);
         }
 
+        /// <summary>The step that raises a defence to level, or null past the top.</summary>
+        public DefenceStep DefenceTo(int level)
+        {
+            return DefenceUpgrades.Find(s => s.Level == level);
+        }
+
         public AdPlacement Placement(string id)
         {
             return Ads.Placements.Find(p => p.Id == id);
@@ -72,6 +81,35 @@ namespace Wick.Economy
     {
         public const string VaultLevel = "vaultLevel";
         public const string Lantern = "lantern";
+
+        /// <summary>Defence upgrades are "defence:" plus the type's JSON name, e.g. "defence:drip_pipe".</summary>
+        public const string DefencePrefix = "defence:";
+
+        public static string Defence(Sim.ObjectType type)
+        {
+            return DefencePrefix + Sim.ObjectTypes.Name(type);
+        }
+
+        /// <summary>The defence a kind upgrades, if it is a defence upgrade of a type that has levels.</summary>
+        public static bool TryParseDefence(string kind, out Sim.ObjectType type)
+        {
+            type = default;
+            if (kind == null || !kind.StartsWith(DefencePrefix, StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            try
+            {
+                type = Sim.ObjectTypes.Parse(kind.Substring(DefencePrefix.Length));
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+
+            return Sim.ObjectTypes.IsUpgradable(type);
+        }
     }
 
     public sealed class RaidConfig
@@ -126,6 +164,45 @@ namespace Wick.Economy
     /// The Lantern, Wick's light: each level costs wax and needs a Vault Level, so at any Vault
     /// Level everyone can reach the same light. Its raid effect arrives with the balance pass (M10).
     /// </summary>
+    /// <summary>The defence levels a player owns, as a vault built at some Vault Level gets them.</summary>
+    public static class OwnedDefences
+    {
+        public static int Level(IDictionary<string, int> owned, Sim.ObjectType type)
+        {
+            return owned != null && owned.TryGetValue(Sim.ObjectTypes.Name(type), out int level) && level > 0 ? level : 1;
+        }
+
+        /// <summary>Owned levels capped for vaultLevel. Read in type order, never by iterating the dictionary.</summary>
+        public static Sim.DefenceLevels For(IDictionary<string, int> owned, int vaultLevel)
+        {
+            Sim.DefenceLevels levels = Sim.DefenceLevels.Base;
+            int cap = Sim.DefenceLevels.Cap(vaultLevel);
+            for (int i = 0; i < Sim.ObjectTypes.Count; i++)
+            {
+                var type = (Sim.ObjectType)i;
+                int level = Level(owned, type);
+                if (Sim.ObjectTypes.IsUpgradable(type) && level > 1)
+                {
+                    levels = levels.With(type, Math.Min(level, cap));
+                }
+            }
+
+            return levels;
+        }
+    }
+
+    /// <summary>
+    /// Raising a defence (every trap or guardian of one type in the player's vault) to Level. The
+    /// level is also capped by Vault Level (DefenceLevels.Cap), the same for everyone.
+    /// </summary>
+    public sealed class DefenceStep
+    {
+        public int Level { get; set; }
+        public long Gold { get; set; }
+        public long Wax { get; set; }
+        public int Minutes { get; set; }
+    }
+
     public sealed class LanternStep
     {
         public int Level { get; set; }

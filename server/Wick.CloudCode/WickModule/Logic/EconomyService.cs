@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Wick.Economy;
+using Wick.Sim;
 
 namespace Wick.CloudCode
 {
@@ -130,6 +131,7 @@ namespace Wick.CloudCode
         public async Task<EconomyState> GetStateAsync(string playerId)
         {
             EconomyConfig cfg = await _economy.GetAsync();
+            bool needsRetest = await new DefenceSync(_store, _clock).SyncAsync(playerId); // upgrades finish on their own
             var data = await _store.GetProtectedAsync(playerId, new[]
             {
                 Keys.Wallet, Keys.Stats, Keys.Profile, EconomyKeys.Upgrades, EconomyKeys.Inventory, EconomyKeys.Pass,
@@ -137,9 +139,11 @@ namespace Wick.CloudCode
             });
             string Get(string k) => data.TryGetValue(k, out StoredItem i) ? i.Json : null;
             long now = _clock.NowMs;
-            return EconomyState.Build(cfg, now, Json.Read<Wallet>(Get(Keys.Wallet)), Json.Read<RaidStats>(Get(Keys.Stats)),
+            EconomyState state = EconomyState.Build(cfg, now, Json.Read<Wallet>(Get(Keys.Wallet)), Json.Read<RaidStats>(Get(Keys.Stats)),
                 Json.Read<Profile>(Get(Keys.Profile)), Upgrades.Read(Get(EconomyKeys.Upgrades), now), Json.Read<Inventory>(Get(EconomyKeys.Inventory)),
                 Json.Read<PassState>(Get(EconomyKeys.Pass)), Json.Read<Progress>(Get(EconomyKeys.Progress)), Json.Read<AdState>(Get(EconomyKeys.Ads)));
+            state.VaultNeedsRetest = needsRetest;
+            return state;
         }
 
         /// <summary>The player's Vault Level (1 until they raise it).</summary>
@@ -220,6 +224,37 @@ namespace Wick.CloudCode
                     toLevel = step.Level;
                     minutes = step.Minutes;
                 }
+                else if (UpgradeKinds.TryParseDefence(kind, out ObjectType defence))
+                {
+                    int unlock = VaultRules.RequiredLevel(defence);
+                    if (upgrades.Levels.VaultLevel < unlock)
+                    {
+                        return new Plan<EconomyResult>(EconomyResult.Fail(defence + " unlocks at Vault Level " + unlock));
+                    }
+
+                    int next = upgrades.Levels.DefenceLevel(defence) + 1;
+                    DefenceStep step = cfg.DefenceTo(next);
+                    if (step == null)
+                    {
+                        return new Plan<EconomyResult>(EconomyResult.Fail("That defence is at the top level"));
+                    }
+
+                    // Capped by Vault Level, so at any Vault Level everyone's defences top out the same.
+                    if (next > DefenceLevels.Cap(upgrades.Levels.VaultLevel))
+                    {
+                        return new Plan<EconomyResult>(EconomyResult.Fail("Level " + next + " needs Vault Level " + (2 * next - 1)));
+                    }
+
+                    if (wallet.Gold < step.Gold || wallet.Wax < step.Wax)
+                    {
+                        return new Plan<EconomyResult>(EconomyResult.Fail("Needs " + step.Gold + " gold and " + step.Wax + " wax"));
+                    }
+
+                    wallet.Gold -= step.Gold;
+                    wallet.Wax -= step.Wax;
+                    toLevel = step.Level;
+                    minutes = step.Minutes;
+                }
                 else
                 {
                     return new Plan<EconomyResult>(EconomyResult.Fail("Nothing to upgrade called " + kind));
@@ -234,6 +269,17 @@ namespace Wick.CloudCode
 
         /// <summary>Completes an upgrade whose time is up, or (useGems) pays gems to finish it now.</summary>
         public async Task<EconomyResult> FinishUpgradeAsync(string playerId, string kind, bool useGems)
+        {
+            EconomyResult result = await FinishAsync(playerId, kind, useGems);
+            if (result.Ok && UpgradeKinds.TryParseDefence(kind, out _))
+            {
+                await new DefenceSync(_store, _clock).SyncAsync(playerId); // the live vault picks up the new level
+            }
+
+            return result;
+        }
+
+        private async Task<EconomyResult> FinishAsync(string playerId, string kind, bool useGems)
         {
             EconomyConfig cfg = await _economy.GetAsync();
             return await Locked.UpdateAsync(_store, playerId, new[] { Keys.Wallet, EconomyKeys.Upgrades }, s =>
@@ -431,6 +477,13 @@ namespace Wick.CloudCode
         public int Stars { get; set; }
         public int VaultLevel { get; set; }
         public int Lantern { get; set; }
+
+        /// <summary>Defence upgrade levels by type name; missing types are level 1.</summary>
+        public Dictionary<string, int> Defences { get; set; } = new Dictionary<string, int>();
+
+        /// <summary>The owner's newest defence levels failed their stored clear-check: test and publish again.</summary>
+        public bool VaultNeedsRetest { get; set; }
+
         public int Workshops { get; set; }
         public List<RunningUpgrade> Running { get; set; } = new List<RunningUpgrade>();
         public VaultLevelStep NextVaultLevel { get; set; }
@@ -464,6 +517,7 @@ namespace Wick.CloudCode
                 Stars = stats.Stars,
                 VaultLevel = upgrades.Levels.VaultLevel,
                 Lantern = upgrades.Levels.Lantern,
+                Defences = upgrades.Levels.Defences,
                 Workshops = Grants.Workshops(cfg, inventory, now),
                 Running = upgrades.Running,
                 NextVaultLevel = cfg.VaultLevelTo(upgrades.Levels.VaultLevel + 1),

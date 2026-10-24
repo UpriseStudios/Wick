@@ -55,6 +55,12 @@ namespace Wick.Game
         public List<DraftObject> Objects = new List<DraftObject>();
         public int NextId = 1;
 
+        /// <summary>
+        /// The owner's defence levels (capped for this draft's Vault Level). The editor sets them
+        /// from the economy state; the server refuses a publish whose levels don't match its own.
+        /// </summary>
+        public DefenceLevels DefenceLevels = DefenceLevels.Base;
+
         /// <summary>The run that proves this vault can be escaped (may be stale after edits).</summary>
         public ClearCheck ClearCheck;
 
@@ -505,7 +511,7 @@ namespace Wick.Game
 
             Array.Sort(objects, (a, b) => a.Id.CompareTo(b.Id));
             return new VaultDef(1, PublishedVaultId, PublishedVersion, Level, Width, Height, (TileType[])Tiles.Clone(),
-                Entrance, objects, HasHoard, Hoard);
+                Entrance, objects, HasHoard, Hoard, "crypt", DefenceLevels);
         }
 
         public static VaultDraft FromVault(VaultDef vault, string name)
@@ -517,6 +523,7 @@ namespace Wick.Game
                 Entrance = vault.Entrance,
                 HasHoard = vault.HasHoard,
                 Hoard = vault.Hoard,
+                DefenceLevels = vault.DefenceLevels,
             };
             for (int i = 0; i < d.Tiles.Length; i++)
             {

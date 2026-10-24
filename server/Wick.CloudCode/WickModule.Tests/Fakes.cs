@@ -263,7 +263,7 @@ namespace Wick.CloudCode.Tests
 
             objects.AddRange(extra);
             return new VaultDef(v.Schema, v.VaultId, v.Version, v.VaultLevel, v.Width, v.Height, tiles, v.Entrance,
-                objects.ToArray(), v.HasHoard, v.Hoard, v.Theme);
+                objects.ToArray(), v.HasHoard, v.Hoard, v.Theme, v.DefenceLevels);
         }
 
         public static ObjectDef Drip(int id, int x, int y)

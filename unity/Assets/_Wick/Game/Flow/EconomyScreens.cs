@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Wick.Economy;
 using Wick.Services;
+using Wick.Sim;
 
 namespace Wick.Game
 {
@@ -169,6 +170,26 @@ namespace Wick.Game
                 l == null ? null : "Level " + l.Level + ": " + l.Wax + " wax, needs Vault Level " + l.MinVaultLevel + ", " + Duration(l.Minutes * 60_000L) +
                     " (a slightly bigger light, from the next balance update)",
                 l != null && _state.Wax >= l.Wax && _state.VaultLevel >= l.MinVaultLevel, cfg));
+
+            // Defences: every trap or guardian of a type, vault-wide, capped at half the Vault Level.
+            int cap = DefenceLevels.Cap(_state.VaultLevel);
+            for (int i = 0; i < ObjectTypes.Count; i++)
+            {
+                var type = (ObjectType)i;
+                if (!ObjectTypes.IsUpgradable(type) || VaultRules.RequiredLevel(type) > _state.VaultLevel)
+                {
+                    continue;
+                }
+
+                int level = OwnedDefences.Level(_state.Defences, type);
+                DefenceStep d = cfg.DefenceTo(level + 1);
+                string next = d == null ? null
+                    : d.Level > cap ? "Level " + d.Level + " needs Vault Level " + (2 * d.Level - 1)
+                    : "Level " + d.Level + ": " + d.Gold + " gold, " + d.Wax + " wax, " + Duration(d.Minutes * 60_000L);
+                rows.Add(UpgradeRow(UpgradeKinds.Defence(type), EditorUI.Name(type) + " " + level, next,
+                    d != null && d.Level <= cap && _state.Gold >= d.Gold && _state.Wax >= d.Wax, cfg));
+            }
+
             return rows;
         }
 

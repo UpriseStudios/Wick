@@ -372,6 +372,16 @@ namespace Wick.Game
             return VaultJson.Parse(templates[0].text);
         }
 
+        private static string UpgradeName(string kind)
+        {
+            if (kind == UpgradeKinds.VaultLevel)
+            {
+                return "Vault Level";
+            }
+
+            return UpgradeKinds.TryParseDefence(kind, out ObjectType type) ? EditorUI.Name(type) : "Lantern";
+        }
+
         /// <summary>Wallet, Crowns, the running upgrade and badges, from the server's economy state.</summary>
         private async void RefreshHome()
         {
@@ -381,9 +391,11 @@ namespace Wick.Game
                 EconomyStateReply s = await _economy.StateAsync();
                 _ui.SetWallet(s.Gold, s.Wax, s.Gems, s.Crowns);
                 RunningUpgradeReply running = s.Running != null && s.Running.Count > 0 ? s.Running[0] : null;
-                _ui.SetHomeStats(running != null
-                    ? (running.Kind == UpgradeKinds.VaultLevel ? "Vault Level " : "Lantern ") + running.ToLevel + " building"
-                    : "Vault Level " + s.VaultLevel + "  ·  " + s.Stars + " ★");
+                _ui.SetHomeStats(s.VaultNeedsRetest
+                    ? "Your defences got stronger: test your vault again to use them"
+                    : running != null
+                        ? UpgradeName(running.Kind) + " " + running.ToLevel + " building"
+                        : "Vault Level " + s.VaultLevel + "  ·  " + s.Stars + " ★");
                 _ui.SetBadge("pass", ClaimablePassTiers(s));
                 _ui.SetBadge("trophies", ClaimableAchievements(s));
             }
