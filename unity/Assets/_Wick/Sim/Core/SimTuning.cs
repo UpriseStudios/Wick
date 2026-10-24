@@ -66,6 +66,12 @@ namespace Wick.Sim
         /// <summary>Each pass of a Swing Axe's blade over a tile is live for this many ticks.</summary>
         public const int AxeSweepTicks = 6;
 
+        /// <summary>A fan blows for this many ticks at the start of each quarter turn.</summary>
+        public const int FanGustTicks = 10;
+
+        /// <summary>How many tiles a fan's wind reaches.</summary>
+        public const int FanRange = 3;
+
         /// <summary>Spike Floor is raised (damaging) while phase is below this.</summary>
         public const int SpikeRaisedTicks = 20;
 

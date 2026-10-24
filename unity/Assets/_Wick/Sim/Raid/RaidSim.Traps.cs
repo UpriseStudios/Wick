@@ -23,8 +23,44 @@ namespace Wick.Sim
                 case ObjectType.Bellows: return phase < SimTuning.GustTicks;
                 case ObjectType.SpikeFloor: return phase < SimTuning.SpikeRaisedTicks;
                 case ObjectType.SwingAxe: return AxeOverCentre(phase, DefenceStats.Cycle(trap, level));
+                case ObjectType.Fan: return FanBlowing(tick, trap, level);
                 default: return false;
             }
+        }
+
+        /// <summary>A fan turns a quarter clockwise every quarter of its cycle, starting at its placed facing.</summary>
+        public static Dir FanFacing(int tick, ObjectDef fan, int level)
+        {
+            int quarter = DefenceStats.Cycle(fan, level) / 4;
+            return (Dir)((fan.Rot + Phase(tick, fan, level) / quarter) % 4);
+        }
+
+        /// <summary>Whether a fan is blowing: the first FanGustTicks of each quarter turn.</summary>
+        public static bool FanBlowing(int tick, ObjectDef fan, int level)
+        {
+            int quarter = DefenceStats.Cycle(fan, level) / 4;
+            return Phase(tick, fan, level) % quarter < SimTuning.FanGustTicks;
+        }
+
+        /// <summary>Whether tile p is in a fan's wind: up to FanRange tiles along its facing, stopping at walls and crates.</summary>
+        public bool OnFanLine(ObjectDef fan, Dir facing, TilePos p)
+        {
+            TilePos t = fan.Pos;
+            for (int i = 0; i < SimTuning.FanRange; i++)
+            {
+                t = t.Step(facing);
+                if (_vault.BlocksGust(t))
+                {
+                    return false;
+                }
+
+                if (t == p)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -159,7 +195,8 @@ namespace Wick.Sim
                 }
 
                 bool swing = o.Type == ObjectType.SwingAxe && phase == DefenceStats.Cycle(o, level) / 2;
-                if (phase == 0 || swing)
+                bool turn = o.Type == ObjectType.Fan && phase % (DefenceStats.Cycle(o, level) / 4) == 0;
+                if (phase == 0 || swing || turn)
                 {
                     Emit(SimEventType.TrapFired, o.Id, o.Pos, 0);
                     if (IsNearMiss(o, wick))
@@ -172,6 +209,11 @@ namespace Wick.Sim
 
         private bool HitsTile(ObjectDef trap, TilePos p)
         {
+            if (trap.Type == ObjectType.Fan)
+            {
+                return OnFanLine(trap, FanFacing(State.Tick, trap, _vault.LevelOf(trap.Type)), p);
+            }
+
             if (trap.Type == ObjectType.SwingAxe)
             {
                 return trap.Pos == p || (DefenceStats.AxeWideArc(_vault.LevelOf(trap.Type)) && trap.Pos.Step(trap.Facing) == p);

@@ -75,6 +75,27 @@ namespace Wick.Editor
                 Set(view, "_snore", bubble.transform);
             });
 
+            Material stone = Mat("Plate");
+            Material gust = Mat("Gust");
+            registry.Fan = Save("Fan", root =>
+            {
+                Prim(PrimitiveType.Cylinder, root, "Base", new Vector3(0f, 0.1f, 0f), new Vector3(0.6f, 0.1f, 0.6f), stone);
+                var head = new GameObject("Head").transform;
+                head.SetParent(root, false);
+                head.localPosition = new Vector3(0f, 0.55f, 0f);
+                Box(head, "Housing", new Vector3(0f, 0f, -0.1f), new Vector3(0.35f, 0.35f, 0.25f), crate);
+                var blades = new GameObject("Blades").transform;
+                blades.SetParent(head, false);
+                blades.localPosition = new Vector3(0f, 0f, 0.08f);
+                Box(blades, "BladeA", Vector3.zero, new Vector3(0.6f, 0.1f, 0.03f), crate);
+                Box(blades, "BladeB", Vector3.zero, new Vector3(0.1f, 0.6f, 0.03f), crate);
+                GameObject wind = Box(head, "Wind", new Vector3(0f, -0.25f, 1.6f), new Vector3(0.3f, 0.08f, 3f), gust);
+                FanView view = root.gameObject.AddComponent<FanView>();
+                Set(view, "_head", head);
+                Set(view, "_blades", blades);
+                Set(view, "_wind", wind.transform);
+            });
+
             EditorUtility.SetDirty(registry);
             AssetDatabase.SaveAssets();
             Debug.Log("M10 stand-ins built");

@@ -136,6 +136,12 @@ namespace Wick.Sim
             return level >= 5;
         }
 
+        /// <summary>Fan Maze: tiles a gust pushes Wick: 1, or 2 at level 5.</summary>
+        public static int FanPush(int level)
+        {
+            return level >= 5 ? 2 : 1;
+        }
+
         /// <summary>Ice Tiles: sub-tile units per tick while sliding: 250, +10% a level, +15% more at level 5.</summary>
         public static int IceSlideSpeed(int level)
         {

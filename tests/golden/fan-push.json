@@ -1,0 +1,112 @@
+{
+  "_note": "A fan on (4,1), cycle 120: it faces north (into the wall) for ticks 0-29, then east, south and west a quarter each, blowing 3 tiles for the first 10 ticks of each quarter. Wick dashes east past it to (6,1) by tick 24. At tick 30 it turns east and blows: he is pushed to (7,1) (knockback, arriving t34); at rest in the wind again that same tick, he is pushed on to (8,1) (t38), and the gust ends at t40. He dashes home (the fan faces south, at the wall, while he passes) and walks out on tick 74. No flickers lost: 1 star.",
+  "simVersion": 4,
+  "seed": 7117,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_fan",
+    "version": 1,
+    "vaultLevel": 7,
+    "theme": "crypt",
+    "grid": {
+      "w": 12,
+      "h": 3
+    },
+    "_map": [
+      "############",
+      "#E.........#",
+      "############"
+    ],
+    "tiles": "AQEBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQEBAQEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "fan",
+        "x": 4,
+        "y": 1,
+        "rot": 0,
+        "cycle": 120
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 10,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 15,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 20,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 40,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 45,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 50,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 55,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 60,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 65,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 70,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 75,
+    "stars": 1,
+    "loot": 0,
+    "hash": "e3f63961d207d866"
+  },
+  "expectedEvents": {
+    "KnockedBack": [
+      30,
+      34
+    ],
+    "FlickerLost": []
+  }
+}

@@ -32,6 +32,7 @@ namespace Wick.Game
         public GameObject SwingAxe;
         public GameObject MimicChest;
         public GameObject SleepyTroll;
+        public GameObject Fan;
 
         public GameObject ForObject(ObjectType type)
         {
@@ -49,6 +50,7 @@ namespace Wick.Game
                 case ObjectType.SwingAxe: return SwingAxe;
                 case ObjectType.MimicChest: return MimicChest;
                 case ObjectType.SleepyTroll: return SleepyTroll;
+                case ObjectType.Fan: return Fan;
                 default: return null;
             }
         }

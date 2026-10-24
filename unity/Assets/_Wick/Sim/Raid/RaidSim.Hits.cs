@@ -53,6 +53,10 @@ namespace Wick.Sim
                         hits = AxeHits(State.Tick, o, _vault.LevelOf(o.Type), at);
                         break;
 
+                    case ObjectType.Fan:
+                        hits = false; // fans push (below); they never cost a flicker
+                        break;
+
                     case ObjectType.Bellows:
                         hits = _trapActive[i] && OnGustLine(o, at);
                         if (hits)
@@ -93,10 +97,38 @@ namespace Wick.Sim
             {
                 StartKnockback(knockDir, knockTiles);
             }
+            else if (w.Flickers > 0 && w.KnockTiles == 0)
+            {
+                PushFromFans(at);
+            }
 
             if (flickersBefore > 0 && w.Flickers <= 0)
             {
                 Emit(SimEventType.Snuffed, 0, at, 0);
+            }
+        }
+
+        /// <summary>
+        /// Fan Maze: a blowing fan whose wind reaches Wick pushes him along it (a knockback, so it
+        /// stops before walls, crates and bell plates). The first fan by id wins. No flicker lost.
+        /// </summary>
+        private void PushFromFans(TilePos at)
+        {
+            for (int i = 0; i < _vault.ObjectCount; i++)
+            {
+                ObjectDef o = _vault.GetObject(i);
+                if (o.Type != ObjectType.Fan || !_trapActive[i])
+                {
+                    continue;
+                }
+
+                int level = _vault.LevelOf(o.Type);
+                Dir facing = FanFacing(State.Tick, o, level);
+                if (OnFanLine(o, facing, at))
+                {
+                    StartKnockback(facing, DefenceStats.FanPush(level));
+                    return;
+                }
             }
         }
 

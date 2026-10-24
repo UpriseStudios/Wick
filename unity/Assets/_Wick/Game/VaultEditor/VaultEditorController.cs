@@ -112,7 +112,7 @@ namespace Wick.Game
         /// <summary>Only Bellows (gust) and Night Owl (gaze) care which way they face.</summary>
         public static bool CanRotate(ObjectType type)
         {
-            return type == ObjectType.Bellows || type == ObjectType.NightOwl || type == ObjectType.SwingAxe;
+            return type == ObjectType.Bellows || type == ObjectType.NightOwl || type == ObjectType.SwingAxe || type == ObjectType.Fan;
         }
 
         public void Bind(EditorAssets assets, EditorView view, EditorCamera camera, EditorInput input, EditorUI ui,

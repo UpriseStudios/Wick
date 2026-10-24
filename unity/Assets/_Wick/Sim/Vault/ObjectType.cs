@@ -21,12 +21,13 @@ namespace Wick.Sim
         SwingAxe,
         MimicChest,
         SleepyTroll,
+        Fan,
     }
 
     public static class ObjectTypes
     {
         /// <summary>How many object types there are (the enum's values are 0 to Count - 1).</summary>
-        public const int Count = (int)ObjectType.SleepyTroll + 1;
+        public const int Count = (int)ObjectType.Fan + 1;
 
         public static ObjectType Parse(string name)
         {
@@ -45,6 +46,7 @@ namespace Wick.Sim
                 case "swing_axe": return ObjectType.SwingAxe;
                 case "mimic_chest": return ObjectType.MimicChest;
                 case "sleepy_troll": return ObjectType.SleepyTroll;
+                case "fan": return ObjectType.Fan;
                 default: throw new FormatException("Unknown object type '" + name + "'");
             }
         }
@@ -66,6 +68,7 @@ namespace Wick.Sim
                 case ObjectType.SwingAxe: return "swing_axe";
                 case ObjectType.MimicChest: return "mimic_chest";
                 case ObjectType.SleepyTroll: return "sleepy_troll";
+                case ObjectType.Fan: return "fan";
                 default: throw new ArgumentOutOfRangeException(nameof(type));
             }
         }
@@ -73,7 +76,7 @@ namespace Wick.Sim
         public static bool IsTimedTrap(ObjectType type)
         {
             return type == ObjectType.DripPipe || type == ObjectType.Bellows || type == ObjectType.SpikeFloor ||
-                type == ObjectType.SwingAxe;
+                type == ObjectType.SwingAxe || type == ObjectType.Fan;
         }
 
         public static bool IsTrap(ObjectType type)
@@ -102,6 +105,7 @@ namespace Wick.Sim
                 case ObjectType.Bellows: return SimTuning.GustTicks + 1;
                 case ObjectType.SpikeFloor: return SimTuning.SpikeRaisedTicks + SimTuning.SpikeWarnTicks + 1;
                 case ObjectType.SwingAxe: return 4 * SimTuning.AxeSweepTicks + 4; // its passes never overlap
+                case ObjectType.Fan: return 4 * (SimTuning.FanGustTicks + 2); // a still moment every quarter
                 default: return 0;
             }
         }

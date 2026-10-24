@@ -387,6 +387,27 @@ GOLDENS = {
         "Escaped", 80, 1, 0,
         {"GuardianAlerted": [], "FlickerLost": []},
     ),
+    "fan-push.json": raid(
+        "A fan on (4,1), cycle 120: it faces north (into the wall) for ticks 0-29, then east, south "
+        "and west a quarter each, blowing 3 tiles for the first 10 ticks of each quarter. Wick dashes "
+        "east past it to (6,1) by tick 24. At tick 30 it turns east and blows: he is pushed to (7,1) "
+        "(knockback, arriving t34); at rest in the wind again that same tick, he is pushed on to (8,1) "
+        "(t38), and the gust ends at t40. He dashes home (the fan faces south, at the wall, while he passes) and walks out "
+        "on tick 74. No flickers lost: 1 star.",
+        7117,
+        vault("v_golden_fan", [
+            "############",
+            "#E.........#",
+            "############",
+        ], [
+            {"id": 1, "type": "fan", "x": 4, "y": 1, "rot": 0, "cycle": 120},
+        ], level=7),
+        cmds((0, "Dash", "E"), (5, "Dash", "E"), (10, "Dash", "E"), (15, "Dash", "E"), (20, "Dash", "E"),
+             (40, "Dash", "W"), (45, "Dash", "W"), (50, "Dash", "W"), (55, "Dash", "W"),
+             (60, "Dash", "W"), (65, "Dash", "W"), (70, "Dash", "W")),
+        "Escaped", 75, 1, 0,
+        {"KnockedBack": [30, 34], "FlickerLost": []},
+    ),
 }
 
 

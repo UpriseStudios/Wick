@@ -17,7 +17,7 @@ namespace Wick.Sim.Tests
         private static readonly string[] Types =
         {
             "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "treasure", "brazier",
-            "swing_axe", "mimic_chest", "sleepy_troll", "crate",
+            "swing_axe", "mimic_chest", "sleepy_troll", "fan", "crate",
         };
 
         [Test]
@@ -84,7 +84,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void Corpus_CombinedHash_IsStable()
         {
-            const string expected = "deb5845f71149f9e";
+            const string expected = "5768607da932e928";
 
             var rng = new Pcg32(2026, 77);
             var combined = new Fnv1a64();
@@ -195,6 +195,7 @@ namespace Wick.Sim.Tests
                     case "bellows":
                     case "spike_floor":
                     case "swing_axe":
+                    case "fan":
                         int cycle = ObjectTypes.MinCycle(ObjectTypes.Parse(type)) + rng.NextInt(60);
                         extra = ",\"cycle\":" + cycle + ",\"offset\":" + rng.NextInt(cycle) + ",\"rot\":" + rng.NextInt(4);
                         break;
@@ -236,7 +237,7 @@ namespace Wick.Sim.Tests
             var levels = new List<string>();
             if (rng.NextInt(2) == 0)
             {
-                foreach (string type in new[] { "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "swing_axe", "mimic_chest", "sleepy_troll" })
+                foreach (string type in new[] { "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "swing_axe", "mimic_chest", "sleepy_troll", "fan" })
                 {
                     levels.Add("\"" + type + "\":" + (1 + rng.NextInt(DefenceLevels.MaxLevel)));
                 }

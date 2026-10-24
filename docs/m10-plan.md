@@ -250,6 +250,12 @@ balance simulator to tune.
   every 30 ticks after (1 flicker), and falls asleep again after 3 s undisturbed. Its tell is the
   snore. Levels wake it at a slightly dimmer light (2.3 tiles at level 5, still above a full-flame
   tiptoe); level 5's stomp also hits the 4 tiles around it.
+- **Fan Maze** (Vault Level 7, 30 points, a timed trap on a floor tile, default cycle 120): the fan
+  turns a quarter clockwise every quarter cycle, starting from its placed facing, and blows for
+  the first 10 ticks of each quarter. Wick in its wind (3 tiles, stopped by walls and crates) is
+  pushed a tile along it, as a knockback: no flicker lost, never onto a bell plate, and pushed
+  again on the tick he comes to rest if it is still blowing. The turning head is its tell. Levels
+  speed up the rotation (never below 48 ticks); level 5 pushes 2 tiles.
 
 ## Decisions (24 October 2026)
 

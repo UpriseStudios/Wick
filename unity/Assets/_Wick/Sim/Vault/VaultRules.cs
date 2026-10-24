@@ -58,6 +58,8 @@ namespace Wick.Sim
                     return 5;
                 case ObjectType.SleepyTroll:
                     return 6;
+                case ObjectType.Fan:
+                    return 7;
                 default:
                     return 1;
             }
@@ -79,6 +81,7 @@ namespace Wick.Sim
                 case ObjectType.SwingAxe: return 22;
                 case ObjectType.MimicChest: return 28;
                 case ObjectType.SleepyTroll: return 35;
+                case ObjectType.Fan: return 30;
                 default: return 0;
             }
         }

@@ -109,6 +109,7 @@ namespace Wick.Game
                 case ObjectType.SpikeFloor: return 60;
                 case ObjectType.Bellows: return 75;
                 case ObjectType.SwingAxe: return 60;
+                case ObjectType.Fan: return 120;
                 default: return 0;
             }
         }
