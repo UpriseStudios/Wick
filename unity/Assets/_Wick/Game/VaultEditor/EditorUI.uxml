@@ -22,6 +22,7 @@
                 <ui:Button name="level-down" text="-" class="tiny-button" />
                 <ui:Label name="level-label" text="Lv 1" class="level" />
                 <ui:Button name="level-up" text="+" class="tiny-button" />
+                <ui:Button name="expand" text="Expand" class="small-button" />
             </ui:VisualElement>
             <ui:VisualElement class="infobar plaque blocks-input">
                 <ui:VisualElement class="budget">

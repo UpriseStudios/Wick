@@ -34,6 +34,7 @@ namespace Wick.Game
         private readonly List<GameObject> _markers = new List<GameObject>();
         private GameObject[] _tiles;
         private PieceChoice[] _shownTiles;
+        private int _shownWidth;
         private Transform _tileRoot;
         private Transform _objectRoot;
         private Transform _markerRoot;
@@ -162,8 +163,9 @@ namespace Wick.Game
         private void BuildTiles(VaultDraft draft, HashSet<TilePos> badTiles)
         {
             int count = draft.Width * draft.Height;
-            if (_tiles == null || _tiles.Length != count)
+            if (_tiles == null || _tiles.Length != count || _shownWidth != draft.Width)
             {
+                _shownWidth = draft.Width;
                 if (_tiles != null)
                 {
                     foreach (GameObject t in _tiles)

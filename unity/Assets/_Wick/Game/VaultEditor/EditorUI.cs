@@ -91,6 +91,7 @@ namespace Wick.Game
             _root.Q<Button>("to-drafts").clicked += () => _controller.ShowDrafts();
             _root.Q<Button>("level-down").clicked += () => _controller.ChangeLevel(-1);
             _root.Q<Button>("level-up").clicked += () => _controller.ChangeLevel(1);
+            _root.Q<Button>("expand").clicked += () => _controller.Expand();
             _root.Q<Button>("issues-button").clicked += () => Show(_issuesPanel, !Visible(_issuesPanel));
             _root.Q<Button>("issues-close").clicked += () => Show(_issuesPanel, false);
             _root.Q<Button>("tab-defences").clicked += () => _controller.SetTab(EditorTab.Defences);
@@ -239,6 +240,8 @@ namespace Wick.Game
             bool defences = c.Tab == EditorTab.Defences;
             _root.Q<Label>("vault-name").text = d.Name;
             _root.Q<Label>("level-label").text = "Lv " + d.Level;
+            Show(_root.Q<Button>("expand"), d.CanExpand);
+            _root.Q<Button>("level-up").SetEnabled(d.Level < VaultEditorController.MaxDraftLevel);
 
             int points = d.BuildPoints;
             int budget = VaultRules.Budget(d.Level);

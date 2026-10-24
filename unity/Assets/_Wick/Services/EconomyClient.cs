@@ -121,9 +121,18 @@ namespace Wick.Services
             return Config;
         }
 
-        public Task<EconomyStateReply> StateAsync()
+        /// <summary>The player's Vault Level from the last economy state (1 until one arrives).</summary>
+        public static int KnownVaultLevel { get; private set; } = 1;
+
+        public async Task<EconomyStateReply> StateAsync()
         {
-            return Call<EconomyStateReply>("GetEconomyState");
+            EconomyStateReply state = await Call<EconomyStateReply>("GetEconomyState");
+            if (state != null && state.VaultLevel > 0)
+            {
+                KnownVaultLevel = state.VaultLevel;
+            }
+
+            return state;
         }
 
         public Task<EconomyReply> StartUpgradeAsync(string kind)

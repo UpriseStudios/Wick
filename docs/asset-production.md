@@ -385,6 +385,14 @@ Locked references (full feature lists are in the Art Direction pack). Model from
 - Readability: the `wiggle` must read on its own at gameplay zoom, because it's the player's only warning. Exaggerate the bottom wiggle and the tail.
 - Variants: coat colours (ginger, black, tabby) and seasonal outfits as texture and accessory swaps only.
 
+**The builder** (`char_builder`, editor cameo, M10)
+
+- Who: a little candle handyman from Wick's crew who opens up a vault when its grid grows. He walks in from the entrance, blasts a doorway through the old outer wall with a hand-held bellows, cheers and walks out. Presentation only; a tap skips him.
+- Key shapes: a short, sturdy candle in orange work overalls and a hard hat or flat cap, a stubby pencil behind the ear, and a hand-held bellows big enough to read at gameplay zoom.
+- Budget and rig: within the character range, on the shared Wick rig so the walk can be reused, with the bellows as a separate prop on a hand socket.
+- Clips: `walk_in`, `pump` (one bellows pump, played three times), `blast` (the final pump with recoil), `cheer`, `walk_out`.
+- Until his model arrives the game uses a stand-in: the Wick model tinted orange, carrying a small Bellows (`BuilderCameo`).
+
 **Tile kits** (`tile_<theme>_*`): floor, floor variant x2, wall straight, wall corner (inner and outer), door frame and door, pit edge, ice floor, entrance arch. Each exactly 1 m, all on one 1024 px atlas per theme. Generate with `tile_kit.py`, then paint the atlas.
 
 **Props** (`prop_*`): treasure pile (small, medium, large), single gold coin (for the fly-to-counter effect), wall brazier, crate, pillar, banner, torch, decoy wax drip.

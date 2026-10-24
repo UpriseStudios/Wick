@@ -55,6 +55,10 @@ namespace Wick.Game
         private bool _panning;
         private bool _testing;
         private TilePos _hoardStart;
+        private BuilderCameo _cameo;
+
+        /// <summary>Doorway tiles drawn as wall until the builder blasts them open.</summary>
+        private List<TilePos> _closedDoorway;
 
         public VaultDraft Draft { get; private set; }
         public List<VaultIssue> Issues { get; private set; } = new List<VaultIssue>();
@@ -107,6 +111,8 @@ namespace Wick.Game
         {
             Application.targetFrameRate = 60;
             _store = new DraftStore(Application.persistentDataPath);
+            _cameo = new GameObject("Builder Cameo").AddComponent<BuilderCameo>();
+            _cameo.transform.SetParent(transform, false);
         }
 
         private void OnEnable()
@@ -129,6 +135,7 @@ namespace Wick.Game
 
         public void ShowDrafts()
         {
+            _cameo.Skip();
             Draft = null;
             _ui.ShowDrafts(_store.List(), TemplateNames());
         }
@@ -154,6 +161,7 @@ namespace Wick.Game
 
         private void Open(VaultDraft draft)
         {
+            _cameo.Skip();
             Draft = draft;
             _undo.Clear();
             Tab = EditorTab.Defences;
@@ -196,9 +204,54 @@ namespace Wick.Game
             }
         }
 
+        /// <summary>
+        /// The highest Vault Level a draft can be set to: the player's own (the server refuses
+        /// anything higher), or any level in development builds for testing.
+        /// </summary>
+        public static int MaxDraftLevel => Debug.isDebugBuild ? VaultRules.MaxVaultLevel : EconomyClient.KnownVaultLevel;
+
         public void ChangeLevel(int delta)
         {
-            Edit(d => d.SetLevel(Mathf.Clamp(d.Level + delta, VaultRules.MinVaultLevel, VaultRules.MaxVaultLevel)));
+            Edit(d => d.SetLevel(Mathf.Clamp(d.Level + delta, VaultRules.MinVaultLevel, MaxDraftLevel)));
+        }
+
+        /// <summary>
+        /// Grows the draft to its Vault Level's grid, then the builder blasts a doorway into the new
+        /// space (decision B in docs/m10-plan.md). One undo step; a tap skips the cameo.
+        /// </summary>
+        public void Expand()
+        {
+            if (Draft == null || !Draft.CanExpand || _cameo.Playing)
+            {
+                return;
+            }
+
+            ExpandResult result = null;
+            ClearSelection();
+            Edit(d => (result = d.Expand()) != null);
+            if (result == null)
+            {
+                return;
+            }
+
+            _camera.Frame(Draft.Width, Draft.Height);
+            if (result.Doorway.Count < 2)
+            {
+                _ui.Toast("More room! Dig out the new space on the Rooms tab");
+                return;
+            }
+
+            TilePos wall = result.Doorway[0];
+            var room = new TilePos(2 * wall.X - result.Doorway[1].X, 2 * wall.Y - result.Doorway[1].Y);
+            _closedDoorway = result.Doorway;
+            Refresh();
+            _cameo.Play(Draft, room, wall, _assets.Registry, _assets.HoardEdge,
+                () =>
+                {
+                    _closedDoorway = null;
+                    Refresh();
+                },
+                () => _ui.Toast("More room! Dig out the new space on the Rooms tab"));
         }
 
         public void RotateSelected()
@@ -326,6 +379,12 @@ namespace Wick.Game
         {
             if (Draft == null || _testing)
             {
+                return;
+            }
+
+            if (_cameo.Playing)
+            {
+                _cameo.Skip(); // any touch skips the builder
                 return;
             }
 
@@ -581,7 +640,7 @@ namespace Wick.Game
             }
 
             Issues = VaultValidator.Validate(Draft.ToVaultDef());
-            _view.Build(Draft, Issues, new EditorView.Marks
+            _view.Build(Drawn(), Issues, new EditorView.Marks
             {
                 Selected = Selected,
                 Moving = Moving,
@@ -589,6 +648,23 @@ namespace Wick.Game
                 HoardPreview = HoardPreview,
             });
             _ui.UpdateEditor(this);
+        }
+
+        /// <summary>The draft as drawn: during the builder's walk the new doorway is still wall.</summary>
+        private VaultDraft Drawn()
+        {
+            if (_closedDoorway == null)
+            {
+                return Draft;
+            }
+
+            VaultDraft drawn = Draft.Clone();
+            foreach (TilePos p in _closedDoorway)
+            {
+                drawn.PaintTile(p, TileType.Wall);
+            }
+
+            return drawn;
         }
 
         // ---- Test and publish ---------------------------------------------------------------------
