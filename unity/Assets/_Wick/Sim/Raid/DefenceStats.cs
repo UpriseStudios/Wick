@@ -102,6 +102,12 @@ namespace Wick.Sim
             return level >= 5 ? 45 : SimTuning.MothDrainTicks;
         }
 
+        /// <summary>Swing Axe level 5: the top of the arc also catches the tile in front of it.</summary>
+        public static bool AxeWideArc(int level)
+        {
+            return level >= 5;
+        }
+
         /// <summary>Ice Tiles: sub-tile units per tick while sliding: 250, +10% a level, +15% more at level 5.</summary>
         public static int IceSlideSpeed(int level)
         {

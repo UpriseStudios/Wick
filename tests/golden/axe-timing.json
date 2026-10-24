@@ -1,0 +1,80 @@
+{
+  "_note": "A Swing Axe over (3,1), cycle 60: its blade is live there on ticks 0-5 and 30-35 of each cycle. Wick dashes to (2,1) (t4), then onto the axe's tile (his on t8, arriving t10), waits, and is caught by the return swing on tick 30. He dashes on to (4,1) inside his invulnerability, then comes back across on safe ticks (on the axe's tile t72) and walks out on tick 86 with 2 flickers: 0 stars, no loot.",
+  "simVersion": 4,
+  "seed": 4404,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_axe",
+    "version": 1,
+    "vaultLevel": 4,
+    "theme": "crypt",
+    "grid": {
+      "w": 7,
+      "h": 3
+    },
+    "_map": [
+      "#######",
+      "#E....#",
+      "#######"
+    ],
+    "tiles": "AQEBAQEBAQEAAAAAAAEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "swing_axe",
+        "x": 3,
+        "y": 1,
+        "rot": 1,
+        "cycle": 60
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 6,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 31,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 70,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 76,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 82,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 87,
+    "stars": 0,
+    "loot": 0,
+    "hash": "526cf50120b1807f"
+  },
+  "expectedEvents": {
+    "FlickerLost": [
+      30
+    ]
+  }
+}

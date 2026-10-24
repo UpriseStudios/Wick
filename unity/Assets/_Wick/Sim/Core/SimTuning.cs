@@ -63,6 +63,9 @@ namespace Wick.Sim
         /// <summary>The dimmest a gust can make a lit flame.</summary>
         public const int MinLightRadius = SubTile.PerTile / 2;
 
+        /// <summary>Each pass of a Swing Axe's blade over a tile is live for this many ticks.</summary>
+        public const int AxeSweepTicks = 6;
+
         /// <summary>Spike Floor is raised (damaging) while phase is below this.</summary>
         public const int SpikeRaisedTicks = 20;
 

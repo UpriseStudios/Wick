@@ -49,6 +49,10 @@ namespace Wick.Sim
                         hits = _trapActive[i] && o.Pos == at;
                         break;
 
+                    case ObjectType.SwingAxe:
+                        hits = AxeHits(State.Tick, o, _vault.LevelOf(o.Type), at);
+                        break;
+
                     case ObjectType.Bellows:
                         hits = _trapActive[i] && OnGustLine(o, at);
                         if (hits)

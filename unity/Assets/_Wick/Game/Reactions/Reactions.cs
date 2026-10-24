@@ -24,6 +24,7 @@ namespace Wick.Game
                 {
                     case ObjectType.DripPipe:
                     case ObjectType.SpikeFloor:
+                    case ObjectType.SwingAxe:
                         if (RaidSim.IsTrapActive(shownTick, o, vault.LevelOf(o.Type)))
                         {
                             nearest = Mathf.Min(nearest, Distance(at, o.Pos));

@@ -17,12 +17,14 @@ namespace Wick.Sim
 
         /// <summary>Ice is painted as tiles, never placed as an object; this type carries its cost, unlock and upgrade level.</summary>
         IceTiles,
+
+        SwingAxe,
     }
 
     public static class ObjectTypes
     {
         /// <summary>How many object types there are (the enum's values are 0 to Count - 1).</summary>
-        public const int Count = (int)ObjectType.IceTiles + 1;
+        public const int Count = (int)ObjectType.SwingAxe + 1;
 
         public static ObjectType Parse(string name)
         {
@@ -38,6 +40,7 @@ namespace Wick.Sim
                 case "brazier": return ObjectType.Brazier;
                 case "crate": return ObjectType.Crate;
                 case "ice_tiles": return ObjectType.IceTiles;
+                case "swing_axe": return ObjectType.SwingAxe;
                 default: throw new FormatException("Unknown object type '" + name + "'");
             }
         }
@@ -56,13 +59,15 @@ namespace Wick.Sim
                 case ObjectType.Brazier: return "brazier";
                 case ObjectType.Crate: return "crate";
                 case ObjectType.IceTiles: return "ice_tiles";
+                case ObjectType.SwingAxe: return "swing_axe";
                 default: throw new ArgumentOutOfRangeException(nameof(type));
             }
         }
 
         public static bool IsTimedTrap(ObjectType type)
         {
-            return type == ObjectType.DripPipe || type == ObjectType.Bellows || type == ObjectType.SpikeFloor;
+            return type == ObjectType.DripPipe || type == ObjectType.Bellows || type == ObjectType.SpikeFloor ||
+                type == ObjectType.SwingAxe;
         }
 
         public static bool IsTrap(ObjectType type)
@@ -89,6 +94,7 @@ namespace Wick.Sim
                 case ObjectType.DripPipe: return SimTuning.DripWindowTicks + 1;
                 case ObjectType.Bellows: return SimTuning.GustTicks + 1;
                 case ObjectType.SpikeFloor: return SimTuning.SpikeRaisedTicks + SimTuning.SpikeWarnTicks + 1;
+                case ObjectType.SwingAxe: return 4 * SimTuning.AxeSweepTicks + 4; // its passes never overlap
                 default: return 0;
             }
         }

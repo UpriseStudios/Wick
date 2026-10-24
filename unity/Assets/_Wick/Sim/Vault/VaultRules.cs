@@ -52,6 +52,8 @@ namespace Wick.Sim
                 case ObjectType.WaxMoths:
                 case ObjectType.IceTiles:
                     return 3;
+                case ObjectType.SwingAxe:
+                    return 4;
                 default:
                     return 1;
             }
@@ -70,6 +72,7 @@ namespace Wick.Sim
                 case ObjectType.NightOwl: return 30;
                 case ObjectType.WaxMoths: return 25;
                 case ObjectType.IceTiles: return 3; // per tile
+                case ObjectType.SwingAxe: return 22;
                 default: return 0;
             }
         }

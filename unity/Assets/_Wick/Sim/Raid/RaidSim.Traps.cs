@@ -22,8 +22,34 @@ namespace Wick.Sim
                 case ObjectType.DripPipe: return phase < SimTuning.DripWindowTicks;
                 case ObjectType.Bellows: return phase < SimTuning.GustTicks;
                 case ObjectType.SpikeFloor: return phase < SimTuning.SpikeRaisedTicks;
+                case ObjectType.SwingAxe: return AxeOverCentre(phase, DefenceStats.Cycle(trap, level));
                 default: return false;
             }
+        }
+
+        /// <summary>
+        /// A Swing Axe's blade passes over its own tile twice a cycle: on the downswing (phase 0)
+        /// and on the return (half a cycle later).
+        /// </summary>
+        private static bool AxeOverCentre(int phase, int cycle)
+        {
+            int half = cycle / 2;
+            return phase < SimTuning.AxeSweepTicks || (phase >= half && phase < half + SimTuning.AxeSweepTicks);
+        }
+
+        /// <summary>Whether a Swing Axe's blade is over tile p this tick (level 5 reaches the tile in front at the top of the arc).</summary>
+        public static bool AxeHits(int tick, ObjectDef axe, int level, TilePos p)
+        {
+            int cycle = DefenceStats.Cycle(axe, level);
+            int phase = Phase(tick, axe, level);
+            if (p == axe.Pos)
+            {
+                return AxeOverCentre(phase, cycle);
+            }
+
+            int quarter = cycle / 4;
+            return DefenceStats.AxeWideArc(level) && p == axe.Pos.Step(axe.Facing) &&
+                phase >= quarter && phase < quarter + SimTuning.AxeSweepTicks;
         }
 
         /// <summary>
@@ -132,7 +158,8 @@ namespace Wick.Sim
                     Emit(SimEventType.TrapWarning, o.Id, o.Pos, 0);
                 }
 
-                if (phase == 0)
+                bool swing = o.Type == ObjectType.SwingAxe && phase == DefenceStats.Cycle(o, level) / 2;
+                if (phase == 0 || swing)
                 {
                     Emit(SimEventType.TrapFired, o.Id, o.Pos, 0);
                     if (IsNearMiss(o, wick))
@@ -145,6 +172,11 @@ namespace Wick.Sim
 
         private bool HitsTile(ObjectDef trap, TilePos p)
         {
+            if (trap.Type == ObjectType.SwingAxe)
+            {
+                return trap.Pos == p || (DefenceStats.AxeWideArc(_vault.LevelOf(trap.Type)) && trap.Pos.Step(trap.Facing) == p);
+            }
+
             return trap.Type == ObjectType.Bellows ? OnGustLine(trap, p) : trap.Pos == p;
         }
 

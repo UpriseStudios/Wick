@@ -234,6 +234,11 @@ balance simulator to tune.
   blocked or the ice ends. He can't turn mid-slide; swipes queue until he stops. Guardians don't
   slide. Levels add 10% slide speed each (15% more at level 5); level 5 also dims his flame like a
   gust while he slides.
+- **Swing Axe** (Vault Level 4, 22 points, a timed trap on a floor tile, default cycle 60): its
+  blade passes over its own tile twice a cycle, on the downswing (phase 0) and the return (half a
+  cycle later), live for 6 ticks each time and costing 1 flicker. The swing is always visible, so
+  it is its own tell. Levels shorten the cycle (never below 28 ticks, so passes never overlap);
+  level 5 also catches the tile in front of it at the top of the arc (a quarter cycle in).
 
 ## Decisions (24 October 2026)
 

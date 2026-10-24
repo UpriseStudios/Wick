@@ -24,3 +24,4 @@ MonoBehaviour:
   Treasure: {fileID: 2438203664810324245, guid: f8f57b46b380f374981db978b5225cef, type: 3}
   Brazier: {fileID: 4118861246496309372, guid: 5b95f15e73cd2ca4cb26062bfb40debd, type: 3}
   Crate: {fileID: 6069799502491572862, guid: bd2b025948eb49340b7d14be6d6b8068, type: 3}
+  SwingAxe: {fileID: 2526044523149217946, guid: bcb0bde44b552904485ee02f4e4c5541, type: 3}

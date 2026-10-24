@@ -28,6 +28,9 @@ namespace Wick.Game
         public GameObject Brazier;
         public GameObject Crate;
 
+        [Header("Objects (M10, stand-ins until phase 2 art)")]
+        public GameObject SwingAxe;
+
         public GameObject ForObject(ObjectType type)
         {
             switch (type)
@@ -41,6 +44,7 @@ namespace Wick.Game
                 case ObjectType.Treasure: return Treasure;
                 case ObjectType.Brazier: return Brazier;
                 case ObjectType.Crate: return Crate;
+                case ObjectType.SwingAxe: return SwingAxe;
                 default: return null;
             }
         }

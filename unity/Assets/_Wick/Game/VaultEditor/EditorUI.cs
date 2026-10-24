@@ -28,7 +28,7 @@ namespace Wick.Game
         private static readonly ObjectType[] ShopItems =
         {
             ObjectType.Treasure, ObjectType.DripPipe, ObjectType.SpikeFloor, ObjectType.Bellows, ObjectType.Crate,
-            ObjectType.Brazier, ObjectType.SnufferBell, ObjectType.NightOwl, ObjectType.WaxMoths,
+            ObjectType.Brazier, ObjectType.SnufferBell, ObjectType.NightOwl, ObjectType.WaxMoths, ObjectType.SwingAxe,
         };
 
         private VisualElement _root;
@@ -61,6 +61,8 @@ namespace Wick.Game
                 case ObjectType.SnufferBell: return "Snuffer Bell";
                 case ObjectType.NightOwl: return "Night Owl";
                 case ObjectType.WaxMoths: return "Wax Moths";
+                case ObjectType.IceTiles: return "Ice Tiles";
+                case ObjectType.SwingAxe: return "Swing Axe";
                 default: return type.ToString();
             }
         }

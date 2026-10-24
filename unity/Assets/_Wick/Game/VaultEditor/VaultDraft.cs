@@ -108,6 +108,7 @@ namespace Wick.Game
                 case ObjectType.DripPipe: return 45;
                 case ObjectType.SpikeFloor: return 60;
                 case ObjectType.Bellows: return 75;
+                case ObjectType.SwingAxe: return 60;
                 default: return 0;
             }
         }

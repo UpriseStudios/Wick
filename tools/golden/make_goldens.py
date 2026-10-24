@@ -333,6 +333,25 @@ GOLDENS = {
         "Escaped", 37, 1, 0,
         {"FlickerLost": []},
     ),
+    "axe-timing.json": raid(
+        "A Swing Axe over (3,1), cycle 60: its blade is live there on ticks 0-5 and 30-35 of each "
+        "cycle. Wick dashes to (2,1) (t4), then onto the axe's tile (his on t8, arriving t10), "
+        "waits, and is caught by the return swing on tick 30. He dashes on to (4,1) inside his "
+        "invulnerability, then comes back across on safe ticks (on the axe's tile t72) and walks "
+        "out on tick 86 with 2 flickers: 0 stars, no loot.",
+        4404,
+        vault("v_golden_axe", [
+            "#######",
+            "#E....#",
+            "#######",
+        ], [
+            {"id": 1, "type": "swing_axe", "x": 3, "y": 1, "rot": 1, "cycle": 60},
+        ], level=4),
+        cmds((0, "Dash", "E"), (6, "Dash", "E"), (31, "Dash", "E"),
+             (70, "Dash", "W"), (76, "Dash", "W"), (82, "Dash", "W")),
+        "Escaped", 87, 0, 0,
+        {"FlickerLost": [30]},
+    ),
 }
 
 
