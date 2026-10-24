@@ -7,8 +7,8 @@ Outputs, all the same document:
   (Cloud Code embeds that same file as its fallback)
   server/remote-config/economy.rc                            deploy with: ugs deploy server/remote-config
 
-Fairness: every grant is currency, cosmetics, time or workshop slots. Nothing here is read by
-RaidSim. The only thing that will change a raid value is the Lantern (light radius), and each
+Fairness: every grant is currency, cosmetics, time or workshop slots. RaidSim reads only the raid
+length per Vault Level, which is the same for everyone at that level. The only thing that will change a raid value is the Lantern (light radius), and each
 Lantern level needs a Vault Level, which needs raid stars, so paying only gets there sooner.
 """
 import json
@@ -29,6 +29,10 @@ VAULT_LEVELS = [
     (9, 35_000, 1_440, 285),
     (10, 50_000, 2_160, 365),
 ]
+
+# Raid length in seconds by the defender's Vault Level (1 to 10). 60 s everywhere until the M10
+# fairness test decides whether bigger vaults get longer (docs/m10-plan.md, B3).
+RAID_SECONDS = [60] * 10
 
 # Lantern: a slightly bigger light radius per level (raid effect wired in M10). Each level needs a
 # Vault Level, so the most anyone can have at a given Vault Level is the same for everyone.
@@ -75,6 +79,7 @@ ECONOMY = {
         "waxPerStar": 10,
         "shieldMinutes": 120,
     },
+    "raid": {"secondsByLevel": RAID_SECONDS},
     "vaultLevels": [{"level": l, "gold": g, "minutes": m, "stars": s} for (l, g, m, s) in VAULT_LEVELS],
     "lantern": [{"level": l, "wax": w, "minutes": m, "minVaultLevel": v, "lightBonus": b} for (l, w, m, v, b) in LANTERN],
     "workshops": {"base": 1, "max": 3},

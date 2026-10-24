@@ -1,7 +1,9 @@
 {
     "name": "Wick.Economy",
     "rootNamespace": "Wick.Economy",
-    "references": [],
+    "references": [
+        "Wick.Sim"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

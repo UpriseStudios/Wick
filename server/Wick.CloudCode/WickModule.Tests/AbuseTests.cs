@@ -47,8 +47,8 @@ namespace Wick.CloudCode.Tests
             InputLog human = Players.UpAndBack(vault, TestVaults.Seed, false);
             var token = new RaidToken { Difficulty = 0, ClearTicks = 0 };
 
-            RaidAnalysis botRun = RaidAnalysis.Run(vault, TestVaults.Seed, bot);
-            RaidAnalysis humanRun = RaidAnalysis.Run(vault, TestVaults.Seed, human);
+            RaidAnalysis botRun = RaidAnalysis.Run(vault, TestVaults.Seed, bot, RaidParams.Default);
+            RaidAnalysis humanRun = RaidAnalysis.Run(vault, TestVaults.Seed, human, RaidParams.Default);
             int botScore = AnomalyScore.Score(botRun, token);
             int humanScore = AnomalyScore.Score(humanRun, token);
 

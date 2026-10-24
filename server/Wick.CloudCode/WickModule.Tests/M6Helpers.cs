@@ -53,7 +53,7 @@ namespace Wick.CloudCode.Tests
         public async Task<SubmitResult> Raid(string raider, RaidStartResult start, InputLog log, string requestId = null)
         {
             Assert.IsTrue(start.Ok, start.Reason);
-            RaidResult r = RaidRunner.RunToEnd(VaultJson.Parse(start.Vault), start.Seed, log);
+            RaidResult r = RaidRunner.RunToEnd(VaultJson.Parse(start.Vault), start.Seed, log, new RaidParams(start.RaidTicks));
             Clock.Advance(r.Ticks * 1000L / SimTuning.TicksPerSecond + 1000);
             return await Raids.SubmitRaidAsync(raider, requestId ?? NextRequest(), start.Token, log.ToBase64(),
                 new RaidClaim { Stars = r.Stars, Loot = r.Loot, Hash = r.HashHex });

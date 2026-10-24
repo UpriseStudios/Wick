@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Wick.Economy;
 using Wick.Sim;
 
 namespace Wick.CloudCode
@@ -12,11 +13,13 @@ namespace Wick.CloudCode
     {
         private readonly IGameStore _store;
         private readonly IClock _clock;
+        private readonly IEconomySource _economy;
 
-        public PublishService(IGameStore store, IClock clock)
+        public PublishService(IGameStore store, IClock clock, IEconomySource economy = null)
         {
             _store = store;
             _clock = clock;
+            _economy = economy ?? new FixedEconomy();
         }
 
         public async Task<PublishResult> PublishAsync(string playerId, string requestId, string document)
@@ -29,7 +32,8 @@ namespace Wick.CloudCode
             // A vault can be built up to the level the player has raised (upgrades, star-gated).
             var levels = await _store.GetProtectedAsync(playerId, new[] { EconomyKeys.Upgrades });
             int vaultLevel = Upgrades.Read(levels.TryGetValue(EconomyKeys.Upgrades, out StoredItem u) ? u.Json : null, _clock.NowMs).Levels.VaultLevel;
-            VaultCheck.Passed passed = VaultCheck.Check(document, vaultLevel, out PublishResult fail);
+            EconomyConfig cfg = await _economy.GetAsync();
+            VaultCheck.Passed passed = VaultCheck.Check(document, vaultLevel, cfg.Raid, out PublishResult fail);
             if (passed == null)
             {
                 return fail;

@@ -36,7 +36,7 @@ namespace Wick.CloudCode.Tests
         /// <summary>What an unmodified client would claim after playing this log.</summary>
         private static RaidClaim Honest(RaidStartResult start, InputLog log)
         {
-            RaidResult r = RaidRunner.RunToEnd(VaultJson.Parse(start.Vault), start.Seed, log);
+            RaidResult r = RaidRunner.RunToEnd(VaultJson.Parse(start.Vault), start.Seed, log, new RaidParams(start.RaidTicks));
             return new RaidClaim { Stars = r.Stars, Loot = r.Loot, Hash = r.HashHex };
         }
 

@@ -25,10 +25,10 @@ namespace Wick.CloudCode
         /// <summary>Of those, moves on the tick that trap turned safe, or the tick after.</summary>
         public int InputsOnSafeFrame { get; private set; }
 
-        public static RaidAnalysis Run(VaultDef vault, int seed, InputLog log)
+        public static RaidAnalysis Run(VaultDef vault, int seed, InputLog log, RaidParams raidParams)
         {
             var a = new RaidAnalysis();
-            var sim = new RaidSim(vault, seed, log);
+            var sim = new RaidSim(vault, seed, log, raidParams);
             int next = 0;
             int lastHit = 0;
             int snuffer = 0;

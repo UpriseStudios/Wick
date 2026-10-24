@@ -200,6 +200,7 @@ namespace Wick.CloudCode
                 RaiderId = r.RaiderId,
                 Code = r.Code,
                 SimVersion = r.SimVersion,
+                RaidTicks = r.RaidTicks,
                 Vault = r.Vault,
                 Seed = r.Seed,
                 Log = r.Log,
@@ -242,7 +243,8 @@ namespace Wick.CloudCode
                 return new SeedResult { Ok = false, Reason = "Bad seed vault name" };
             }
 
-            VaultCheck.Passed passed = VaultCheck.Check(document, VaultRules.MaxVaultLevel, out PublishResult fail);
+            EconomyConfig cfg = await _economy.GetAsync();
+            VaultCheck.Passed passed = VaultCheck.Check(document, VaultRules.MaxVaultLevel, cfg.Raid, out PublishResult fail);
             if (passed == null)
             {
                 return new SeedResult { Ok = false, Reason = fail.Reason, Issues = fail.Issues };

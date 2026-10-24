@@ -34,6 +34,10 @@ namespace Wick.Services
         public string VaultId;
         public int VaultVersion;
         public string Vault;
+
+        /// <summary>How long the raid lasts in sim ticks; 0 from a server older than M10 (60 s).</summary>
+        public int RaidTicks;
+
         public long ExpiresAtMs;
     }
 
@@ -99,6 +103,7 @@ namespace Wick.Services
         public int SimVersion;
         public string Vault;
         public int Seed;
+        public int RaidTicks;
         public string Log;
         public string Hash;
         public string Outcome;

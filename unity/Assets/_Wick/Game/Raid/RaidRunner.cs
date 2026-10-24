@@ -41,6 +41,9 @@ namespace Wick.Game
         public VaultDef Vault { get; private set; }
         public int Seed { get; private set; }
 
+        /// <summary>The loaded raid's settings (its length), from the raid token or replay record.</summary>
+        public RaidParams Params { get; private set; } = RaidParams.Default;
+
         public RaidSnapshot Previous { get; private set; } = new RaidSnapshot();
         public RaidSnapshot Current { get; private set; } = new RaidSnapshot();
 
@@ -67,18 +70,20 @@ namespace Wick.Game
         public bool ManualClock { get; set; }
 
         /// <summary>Loads a raid for the player, paused for the scout flyover.</summary>
-        public void LoadLive(VaultDef vault, int seed)
+        public void LoadLive(VaultDef vault, int seed, RaidParams? raidParams = null)
         {
             _replayLog = null;
-            Load(new RaidSim(vault, seed), vault, seed, RaidMode.Scout);
+            Params = raidParams ?? RaidParams.Default;
+            Load(new RaidSim(vault, seed, InputLog.Empty, Params), vault, seed, RaidMode.Scout);
         }
 
         /// <summary>Loads a recorded raid; it starts playing straight away.</summary>
-        public void LoadReplay(VaultDef vault, int seed, InputLog log)
+        public void LoadReplay(VaultDef vault, int seed, InputLog log, RaidParams? raidParams = null)
         {
             _replayLog = log;
             Paused = false;
-            Load(new RaidSim(vault, seed, log), vault, seed, RaidMode.Replay);
+            Params = raidParams ?? RaidParams.Default;
+            Load(new RaidSim(vault, seed, log, Params), vault, seed, RaidMode.Replay);
         }
 
         /// <summary>
@@ -93,7 +98,7 @@ namespace Wick.Game
                 return;
             }
 
-            var sim = new RaidSim(Vault, Seed, _replayLog);
+            var sim = new RaidSim(Vault, Seed, _replayLog, Params);
             while (!sim.IsOver && sim.State.Tick < tick)
             {
                 sim.Step();

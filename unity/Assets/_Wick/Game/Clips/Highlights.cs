@@ -78,7 +78,8 @@ namespace Wick.Game
         /// A raid shorter than 10 s is shown whole.
         /// </summary>
         /// <param name="endTick">The tick the raid ended on.</param>
-        public static ClipWindow Pick(IReadOnlyList<TimedEvent> events, int endTick, Outcome outcome, int bigTreasure)
+        public static ClipWindow Pick(IReadOnlyList<TimedEvent> events, int endTick, Outcome outcome, int bigTreasure,
+            int raidTicks = SimTuning.RaidTicks)
         {
             var scored = new List<(int Tick, int Score)>();
             foreach (TimedEvent t in events)
@@ -90,7 +91,7 @@ namespace Wick.Game
                 }
             }
 
-            if (outcome == Outcome.Escaped && endTick >= SimTuning.RaidTicks - LastSecondTicks)
+            if (outcome == Outcome.Escaped && endTick >= raidTicks - LastSecondTicks)
             {
                 scored.Add((endTick, LastSecondEscapeScore));
             }
@@ -160,10 +161,11 @@ namespace Wick.Game
         }
 
         /// <summary>Re-simulates a raid and keeps its events with their ticks (milliseconds).</summary>
-        public static List<TimedEvent> Collect(VaultDef vault, int seed, InputLog log, out RaidResult result)
+        public static List<TimedEvent> Collect(VaultDef vault, int seed, InputLog log, out RaidResult result,
+            RaidParams? raidParams = null)
         {
             var events = new List<TimedEvent>();
-            var sim = new RaidSim(vault, seed, log);
+            var sim = new RaidSim(vault, seed, log, raidParams ?? RaidParams.Default);
             while (!sim.IsOver)
             {
                 int tick = sim.State.Tick;

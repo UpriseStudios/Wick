@@ -34,6 +34,9 @@ namespace Wick.CloudCode
         /// <summary>The vault to play (VaultJson, without the owner's clear-check).</summary>
         public string Vault { get; set; }
 
+        /// <summary>How long the raid lasts, in sim ticks.</summary>
+        public int RaidTicks { get; set; }
+
         public long ExpiresAtMs { get; set; }
 
         public static RaidStartResult Fail(string reason)
@@ -100,6 +103,7 @@ namespace Wick.CloudCode
         public int SimVersion { get; set; }
         public string Vault { get; set; }
         public int Seed { get; set; }
+        public int RaidTicks { get; set; }
         public string Log { get; set; }
         public string Hash { get; set; }
         public string Outcome { get; set; }

@@ -206,6 +206,13 @@ namespace Wick.CloudCode
         public int Difficulty { get; set; }
         public int ClearTicks { get; set; }
         public int Seed { get; set; }
+
+        /// <summary>The sim version the raid was issued under; a submit under another is voided.</summary>
+        public int SimVersion { get; set; }
+
+        /// <summary>How long the raid lasts in sim ticks, from Remote Config for the defender's Vault Level.</summary>
+        public int RaidTicks { get; set; }
+
         public long IssuedAtMs { get; set; }
         public long ExpiresAtMs { get; set; }
         public bool Used { get; set; }

@@ -161,6 +161,7 @@ namespace Wick.CloudCode
         private async Task<RaidStartResult> IssueAsync(string playerId, MatchEntry target, string kind, string platform, string integrityToken)
         {
             IntegrityVerdict verdict = await _integrity.VerifyAsync(playerId, platform, integrityToken);
+            EconomyConfig cfg = await _economy.GetAsync();
             long now = _clock.NowMs;
             var token = new RaidToken
             {
@@ -176,6 +177,8 @@ namespace Wick.CloudCode
                 Difficulty = target.Difficulty,
                 ClearTicks = target.ClearTicks,
                 Seed = _random.NextSeed(),
+                SimVersion = SimInfo.Version,
+                RaidTicks = cfg.Raid.TicksFor(target.VaultLevel),
                 IssuedAtMs = now,
                 ExpiresAtMs = now + Rules.TokenLifetimeMs,
                 Vault = target.Vault,
@@ -232,6 +235,7 @@ namespace Wick.CloudCode
                 VaultId = token.VaultId,
                 VaultVersion = token.VaultVersion,
                 Vault = token.Vault,
+                RaidTicks = token.RaidTicks,
                 ExpiresAtMs = token.ExpiresAtMs,
             };
         }
@@ -302,6 +306,18 @@ namespace Wick.CloudCode
                     if (now > token.ExpiresAtMs)
                     {
                         return new Plan<SubmitResult>(SubmitResult.Rejected("The raid token expired"));
+                    }
+
+                    if (token.SimVersion != SimInfo.Version)
+                    {
+                        // The game updated mid-raid. The old rules aren't kept on the server (that
+                        // would fork sim code), so the raid is voided and its raid-limit slot returned.
+                        book.Tokens.Remove(token);
+                        book.IssuedAtMs.Remove(token.IssuedAtMs);
+                        SubmitResult voided = SubmitResult.Rejected("The game updated during your raid, so it doesn't count. Raid again any time");
+                        return new Plan<SubmitResult>(voided)
+                            .Write(Keys.RaidTokens, Json.Write(book))
+                            .Write(Keys.Idempotency, Idempotency.Add(s, requestId, voided));
                     }
 
                     token.Used = true; // single use, whatever the verdict
@@ -450,7 +466,7 @@ namespace Wick.CloudCode
                 return SubmitResult.Rejected("The raid log couldn't be read");
             }
 
-            analysis = RaidAnalysis.Run(VaultJson.Parse(token.Vault), token.Seed, inputs);
+            analysis = RaidAnalysis.Run(VaultJson.Parse(token.Vault), token.Seed, inputs, ParamsOf(token));
             RaidResult run = analysis.Result;
             var result = new SubmitResult
             {
@@ -479,6 +495,12 @@ namespace Wick.CloudCode
             return result;
         }
 
+        /// <summary>The raid settings a token was issued with (tokens from before M10 had none: 60 s).</summary>
+        public static RaidParams ParamsOf(RaidToken token)
+        {
+            return token.RaidTicks == 0 ? RaidParams.Default : new RaidParams(token.RaidTicks);
+        }
+
         /// <summary>The submitted raid, kept server-only for the defence log's replays.</summary>
         private async Task SaveRecordAsync(string playerId, RaidToken token, string log, RaidClaim claim, SubmitResult verdict,
             RaidAnalysis analysis, int score)
@@ -494,6 +516,7 @@ namespace Wick.CloudCode
                 RaiderId = playerId,
                 Seed = token.Seed,
                 SimVersion = SimInfo.Version,
+                RaidTicks = token.RaidTicks,
                 Vault = token.Vault,
                 Log = log,
                 Claimed = claim,
@@ -530,6 +553,7 @@ namespace Wick.CloudCode
         public string RaiderId { get; set; }
         public int Seed { get; set; }
         public int SimVersion { get; set; }
+        public int RaidTicks { get; set; }
         public string Vault { get; set; }
         public string Log { get; set; }
         public RaidClaim Claimed { get; set; }

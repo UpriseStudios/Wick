@@ -606,6 +606,7 @@ namespace Wick.Game
             RaidLaunch.Begin(new RaidLaunch.Request
             {
                 Vault = vault,
+                Params = new RaidParams(EconomyClient.Config.Raid.TicksFor(Draft.Level)),
                 RunFinished = OnTestRun,
                 Done = () => StartCoroutine(ReturnFromTest()),
             });
@@ -638,7 +639,7 @@ namespace Wick.Game
             RaidResult r = report.Result;
             if (r.Outcome == Outcome.Escaped && r.Stars >= 1)
             {
-                Draft.ClearCheck = ClearCheck.FromRun(report.Vault, report.Seed, report.Log, r);
+                Draft.ClearCheck = ClearCheck.FromRun(report.Vault, report.Seed, report.Log, r, report.Params);
                 _store.Save(Draft);
                 _ui.Toast("Clear-check passed: " + r.Stars + " star" + (r.Stars == 1 ? "" : "s"));
             }

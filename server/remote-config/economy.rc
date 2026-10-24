@@ -11,6 +11,20 @@
         "waxPerStar": 10,
         "shieldMinutes": 120
       },
+      "raid": {
+        "secondsByLevel": [
+          60,
+          60,
+          60,
+          60,
+          60,
+          60,
+          60,
+          60,
+          60,
+          60
+        ]
+      },
       "vaultLevels": [
         {
           "level": 2,

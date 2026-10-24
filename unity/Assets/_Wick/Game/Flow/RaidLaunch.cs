@@ -10,13 +10,15 @@ namespace Wick.Game
         public readonly int Seed;
         public readonly InputLog Log;
         public readonly RaidResult Result;
+        public readonly RaidParams Params;
 
-        public RaidRunReport(VaultDef vault, int seed, InputLog log, RaidResult result)
+        public RaidRunReport(VaultDef vault, int seed, InputLog log, RaidResult result, RaidParams raidParams)
         {
             Vault = vault;
             Seed = seed;
             Log = log;
             Result = result;
+            Params = raidParams;
         }
     }
 
@@ -29,6 +31,9 @@ namespace Wick.Game
         public sealed class Request
         {
             public VaultDef Vault;
+
+            /// <summary>The raid length raiders get at the vault's level, so a test run proves the real thing.</summary>
+            public RaidParams Params = RaidParams.Default;
 
             /// <summary>Called after every finished run (Retry gives several).</summary>
             public Action<RaidRunReport> RunFinished;

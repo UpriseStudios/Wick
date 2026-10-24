@@ -55,7 +55,7 @@ namespace Wick.CloudCode
         [CloudCodeFunction("PublishVault")]
         public Task<PublishResult> PublishVault(IExecutionContext context, string requestId, string vault)
         {
-            return new PublishService(Store(context), _clock).PublishAsync(context.PlayerId, requestId, vault);
+            return new PublishService(Store(context), _clock, Economy(context)).PublishAsync(context.PlayerId, requestId, vault);
         }
 
         // ---- Economy (M8) -------------------------------------------------------------------

@@ -45,6 +45,7 @@ namespace Wick.Game
         private VaultDef _lastVault;
         private int _lastSeed;
         private InputLog _lastLog;
+        private RaidParams _lastParams = RaidParams.Default;
         private string _lastCode;
         private string _clipPath;
         private ClipRenderer _clips;
@@ -439,7 +440,7 @@ namespace Wick.Game
         private void StartLaunched()
         {
             _replaying = null;
-            _runner.LoadLive(_launched.Vault, _seeds.Next());
+            _runner.LoadLive(_launched.Vault, _seeds.Next(), _launched.Params);
             BeginScout("TEST RAID");
         }
 
@@ -520,7 +521,7 @@ namespace Wick.Game
                 _serverBanner = banner;
                 _serverRaid = reply;
                 _ui.SetMenuLabel("Home");
-                _runner.LoadLive(VaultJson.Parse(reply.Vault), reply.Seed);
+                _runner.LoadLive(VaultJson.Parse(reply.Vault), reply.Seed, ParamsFor(reply.RaidTicks));
                 BeginScout(banner);
             }
             catch (Exception e)
@@ -592,10 +593,18 @@ namespace Wick.Game
                     return;
                 }
 
+                if (replay.SimVersion != SimInfo.Version)
+                {
+                    // Raids are re-simulated to replay them, and this one ran under older rules.
+                    ShowPicker();
+                    _ui.ShowPickerMessage("That raid was played on an older version of the game, so it can't be replayed.");
+                    return;
+                }
+
                 ClearModes();
                 _serverReplay = replay;
                 _ui.SetMenuLabel("Raids on your vault");
-                _runner.LoadReplay(VaultJson.Parse(replay.Vault), replay.Seed, InputLog.FromBase64(replay.Log));
+                _runner.LoadReplay(VaultJson.Parse(replay.Vault), replay.Seed, InputLog.FromBase64(replay.Log), ParamsFor(replay.RaidTicks));
                 _camera.EndScout();
                 _ui.ShowReplayHud("REPLAY", replay.Ticks);
                 _lastCode = replay.Code;
@@ -608,11 +617,17 @@ namespace Wick.Game
             }
         }
 
+        /// <summary>A server's raid length; 0 comes from a server older than M10 and means 60 s.</summary>
+        private static RaidParams ParamsFor(int raidTicks)
+        {
+            return raidTicks == 0 ? RaidParams.Default : new RaidParams(raidTicks);
+        }
+
         private void StartGolden(int index)
         {
             ClearModes();
             _replaying = RaidFile.Parse(_goldens[index].text);
-            _runner.LoadReplay(_replaying.Vault, _replaying.Seed, _replaying.Log);
+            _runner.LoadReplay(_replaying.Vault, _replaying.Seed, _replaying.Log, _replaying.Params);
             _camera.EndScout();
             _ui.ShowReplayHud("REPLAY " + _goldens[index].name, _replaying.ExpectedTicks);
         }
@@ -725,6 +740,7 @@ namespace Wick.Game
             _lastVault = runner.Vault;
             _lastSeed = runner.Seed;
             _lastLog = runner.Sim.RecordedLog;
+            _lastParams = runner.Params;
             _lastCode = _serverRaid?.Code ?? (_serverReplay != null ? _lastCode : null);
             _clipPath = null;
             string live = result.HashHex;
@@ -748,11 +764,11 @@ namespace Wick.Game
 
             if (_launched != null)
             {
-                RaidLaunch.ReportRun(new RaidRunReport(runner.Vault, runner.Seed, runner.Sim.RecordedLog, result));
+                RaidLaunch.ReportRun(new RaidRunReport(runner.Vault, runner.Seed, runner.Sim.RecordedLog, result, runner.Params));
             }
 
             // Replay the recorded log headlessly: it must give the same hash as the live run.
-            RaidResult replay = Sim.RaidRunner.RunToEnd(runner.Vault, runner.Seed, runner.Sim.RecordedLog);
+            RaidResult replay = Sim.RaidRunner.RunToEnd(runner.Vault, runner.Seed, runner.Sim.RecordedLog, runner.Params);
             _ui.ShowResults(result, live, replay.HashHex, replay.FinalHash == result.FinalHash);
             _ui.SetShare(true, _lastCode != null, null);
 
@@ -793,7 +809,7 @@ namespace Wick.Game
             _ui.SetShare(false, _lastCode != null, "Making your clip...");
             string path = System.IO.Path.Combine(Application.temporaryCachePath, "wick-clip.mp4");
             string watermark = "Can you crack this vault?\n" + (_lastCode != null ? VaultLink.Build(_lastCode) : VaultLink.Domain);
-            StartCoroutine(_clips.Render(_lastVault, _lastSeed, _lastLog, watermark, path, OnClip));
+            StartCoroutine(_clips.Render(_lastVault, _lastSeed, _lastLog, watermark, path, OnClip, _lastParams));
         }
 
         private void OnClip(ClipResult clip)

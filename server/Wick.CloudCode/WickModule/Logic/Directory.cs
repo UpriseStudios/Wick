@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Wick.Economy;
 using Wick.Sim;
 
 namespace Wick.CloudCode
@@ -113,7 +114,7 @@ namespace Wick.CloudCode
         }
 
         /// <returns>The checked vault, or null with the reason in fail.</returns>
-        public static Passed Check(string document, int maxLevel, out PublishResult fail)
+        public static Passed Check(string document, int maxLevel, RaidConfig raid, out PublishResult fail)
         {
             fail = null;
             if (string.IsNullOrEmpty(document) || document.Length > MaxDocumentChars)
@@ -146,6 +147,15 @@ namespace Wick.CloudCode
             if (issues.Count > 0)
             {
                 fail = PublishResult.Fail("The vault breaks the building rules", issues.ConvertAll(i => i.Message));
+                return null;
+            }
+
+            // The proof run must not have had more time than raiders get at this level.
+            int raidTicks = raid.TicksFor(vault.VaultLevel);
+            if (clearCheck != null && clearCheck.Params.RaidTicks > raidTicks)
+            {
+                fail = PublishResult.Fail("The clear-check run had a longer clock than raids at Vault Level " + vault.VaultLevel +
+                    "; test the vault again");
                 return null;
             }
 

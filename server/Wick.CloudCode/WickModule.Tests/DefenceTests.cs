@@ -121,7 +121,7 @@ namespace Wick.CloudCode.Tests
                     halls.Height, Tiles(halls), halls.Entrance, new[] { Pile(halls) }, halls.HasHoard, halls.Hoard),
                 new ObjectDef(40, ObjectType.SnufferBell, new TilePos(4, 7), 0, 0, 0, 0, new TilePos[0]));
 
-            RaidAnalysis a = RaidAnalysis.Run(belled, TestVaults.Seed, TestVaults.Escape);
+            RaidAnalysis a = RaidAnalysis.Run(belled, TestVaults.Seed, TestVaults.Escape, RaidParams.Default);
 
             Assert.AreEqual(Outcome.Snuffed, a.Result.Outcome);
             Assert.AreEqual("SnufferBell", a.SnuffedBy);

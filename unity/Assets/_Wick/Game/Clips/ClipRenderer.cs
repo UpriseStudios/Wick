@@ -60,12 +60,14 @@ namespace Wick.Game
             _source = source;
         }
 
-        public IEnumerator Render(VaultDef vault, int seed, InputLog log, string watermark, string path, Action<ClipResult> done)
+        public IEnumerator Render(VaultDef vault, int seed, InputLog log, string watermark, string path, Action<ClipResult> done,
+            RaidParams? raidParams = null)
         {
+            RaidParams p = raidParams ?? RaidParams.Default;
             Busy = true;
             Stopwatch clock = Stopwatch.StartNew();
-            List<TimedEvent> events = Highlights.Collect(vault, seed, log, out RaidResult result);
-            ClipWindow window = Highlights.Pick(events, result.Ticks, result.Outcome, Highlights.BigTreasure(vault));
+            List<TimedEvent> events = Highlights.Collect(vault, seed, log, out RaidResult result, p);
+            ClipWindow window = Highlights.Pick(events, result.Ticks, result.Outcome, Highlights.BigTreasure(vault), p.RaidTicks);
 
             IClipEncoder encoder = ClipEncoders.Create();
             if (encoder == null || !encoder.Open(path, Width, Height, Fps, Bitrate))
@@ -84,7 +86,7 @@ namespace Wick.Game
             GameObject overlay = MakeWatermark(camera, watermark);
 
             _runner.ManualClock = true;
-            _runner.LoadReplay(vault, seed, log);
+            _runner.LoadReplay(vault, seed, log, p);
             _runner.SeekReplay(window.StartTick);
 
             var pending = new Queue<AsyncGPUReadbackRequest>();
