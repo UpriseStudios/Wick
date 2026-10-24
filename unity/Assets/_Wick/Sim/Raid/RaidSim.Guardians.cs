@@ -47,6 +47,10 @@ namespace Wick.Sim
                         AdvanceWaypoint(ref guardian, def);
                     }
                 }
+                else if (guardian.Kind == ObjectType.MimicChest)
+                {
+                    PerceiveMimic(ref guardian, def);
+                }
                 else
                 {
                     PerceiveMoths(ref guardian);
@@ -185,6 +189,36 @@ namespace Wick.Sim
             return dist2 <= reach * reach && Lighting.HasLineOfSight(_vault, moths, light);
         }
 
+        // ---- Mimic Chest ----------------------------------------------------------------
+
+        /// <summary>
+        /// A Mimic Chest never moves. While Wick is on its tile or beside it (not diagonally) it
+        /// winds up, one tick at a time; stepping away resets it. The bite is in step 5.
+        /// </summary>
+        private void PerceiveMimic(ref GuardianState mimic, ObjectDef def)
+        {
+            if (!MimicInReach(mimic))
+            {
+                mimic.ContactTicks = 0;
+                mimic.Mode = GuardianMode.Patrol;
+                return;
+            }
+
+            if (mimic.ContactTicks == 0)
+            {
+                mimic.Mode = GuardianMode.Chase;
+                Emit(SimEventType.GuardianAlerted, def.Id, mimic.Tile, 0);
+            }
+
+            mimic.ContactTicks++;
+        }
+
+        private bool MimicInReach(in GuardianState mimic)
+        {
+            TilePos wick = State.Wick.Occupied;
+            return wick == mimic.Tile || Motion.DistSq(wick, mimic.Tile) == 1;
+        }
+
         // ---- Shared --------------------------------------------------------------------
 
         private bool DecoyActive()
@@ -298,6 +332,18 @@ namespace Wick.Sim
             }
 
             ref GuardianState g = ref State.Guardians[gi];
+            if (g.Kind == ObjectType.MimicChest)
+            {
+                // It bites once its wind-up is done (whether or not Wick is invulnerable), then starts over.
+                if (g.ContactTicks >= DefenceStats.MimicLungeTicks(_vault.LevelOf(g.Kind)) && MimicInReach(g))
+                {
+                    g.ContactTicks = 0;
+                    return true;
+                }
+
+                return false;
+            }
+
             bool touching = g.Occupied == at;
             if (g.Kind == ObjectType.NightOwl)
             {

@@ -54,6 +54,8 @@ namespace Wick.Sim
                     return 3;
                 case ObjectType.SwingAxe:
                     return 4;
+                case ObjectType.MimicChest:
+                    return 5;
                 default:
                     return 1;
             }
@@ -73,6 +75,7 @@ namespace Wick.Sim
                 case ObjectType.WaxMoths: return 25;
                 case ObjectType.IceTiles: return 3; // per tile
                 case ObjectType.SwingAxe: return 22;
+                case ObjectType.MimicChest: return 28;
                 default: return 0;
             }
         }

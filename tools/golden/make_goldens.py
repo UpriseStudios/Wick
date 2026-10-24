@@ -352,6 +352,23 @@ GOLDENS = {
         "Escaped", 87, 0, 0,
         {"FlickerLost": [30]},
     ),
+    "mimic-bite.json": raid(
+        "A Mimic Chest on (3,1). Wick dashes east; from tick 2 he occupies (2,1), beside it, and it "
+        "winds up one tick at a time (1 on t2 ... 18 on t19). On tick 19 it bites for 2 flickers. "
+        "Still beside it on tick 20, it starts winding up again (a second alert), but he is away by "
+        "tick 22 and walks out on tick 24 with 1 flicker.",
+        5115,
+        vault("v_golden_mimic", [
+            "#######",
+            "#E....#",
+            "#######",
+        ], [
+            {"id": 1, "type": "mimic_chest", "x": 3, "y": 1},
+        ], level=5),
+        cmds((0, "Dash", "E"), (20, "Dash", "W")),
+        "Escaped", 25, 0, 0,
+        {"FlickerLost": [19], "GuardianAlerted": [2, 20]},
+    ),
 }
 
 

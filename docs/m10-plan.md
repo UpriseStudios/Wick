@@ -205,7 +205,7 @@ B3.
 | Wax Moths | Speed 40, drain every 60 ticks | +3 speed | +5 | Drain every 45 ticks |
 | Ice Tiles | Wick slides until he hits something | +10% slide speed | +15% | Sliding dims the flame like a gust |
 | Swing Axe | Swings on its cycle | -2 ticks | -3 ticks | The arc covers one more tile |
-| Mimic Chest | Bites for 2 flickers when Wick is adjacent | Lunges 2 ticks sooner | 3 ticks sooner | A bite steals one carried treasure pile |
+| Mimic Chest | Bites for 2 flickers after an 18-tick wind-up beside it | Winds up 2 ticks sooner | 2 ticks sooner (10, the tell floor) | A bite steals one carried treasure pile |
 | Sleepy Troll | Wakes in bright light and stomps | Wakes at a slightly dimmer light | Dimmer again | The stomp also hits the 4 tiles around him |
 | Fan Maze | Turns on its cycle, pushes 1 tile | -2 ticks | -3 ticks | Pushes 2 tiles |
 | Lever Doors | A door stays open for its timer after its lever is pulled | -0.5 s open time | -1 s | One lever can work two doors |
@@ -239,6 +239,11 @@ balance simulator to tune.
   cycle later), live for 6 ticks each time and costing 1 flicker. The swing is always visible, so
   it is its own tell. Levels shorten the cycle (never below 28 ticks, so passes never overlap);
   level 5 also catches the tile in front of it at the top of the arc (a quarter cycle in).
+- **Mimic Chest** (Vault Level 5, 28 points, a guardian that never moves): it looks like a treasure
+  pile. While Wick is on its tile or beside it (not diagonally) it winds up a tick at a time;
+  after 18 ticks it bites for 2 flickers, then starts over. Stepping away resets it. Its tells are
+  a slow breath when lit and the lid creaking open during the wind-up. Levels take 2 ticks off the
+  wind-up, down to the 10-tick tell floor; level 5's bite also steals one carried pile.
 
 ## Decisions (24 October 2026)
 

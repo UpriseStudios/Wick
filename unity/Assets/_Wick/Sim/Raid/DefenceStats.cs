@@ -108,6 +108,19 @@ namespace Wick.Sim
             return level >= 5;
         }
 
+        /// <summary>Mimic Chest: its wind-up before a bite: 18 ticks, 2 fewer a level, never below the tell floor.</summary>
+        public static int MimicLungeTicks(int level)
+        {
+            int ticks = SimTuning.MimicLungeTicks - Steps(level, 2, 2);
+            return ticks < MinTellTicks ? MinTellTicks : ticks;
+        }
+
+        /// <summary>Mimic Chest level 5: a bite also steals one treasure pile Wick is carrying.</summary>
+        public static bool MimicSteals(int level)
+        {
+            return level >= 5;
+        }
+
         /// <summary>Ice Tiles: sub-tile units per tick while sliding: 250, +10% a level, +15% more at level 5.</summary>
         public static int IceSlideSpeed(int level)
         {

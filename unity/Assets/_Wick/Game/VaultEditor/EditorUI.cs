@@ -29,6 +29,7 @@ namespace Wick.Game
         {
             ObjectType.Treasure, ObjectType.DripPipe, ObjectType.SpikeFloor, ObjectType.Bellows, ObjectType.Crate,
             ObjectType.Brazier, ObjectType.SnufferBell, ObjectType.NightOwl, ObjectType.WaxMoths, ObjectType.SwingAxe,
+            ObjectType.MimicChest,
         };
 
         private VisualElement _root;
@@ -63,6 +64,7 @@ namespace Wick.Game
                 case ObjectType.WaxMoths: return "Wax Moths";
                 case ObjectType.IceTiles: return "Ice Tiles";
                 case ObjectType.SwingAxe: return "Swing Axe";
+                case ObjectType.MimicChest: return "Mimic Chest";
                 default: return type.ToString();
             }
         }

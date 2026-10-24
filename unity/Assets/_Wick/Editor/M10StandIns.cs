@@ -42,6 +42,25 @@ namespace Wick.Editor
                 Set(view, "_pivot", pivot);
             });
 
+            Material gold = Mat("Gold");
+            Material warning = Mat("Warning");
+            registry.MimicChest = Save("MimicChest", root =>
+            {
+                // Dressed as a treasure pile: a gold heap in an open-topped chest.
+                var body = new GameObject("Body").transform;
+                body.SetParent(root, false);
+                Box(body, "Chest", new Vector3(0f, 0.2f, 0f), new Vector3(0.6f, 0.4f, 0.45f), crate);
+                Box(body, "Gold", new Vector3(0f, 0.42f, 0f), new Vector3(0.5f, 0.12f, 0.38f), gold);
+                Box(body, "Tongue", new Vector3(0f, 0.38f, 0.1f), new Vector3(0.18f, 0.04f, 0.25f), warning);
+                var lid = new GameObject("Lid").transform;
+                lid.SetParent(root, false);
+                lid.localPosition = new Vector3(0f, 0.42f, -0.22f);
+                Box(lid, "LidBoard", new Vector3(0f, 0.03f, 0.22f), new Vector3(0.62f, 0.06f, 0.46f), crate);
+                MimicView view = root.gameObject.AddComponent<MimicView>();
+                Set(view, "_body", body);
+                Set(view, "_lid", lid);
+            });
+
             EditorUtility.SetDirty(registry);
             AssetDatabase.SaveAssets();
             Debug.Log("M10 stand-ins built");

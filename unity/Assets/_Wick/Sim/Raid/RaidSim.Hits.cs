@@ -71,9 +71,16 @@ namespace Wick.Sim
                 if (hits && !invulnerable && !hitLanded)
                 {
                     hitLanded = true;
-                    w.Flickers--;
+                    w.Flickers = w.Flickers > HitCost(o.Type) ? w.Flickers - HitCost(o.Type) : 0;
                     w.InvulnTicks = SimTuning.InvulnTicks;
                     Emit(SimEventType.FlickerLost, o.Id, at, w.Flickers);
+                    if (o.Type == ObjectType.MimicChest && DefenceStats.MimicSteals(_vault.LevelOf(o.Type)) && w.CarriedPiles > 0)
+                    {
+                        // Level 5: it snatches a pile back. Piles in a vault are worth the same, so take the average.
+                        w.CarriedTreasure -= w.CarriedTreasure / w.CarriedPiles;
+                        w.CarriedPiles--;
+                    }
+
                     if (o.Type == ObjectType.Bellows)
                     {
                         knockDir = o.Facing;
@@ -91,6 +98,12 @@ namespace Wick.Sim
             {
                 Emit(SimEventType.Snuffed, 0, at, 0);
             }
+        }
+
+        /// <summary>Flickers one hit costs: a Mimic Chest's bite takes two, everything else one.</summary>
+        private static int HitCost(ObjectType type)
+        {
+            return type == ObjectType.MimicChest ? SimTuning.MimicBiteFlickers : 1;
         }
 
         /// <summary>

@@ -91,6 +91,12 @@ namespace Wick.Sim
         /// <summary>Continuous moth contact drains 1 flicker every this many ticks.</summary>
         public const int MothDrainTicks = 2 * TicksPerSecond;
 
+        /// <summary>Mimic Chest: ticks Wick must stay on or beside it before it bites (level 1).</summary>
+        public const int MimicLungeTicks = 18;
+
+        /// <summary>A Mimic Chest's bite costs this many flickers.</summary>
+        public const int MimicBiteFlickers = 2;
+
         // ---- Treasure ------------------------------------------------------------------
 
         /// <summary>Each treasure pile carried slows Wick by this percentage...</summary>
