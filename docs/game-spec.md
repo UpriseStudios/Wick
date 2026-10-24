@@ -93,7 +93,7 @@ Loot paid out = share of treasure stolen, capped by the defender's vault level. 
 
 You can only publish a vault you have beaten yourself. That one rule keeps every vault fair and gives the server a proof run to check against.
 
-- **Grid:** vaults start at 9 x 13 tiles with 3 rooms. Raising your Vault Level (the Town Hall equivalent) unlocks more space, rooms and trap slots.
+- **Grid:** vaults start at 12 x 16 tiles with 2 to 3 rooms and grow to 20 x 28 at Vault Level 10. Raising your Vault Level (the Town Hall equivalent) unlocks more space, rooms and trap slots.
 - **Build budget:** each trap and guardian costs build points. The budget grows with Vault Level, so a level 3 vault can't be packed with level 10 traps.
 - **Editor:** drag-and-drop from a tray, tap to rotate, pinch to zoom. A Test button drops you straight into a raid of your own vault.
 - **Clear-check:** to publish, you must escape your own vault with at least 1 star. The input log of that run is uploaded and re-simulated on the server before the vault goes live.
