@@ -1,10 +1,10 @@
-# Wick — Game Design Spec
+# Wax Bandits — Game Design Spec
 
 Oct 17, 2026 · @Jamie
 
 ## Overview
 
-Wick (working title) is a mobile build-and-raid game. You design a booby-trapped vault around your hoard, then sneak a tiny living candle through other players' vaults to steal theirs. Raids take 30 to 60 seconds, and players build the levels, so content never runs out.
+Wax Bandits (store subtitle: "Tiny Thieves, Big Heists") is a mobile build-and-raid game starring Wick and his crew of candle thieves. You design a booby-trapped vault around your hoard, then sneak a tiny living candle through other players' vaults to steal theirs. Raids take 30 to 60 seconds, and players build the levels, so content never runs out.
 
 **Design pillars**
 
@@ -46,12 +46,12 @@ The goal is a character people recognise and want to collect, not just a functio
 
 | Concept | Look | Personality | Role |
 | --- | --- | --- | --- |
-| Classic Wick, the lovable thief | Short ivory pillar candle, oversized eyes, tiny feet, flame shaped like unruly hair; wide, soft proportions | Innocent-looking but mischievous; the strongest all-round mascot | Default hero and app icon |
-| Drippy, the nervous disaster | Slightly melted and lopsided, exaggerated wax drips, permanently worried eyes; body reacts physically to danger | Panicky and hapless; made for funny failures and social clips | Early skin, ideal for promo clips |
-| Cinder, the tiny criminal mastermind | Subtly tapered, confident eyebrows, miniature burglar mask, little loot satchel | Cheeky and smug; communicates the heist instantly | Premium skin and the face of heist events |
-| Pip, the fearless tealight | Very short candle in a rounded metal cup, huge eyes, disproportionately tall flame | Tiny, bold, energetic; strong toy appeal | Starter-pack reward |
-| Twist, the cheeky trickster | Short spiral-twisted wax body, angled eyebrows, off-centre flame | Playful and unusual; instantly recognisable shape | Season-pass skin |
-| Ember, the determined survivor | Half-melted stump, chipped base, oversized flame, optimistic face | Compact, endearing underdog | Achievement or loyalty skin |
+| Classic Wick, the lovable thief | Rounded ivory candle with a melted, dripping top, swept quiff-like flame, large amber eyes, confident brows, stubby limbs, cross-body strap and satchel of gold (locked reference v1) | Cheeky and confident; the strongest all-round mascot | Default hero and app icon |
+| Drippy, the nervous disaster | Heavily melted and leaning, drips over body and arms pooling at his feet, worried brows and darting eyes, hands clutched to chest (locked reference v1) | Panicky and hapless; made for funny failures and social clips | Early skin, ideal for promo clips |
+| Cinder, the tiny criminal mastermind | Wick's body with a burglar eye mask tied at the side, sly glance and smirk, rope-tied satchel of gold (locked reference v1) | Cheeky and smug; communicates the heist instantly | Premium skin and the face of heist events |
+| Pip, the fearless tealight | Very short candle in a silver tealight cup, flame about twice his height, determined grin (locked reference v1) | Tiny, bold, energetic; strong toy appeal | Starter-pack reward |
+| Twist, the cheeky trickster | Spiral-twisted wax body, curling ribbon flame swept to one side, toothy smug grin (locked reference v1) | Playful and unusual; instantly recognisable shape | Season-pass skin |
+| Ember, the determined survivor | Short squat stump with a chipped lower edge, big swept flame, optimistic determined face, satchel (locked reference v1) | Compact, endearing underdog | Achievement or loyalty skin |
 
 Every skin keeps the same silhouette width and flame position so hitboxes and readability never change, only personality.
 
@@ -120,6 +120,24 @@ Every trap attacks the flame or the path, and every one has a readable counter, 
 | Lever Doors | Puzzle | Doors linked to levers elsewhere in the vault | Route planning | 8 |
 
 Wall braziers (relight 1 flicker) are free to place but limited per vault. Smart builders use them as bait next to traps.
+
+**Sir Whiskers: signature guardian (Vault Level 10)**
+
+Sir Whiskers is a big, fluffy, smug vault cat who can't resist a flickering flame. Every other threat rewards moving well; he rewards holding your nerve and standing still.
+
+|  | Rule |
+| --- | --- |
+| Idle | Naps on a velvet cushion; wakes when Wick's lit flame comes within 3 tiles (tiptoe shrinks the light, so sneaking past can keep him asleep) |
+| Stalk | While Wick is moving, he follows the flame at a crouch |
+| Freeze to evade | If Wick stays still for 1.5 seconds, he loses interest, yawns and returns to his cushion |
+| Tell | About 1 second of butt-wiggle and tail-twitch before every pounce |
+| Swat | Costs 1 flicker and bats Wick 2 tiles in the swat direction; Wick stops on the last free tile if a wall or object is in the way |
+| Safety | After a swat, Wick gets a short invulnerability window, and knockback can never trigger instant-snuff traps such as the Snuffer Bell |
+| Decoy | Sir Whiskers always chases a decoy over Wick, batting it around until it fades |
+| Limit | One per vault; high build-point cost |
+| Personality | Not evil, just playing. After a swat he sits and licks a paw, very pleased with himself |
+
+Builders can place him to bat raiders into other traps, which gives high-level vaults new combos. Cosmetic coat variants (ginger, black, tabby, a seasonal jumper) can be sold as vault cosmetics; they never change his behaviour.
 
 ## Multiplayer and social
 
@@ -289,11 +307,11 @@ The vertical slice must prove one thing: that raiding a stranger's vault is fun 
 | Empty world at launch with too few player vaults | Seed with designer vaults and bot-tuned variations; async play needs far fewer players than live modes |
 | The editor feels fiddly on a phone | Room templates to start from, undo, and a strong Test button; playtest the editor as early as the raid |
 | Determinism bugs between client and server | Keep the simulation in one shared C# library with integer maths, and run every raid log through the server in automated tests |
-| "Wick" name clashes with existing games or trademarks | Run a store and trademark search before any branding work |
+| "Wax Bandits" name or brand conflict found later | Initial store and trademark checks are clear; file a UK trademark application and secure the domain and social handles before launch marketing |
 
 **Open questions**
 
-- [ ] Final game name: keep "Wick" or pick something more ownable?
+- [ ] Final game name: decided as Wax Bandits; Wick remains the hero character's name
 - [ ] Should raids be strictly grid-based, or allow free movement with a grid-based simulation underneath?
 - [ ] Is a 60-second timer right, or should larger vaults get more time?
 - [ ] Which backend to choose, based on cost at soft-launch scale?
