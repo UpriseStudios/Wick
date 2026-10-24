@@ -28,3 +28,5 @@ MonoBehaviour:
   MimicChest: {fileID: 3027814575715129412, guid: e1643ce6aed5e1e45ab4ae42b1159797, type: 3}
   SleepyTroll: {fileID: 2852249521004395099, guid: 289cb839a62b6454687df7dcbe48d430, type: 3}
   Fan: {fileID: 2982306261373101575, guid: 52ee9ef282ce8ac48afb5749ed3d5a37, type: 3}
+  Gate: {fileID: 8168421105670581114, guid: 34c18c82442f4e941b1f2aead185b619, type: 3}
+  Lever: {fileID: 2855961878437583626, guid: 8fb1a9f5712f9364c8f76d5c96828e11, type: 3}

@@ -17,7 +17,7 @@ namespace Wick.Sim.Tests
         private static readonly string[] Types =
         {
             "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "treasure", "brazier",
-            "swing_axe", "mimic_chest", "sleepy_troll", "fan", "crate",
+            "swing_axe", "mimic_chest", "sleepy_troll", "fan", "gate", "lever", "crate",
         };
 
         [Test]
@@ -84,7 +84,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void Corpus_CombinedHash_IsStable()
         {
-            const string expected = "5768607da932e928";
+            const string expected = "71ebba2376dc3c3d";
 
             var rng = new Pcg32(2026, 77);
             var combined = new Fnv1a64();
@@ -237,7 +237,7 @@ namespace Wick.Sim.Tests
             var levels = new List<string>();
             if (rng.NextInt(2) == 0)
             {
-                foreach (string type in new[] { "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "swing_axe", "mimic_chest", "sleepy_troll", "fan" })
+                foreach (string type in new[] { "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "swing_axe", "mimic_chest", "sleepy_troll", "fan", "gate" })
                 {
                     levels.Add("\"" + type + "\":" + (1 + rng.NextInt(DefenceLevels.MaxLevel)));
                 }

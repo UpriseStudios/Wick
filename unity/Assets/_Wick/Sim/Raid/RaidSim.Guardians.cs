@@ -315,7 +315,7 @@ namespace Wick.Sim
         private bool NextStep(TilePos from, TilePos to, out Dir dir)
         {
             dir = Dir.N;
-            if (!_vault.IsWalkable(to))
+            if (!IsWalkableNow(to))
             {
                 return false;
             }
@@ -339,7 +339,7 @@ namespace Wick.Sim
                 for (int d = 0; d < 4; d++)
                 {
                     TilePos n = p.Step((Dir)d);
-                    if (!_vault.IsWalkable(n))
+                    if (!IsWalkableNow(n))
                     {
                         continue;
                     }
@@ -362,7 +362,7 @@ namespace Wick.Sim
             for (int d = 0; d < 4; d++)
             {
                 TilePos n = from.Step((Dir)d);
-                if (_vault.IsWalkable(n) && _bfsDist[n.Y * w + n.X] == here - 1)
+                if (IsWalkableNow(n) && _bfsDist[n.Y * w + n.X] == here - 1)
                 {
                     dir = (Dir)d;
                     return true;

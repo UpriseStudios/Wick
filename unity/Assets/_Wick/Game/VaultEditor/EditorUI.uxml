@@ -48,6 +48,7 @@
                 <ui:VisualElement class="row">
                     <ui:Button name="sel-rotate" text="Rotate" class="sel-button" />
                     <ui:Button name="sel-patrol" text="Patrol" class="sel-button" />
+                    <ui:Button name="sel-link" text="Link" class="sel-button" />
                     <ui:Button name="sel-clear" text="Clear route" class="sel-button" />
                     <ui:Button name="sel-remove" text="Remove" class="sel-button danger" />
                 </ui:VisualElement>

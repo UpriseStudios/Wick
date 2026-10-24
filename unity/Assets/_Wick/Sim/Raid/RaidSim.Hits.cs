@@ -153,7 +153,7 @@ namespace Wick.Sim
             while (free < tiles)
             {
                 p = p.Step(dir);
-                if (!_vault.IsWalkable(p) || IsArmedBellPlate(p))
+                if (!IsWalkableNow(p) || IsArmedBellPlate(p))
                 {
                     break;
                 }

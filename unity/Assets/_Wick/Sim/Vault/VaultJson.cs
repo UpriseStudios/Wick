@@ -144,6 +144,20 @@ namespace Wick.Sim
                 }
             }
 
+            if (o.Links.Length > 0 && o.Type != ObjectType.Lever)
+            {
+                throw new FormatException(what + ": only levers link to gates");
+            }
+
+            foreach (int id in o.Links)
+            {
+                int target = vault.IndexOfObject(id);
+                if (target < 0 || vault.GetObject(target).Type != ObjectType.Gate)
+                {
+                    throw new FormatException(what + " links to " + id + ", which isn't a gate");
+                }
+            }
+
             if (o.Type == ObjectType.Treasure && (o.Value <= 0 || o.Value > SimTuning.MaxTreasureValue))
             {
                 throw new FormatException(what + " needs 0 < value <= " + SimTuning.MaxTreasureValue);
@@ -276,6 +290,17 @@ namespace Wick.Sim
                     w.EndArray();
                 }
 
+                if (o.Links.Length > 0)
+                {
+                    w.Name("links").BeginArray();
+                    foreach (int id in o.Links)
+                    {
+                        w.Value(id);
+                    }
+
+                    w.EndArray();
+                }
+
                 w.EndObject();
             }
 
@@ -312,7 +337,8 @@ namespace Wick.Sim
                     o.GetInt("cycle", 0),
                     o.GetInt("offset", 0),
                     o.GetInt("value", 0),
-                    ReadPatrol(o.Find("patrol")));
+                    ReadPatrol(o.Find("patrol")),
+                    ReadLinks(o.Find("links")));
             }
 
             // Ids are unique (checked by the caller), so this order is fully determined.
@@ -344,6 +370,22 @@ namespace Wick.Sim
 
             Array.Sort(decorations, (a, b) => a.Id.CompareTo(b.Id));
             return decorations;
+        }
+
+        private static int[] ReadLinks(JsonNode list)
+        {
+            if (list == null || list.Kind == JsonKind.Null)
+            {
+                return new int[0];
+            }
+
+            var links = new int[list.Count];
+            for (int i = 0; i < list.Count; i++)
+            {
+                links[i] = list[i].AsInt();
+            }
+
+            return links;
         }
 
         private static TilePos[] ReadPatrol(JsonNode list)

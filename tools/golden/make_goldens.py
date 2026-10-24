@@ -408,6 +408,30 @@ GOLDENS = {
         "Escaped", 75, 1, 0,
         {"KnockedBack": [30, 34], "FlickerLost": []},
     ),
+    "lever-gate.json": raid(
+        "A gate in the doorway at (4,2) shuts off the hoard; its lever is on (1,3) in the entrance "
+        "hall. Wick dashes north (t4) and runs west; he is on the lever from tick 29 (arriving t34), "
+        "which opens the gate, and it stays open 240 ticks after he leaves. He dashes back east to "
+        "(4,3) (t49) and north through the open gate (t54), takes the 400 pile at (4,1) on tick 57 "
+        "and, 10% slower, comes home with queued dashes: (4,1) t60, (4,2) t66, (4,3) t72, out on "
+        "tick 78 with every flicker. 3 stars, 400 loot.",
+        8118,
+        vault("v_golden_gate", [
+            "#########",
+            "#.......#",
+            "####D####",
+            "#.......#",
+            "####E####",
+        ], [
+            {"id": 1, "type": "gate", "x": 4, "y": 2},
+            {"id": 2, "type": "lever", "x": 1, "y": 3, "links": [1]},
+            {"id": 3, "type": "treasure", "x": 4, "y": 1, "value": 400},
+        ], level=8, hoard=[1, 1, 7, 1]),
+        cmds((0, "Dash", "N"), (5, "RunStart", "W"), (35, "Dash", "E"), (40, "Dash", "E"), (45, "Dash", "E"),
+             (50, "Dash", "N"), (55, "Dash", "N"), (60, "Dash", "S"), (66, "Dash", "S"), (72, "Dash", "S")),
+        "Escaped", 79, 3, 400,
+        {"FlickerLost": [], "TreasureTaken": [57], "TrapFired": [29]},
+    ),
 }
 
 

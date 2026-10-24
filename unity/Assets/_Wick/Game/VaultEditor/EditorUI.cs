@@ -29,7 +29,7 @@ namespace Wick.Game
         {
             ObjectType.Treasure, ObjectType.DripPipe, ObjectType.SpikeFloor, ObjectType.Bellows, ObjectType.Crate,
             ObjectType.Brazier, ObjectType.SnufferBell, ObjectType.NightOwl, ObjectType.WaxMoths, ObjectType.SwingAxe,
-            ObjectType.MimicChest, ObjectType.SleepyTroll, ObjectType.Fan,
+            ObjectType.MimicChest, ObjectType.SleepyTroll, ObjectType.Fan, ObjectType.Gate, ObjectType.Lever,
         };
 
         private VisualElement _root;
@@ -67,6 +67,8 @@ namespace Wick.Game
                 case ObjectType.MimicChest: return "Mimic Chest";
                 case ObjectType.SleepyTroll: return "Sleepy Troll";
                 case ObjectType.Fan: return "Fan";
+                case ObjectType.Gate: return "Gate";
+                case ObjectType.Lever: return "Lever";
                 default: return type.ToString();
             }
         }
@@ -112,6 +114,7 @@ namespace Wick.Game
             _root.Q<Button>("publish").clicked += () => _controller.Publish();
             _root.Q<Button>("sel-rotate").clicked += () => _controller.RotateSelected();
             _root.Q<Button>("sel-patrol").clicked += () => _controller.TogglePatrolEditing();
+            _root.Q<Button>("sel-link").clicked += () => _controller.ToggleLinkEditing();
             _root.Q<Button>("sel-clear").clicked += () => _controller.ClearPatrol();
             _root.Q<Button>("sel-remove").clicked += () => _controller.RemoveSelected();
             Button verify = _root.Q<Button>("verify");
@@ -338,6 +341,7 @@ namespace Wick.Game
                 _root.Q<Label>("selection-name").text = DecorName(dec.Kind);
                 Show(_root.Q("sel-rotate"), true);
                 Show(_root.Q("sel-patrol"), false);
+                Show(_root.Q("sel-link"), false);
                 Show(_root.Q("sel-clear"), false);
                 Show(_root.Q("sel-remove"), true);
                 return;
@@ -356,6 +360,13 @@ namespace Wick.Game
             Show(_root.Q("sel-rotate"), !c.EditingPatrol && VaultEditorController.CanRotate(o.Type));
             Show(_root.Q("sel-patrol"), owl);
             _root.Q<Button>("sel-patrol").text = c.EditingPatrol ? "Done" : "Patrol";
+            bool lever = o.Type == ObjectType.Lever;
+            Show(_root.Q("sel-link"), lever);
+            _root.Q<Button>("sel-link").text = c.EditingLinks ? "Done" : "Link (" + o.Links.Count + ")";
+            if (c.EditingLinks)
+            {
+                _root.Q<Label>("selection-name").text = "Tap gates to link or unlink them";
+            }
             Show(_root.Q("sel-clear"), owl && c.EditingPatrol);
             Show(_root.Q("sel-remove"), !c.EditingPatrol);
         }
@@ -555,6 +566,8 @@ namespace Wick.Game
                 case ObjectType.Brazier: return "Brazier: drag onto a wall next to floor";
                 case ObjectType.Bellows: return "Bellows: drag onto a wall; it blows into the room";
                 case ObjectType.Crate: return "Crate: blocks the way and gives cover";
+                case ObjectType.Gate: return "Gate: drag into a doorway, then link a lever to it";
+                case ObjectType.Lever: return "Lever: drag onto floor, then tap Link and tap its gate";
                 default: return Name(type) + ": drag it onto the vault";
             }
         }

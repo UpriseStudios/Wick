@@ -3,8 +3,10 @@ namespace Wick.Sim
     /// <summary>A placed vault object (trap, guardian, treasure, brazier, crate) as authored.</summary>
     public sealed class ObjectDef
     {
-        public ObjectDef(int id, ObjectType type, TilePos pos, int rot, int cycle, int offset, int value, TilePos[] patrol)
+        public ObjectDef(int id, ObjectType type, TilePos pos, int rot, int cycle, int offset, int value, TilePos[] patrol,
+            int[] links = null)
         {
+            Links = links ?? new int[0];
             Id = id;
             Type = type;
             Pos = pos;
@@ -28,6 +30,9 @@ namespace Wick.Sim
 
         /// <summary>Patrol waypoints; empty when the object doesn't patrol.</summary>
         public TilePos[] Patrol { get; }
+
+        /// <summary>A lever: the ids of the gates it opens. Empty for everything else.</summary>
+        public int[] Links { get; }
 
         public Dir Facing => (Dir)Rot;
     }

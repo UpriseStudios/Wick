@@ -142,6 +142,18 @@ namespace Wick.Sim
             return level >= 5 ? 2 : 1;
         }
 
+        /// <summary>Lever Doors: ticks a gate stays open after Wick leaves its lever: 8 s, 0.5 s less a level, 1 s less again at level 5.</summary>
+        public static int GateOpenTicks(int level)
+        {
+            return SimTuning.GateOpenTicks - Steps(level, SimTuning.TicksPerSecond / 2, SimTuning.TicksPerSecond);
+        }
+
+        /// <summary>Lever Doors: how many gates one lever can work: 1, or 2 at level 5.</summary>
+        public static int LeverLinks(int level)
+        {
+            return level >= 5 ? 2 : 1;
+        }
+
         /// <summary>Ice Tiles: sub-tile units per tick while sliding: 250, +10% a level, +15% more at level 5.</summary>
         public static int IceSlideSpeed(int level)
         {

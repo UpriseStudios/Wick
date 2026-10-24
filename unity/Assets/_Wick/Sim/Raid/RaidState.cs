@@ -119,6 +119,12 @@ namespace Wick.Sim
         public GuardianState[] Guardians;
 
         /// <summary>
+        /// Per vault object: a gate's open ticks left (0 = closed, unless someone stands in it).
+        /// Always 0 for other objects.
+        /// </summary>
+        public int[] GateOpen;
+
+        /// <summary>
         /// Tiles lit by Wick's flame this tick, row-major (y * vault width + x). Derived from
         /// Wick's state and the vault, so it is not hashed separately. Read it with RaidSim.IsLit.
         /// </summary>

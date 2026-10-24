@@ -15,10 +15,14 @@ namespace Wick.Game
         public int Offset;
         public List<TilePos> Patrol = new List<TilePos>();
 
+        /// <summary>A lever: the ids of the gates it opens.</summary>
+        public List<int> Links = new List<int>();
+
         public DraftObject Clone()
         {
             var c = (DraftObject)MemberwiseClone();
             c.Patrol = new List<TilePos>(Patrol);
+            c.Links = new List<int>(Links);
             return c;
         }
     }
@@ -281,7 +285,30 @@ namespace Wick.Game
 
         public bool Delete(int id)
         {
+            foreach (DraftObject o in Objects)
+            {
+                o.Links.Remove(id); // a deleted gate leaves no dangling links
+            }
+
             return Objects.RemoveAll(o => o.Id == id) + Decorations.RemoveAll(d => d.Id == id) > 0;
+        }
+
+        /// <summary>Links a lever to the gate on tile p, or unlinks it if it was linked.</summary>
+        public bool ToggleLink(int leverId, TilePos p)
+        {
+            DraftObject lever = Find(leverId);
+            DraftObject gate = Objects.Find(o => o.Type == ObjectType.Gate && o.Pos == p);
+            if (lever == null || lever.Type != ObjectType.Lever || gate == null)
+            {
+                return false;
+            }
+
+            if (!lever.Links.Remove(gate.Id))
+            {
+                lever.Links.Add(gate.Id);
+            }
+
+            return true;
         }
 
         // ---- Decorations ------------------------------------------------------------------
@@ -615,7 +642,7 @@ namespace Wick.Game
             {
                 DraftObject o = Objects[i];
                 int value = o.Type == ObjectType.Treasure ? VaultRules.TreasureValue(Level) : 0;
-                objects[i] = new ObjectDef(o.Id, o.Type, o.Pos, o.Rot, o.Cycle, o.Offset, value, o.Patrol.ToArray());
+                objects[i] = new ObjectDef(o.Id, o.Type, o.Pos, o.Rot, o.Cycle, o.Offset, value, o.Patrol.ToArray(), o.Links.ToArray());
             }
 
             Array.Sort(objects, (a, b) => a.Id.CompareTo(b.Id));
@@ -654,6 +681,7 @@ namespace Wick.Game
                 {
                     Id = o.Id, Type = o.Type, Pos = o.Pos, Rot = o.Rot, Cycle = o.Cycle, Offset = o.Offset,
                     Patrol = new List<TilePos>(o.Patrol),
+                    Links = new List<int>(o.Links),
                 });
                 d.NextId = Math.Max(d.NextId, o.Id + 1);
             }

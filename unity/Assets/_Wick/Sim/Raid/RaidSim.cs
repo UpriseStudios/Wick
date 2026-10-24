@@ -56,6 +56,7 @@ namespace Wick.Sim
             State.Wick.Facing = Dir.N;
             State.Wick.Flickers = SimTuning.StartFlickers;
             State.Spent = new bool[vault.ObjectCount];
+            State.GateOpen = new int[vault.ObjectCount];
             State.Guardians = CreateGuardians(vault);
             State.Lit = new bool[vault.Width * vault.Height];
             _trapActive = new bool[vault.ObjectCount];
@@ -311,7 +312,7 @@ namespace Wick.Sim
 
                 // Ice: he slides on in the same direction until something stops him or the ice
                 // ends. Swipes made meanwhile wait until he stops.
-                if (_vault.TileAt(w.Tile) == TileType.Ice && _vault.IsWalkable(w.Tile.Step(w.MoveDir)))
+                if (_vault.TileAt(w.Tile) == TileType.Ice && IsWalkableNow(w.Tile.Step(w.MoveDir)))
                 {
                     w.Sliding = true;
                     w.Moving = true;
@@ -350,9 +351,15 @@ namespace Wick.Sim
             Lighting.Compute(_vault, in State.Wick, State.Lit);
         }
 
+        /// <summary>Walkable this tick: the vault's walls and crates, plus any closed gate.</summary>
+        public bool IsWalkableNow(TilePos p)
+        {
+            return _vault.IsWalkable(p) && !IsClosedGate(p);
+        }
+
         private bool TryStartMove(ref WickState w, Dir dir, bool isRun)
         {
-            if (!_vault.IsWalkable(w.Tile.Step(dir)))
+            if (!IsWalkableNow(w.Tile.Step(dir)))
             {
                 return false;
             }

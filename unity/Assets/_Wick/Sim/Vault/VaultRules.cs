@@ -60,6 +60,9 @@ namespace Wick.Sim
                     return 6;
                 case ObjectType.Fan:
                     return 7;
+                case ObjectType.Gate:
+                case ObjectType.Lever:
+                    return 8;
                 default:
                     return 1;
             }
@@ -82,6 +85,7 @@ namespace Wick.Sim
                 case ObjectType.MimicChest: return 28;
                 case ObjectType.SleepyTroll: return 35;
                 case ObjectType.Fan: return 30;
+                case ObjectType.Gate: return 20; // with its lever: a pair costs 20
                 default: return 0;
             }
         }

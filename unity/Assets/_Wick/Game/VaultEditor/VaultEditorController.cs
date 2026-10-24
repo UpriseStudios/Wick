@@ -77,6 +77,9 @@ namespace Wick.Game
         public string MoveProblem { get; private set; }
         public bool EditingPatrol { get; private set; }
 
+        /// <summary>Linking the selected lever: taps on gates link or unlink them.</summary>
+        public bool EditingLinks { get; private set; }
+
         /// <summary>The hoard rectangle being dragged out on the Rooms tab.</summary>
         public TileRect? HoardPreview { get; private set; }
 
@@ -301,6 +304,12 @@ namespace Wick.Game
             Refresh();
         }
 
+        public void ToggleLinkEditing()
+        {
+            EditingLinks = SelectedObject?.Type == ObjectType.Lever && !EditingLinks;
+            Refresh();
+        }
+
         public void ClearPatrol()
         {
             if (SelectedObject != null)
@@ -357,6 +366,7 @@ namespace Wick.Game
             Moving = -1;
             MoveProblem = null;
             EditingPatrol = false;
+            EditingLinks = false;
             HoardPreview = null;
         }
 
@@ -529,6 +539,16 @@ namespace Wick.Game
                         if (onGrid && g.Type == EditorGestureType.Tap)
                         {
                             Edit(d => d.AddWaypoint(Selected, tile));
+                        }
+
+                        break;
+                    }
+
+                    if (EditingLinks)
+                    {
+                        if (onGrid && g.Type == EditorGestureType.Tap && !Edit2(d => d.ToggleLink(Selected, tile)))
+                        {
+                            _ui.Toast("Tap a gate to link or unlink it");
                         }
 
                         break;
@@ -719,6 +739,14 @@ namespace Wick.Game
         // ---- Edits ----------------------------------------------------------------------------
 
         private delegate bool DraftEdit(VaultDraft d);
+
+        /// <summary>Edit, saying whether anything changed.</summary>
+        private bool Edit2(DraftEdit edit)
+        {
+            bool changed = false;
+            Edit(d => changed = edit(d));
+            return changed;
+        }
 
         private void Edit(DraftEdit edit)
         {

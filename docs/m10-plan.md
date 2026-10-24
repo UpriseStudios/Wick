@@ -256,6 +256,13 @@ balance simulator to tune.
   pushed a tile along it, as a knockback: no flicker lost, never onto a bell plate, and pushed
   again on the tick he comes to rest if it is still blowing. The turning head is its tell. Levels
   speed up the rotation (never below 48 ticks); level 5 pushes 2 tiles.
+- **Lever Doors** (Vault Level 8, 20 points a gate and lever pair): a gate stands in a doorway (a
+  door tile). Closed, it stops Wick and guardians but not light or wind (it is bars). A lever on a
+  floor tile is linked to its gate in the editor (select the lever, Link, tap the gate). Standing
+  on the lever opens its gates and holds them open; they stay open 8 s after he steps off, and a
+  gate never closes on anyone standing in it. The validator only counts treasure as reachable if
+  every gate on the way has a lever Wick can reach first. Levels shorten the open time by 0.5 s
+  (1 s more at level 5); at level 5 one lever can work two gates.
 
 ## Decisions (24 October 2026)
 

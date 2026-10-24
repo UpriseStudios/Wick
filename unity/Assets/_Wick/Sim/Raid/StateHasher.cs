@@ -44,6 +44,12 @@ namespace Wick.Sim
                 h.AddBool(s.Spent[i]);
             }
 
+            h.AddInt(s.GateOpen.Length);
+            for (int i = 0; i < s.GateOpen.Length; i++)
+            {
+                h.AddInt(s.GateOpen[i]);
+            }
+
             h.AddInt(s.Guardians.Length);
             for (int i = 0; i < s.Guardians.Length; i++)
             {

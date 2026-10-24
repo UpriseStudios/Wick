@@ -22,12 +22,18 @@ namespace Wick.Sim
         MimicChest,
         SleepyTroll,
         Fan,
+
+        /// <summary>A barred gate on a door tile; closed, it stops Wick and guardians but not light or wind.</summary>
+        Gate,
+
+        /// <summary>Opens the gates it is linked to while Wick stands on it, and for a while after.</summary>
+        Lever,
     }
 
     public static class ObjectTypes
     {
         /// <summary>How many object types there are (the enum's values are 0 to Count - 1).</summary>
-        public const int Count = (int)ObjectType.Fan + 1;
+        public const int Count = (int)ObjectType.Lever + 1;
 
         public static ObjectType Parse(string name)
         {
@@ -47,6 +53,8 @@ namespace Wick.Sim
                 case "mimic_chest": return ObjectType.MimicChest;
                 case "sleepy_troll": return ObjectType.SleepyTroll;
                 case "fan": return ObjectType.Fan;
+                case "gate": return ObjectType.Gate;
+                case "lever": return ObjectType.Lever;
                 default: throw new FormatException("Unknown object type '" + name + "'");
             }
         }
@@ -69,6 +77,8 @@ namespace Wick.Sim
                 case ObjectType.MimicChest: return "mimic_chest";
                 case ObjectType.SleepyTroll: return "sleepy_troll";
                 case ObjectType.Fan: return "fan";
+                case ObjectType.Gate: return "gate";
+                case ObjectType.Lever: return "lever";
                 default: throw new ArgumentOutOfRangeException(nameof(type));
             }
         }
@@ -90,10 +100,19 @@ namespace Wick.Sim
                 type == ObjectType.SleepyTroll;
         }
 
-        /// <summary>Traps and guardians have defence upgrade levels; treasure, braziers and crates don't.</summary>
+        /// <summary>Lever Doors: a gate and the levers that open it.</summary>
+        public static bool IsPuzzle(ObjectType type)
+        {
+            return type == ObjectType.Gate || type == ObjectType.Lever;
+        }
+
+        /// <summary>
+        /// Traps, guardians and gates have defence upgrade levels (Lever Doors upgrade through their
+        /// gates); treasure, braziers, crates and levers don't.
+        /// </summary>
         public static bool IsUpgradable(ObjectType type)
         {
-            return IsTrap(type) || IsGuardian(type);
+            return IsTrap(type) || IsGuardian(type) || type == ObjectType.Gate;
         }
 
         /// <summary>Smallest valid cycle for a timed trap, so its phases never overlap.</summary>

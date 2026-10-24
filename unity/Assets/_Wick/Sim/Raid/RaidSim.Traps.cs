@@ -174,9 +174,90 @@ namespace Wick.Sim
             return second == p && _vault.IsWalkable(second);
         }
 
+        /// <summary>Whether a closed gate stands on p this tick.</summary>
+        public bool IsClosedGate(TilePos p)
+        {
+            for (int i = 0; i < _vault.ObjectCount; i++)
+            {
+                ObjectDef o = _vault.GetObject(i);
+                if (o.Type == ObjectType.Gate && o.Pos == p && State.GateOpen[i] == 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Lever Doors. Wick on a lever holds its gates open for GateOpenTicks; time counts down
+        /// once he steps off. A gate whose time is up stays open while Wick or a guardian is in it,
+        /// and closes the first tick it is clear.
+        /// </summary>
+        private void AdvanceGates(TilePos wick)
+        {
+            int open = DefenceStats.GateOpenTicks(_vault.LevelOf(ObjectType.Gate));
+            for (int i = 0; i < _vault.ObjectCount; i++)
+            {
+                ObjectDef o = _vault.GetObject(i);
+                if (o.Type == ObjectType.Lever && o.Pos == wick)
+                {
+                    foreach (int id in o.Links)
+                    {
+                        int g = _vault.IndexOfObject(id);
+                        if (State.GateOpen[g] == 0)
+                        {
+                            Emit(SimEventType.TrapFired, id, _vault.GetObject(g).Pos, 1); // opens
+                        }
+
+                        State.GateOpen[g] = open + 1; // counted down below, so it holds at `open` while he stays
+                    }
+                }
+            }
+
+            for (int i = 0; i < _vault.ObjectCount; i++)
+            {
+                ObjectDef o = _vault.GetObject(i);
+                if (o.Type != ObjectType.Gate || State.GateOpen[i] == 0)
+                {
+                    continue;
+                }
+
+                if (State.GateOpen[i] > 1)
+                {
+                    State.GateOpen[i]--;
+                }
+                else if (!SomeoneIn(o.Pos))
+                {
+                    State.GateOpen[i] = 0;
+                    Emit(SimEventType.TrapFired, o.Id, o.Pos, 0); // closes
+                }
+            }
+        }
+
+        private bool SomeoneIn(TilePos p)
+        {
+            WickState w = State.Wick;
+            if (w.Tile == p || w.Occupied == p || (w.Moving && w.Tile.Step(w.MoveDir) == p))
+            {
+                return true;
+            }
+
+            foreach (GuardianState g in State.Guardians)
+            {
+                if (g.Tile == p || g.Occupied == p || (g.Moving && g.Tile.Step(g.MoveDir) == p))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private void AdvanceTraps()
         {
             TilePos wick = State.Wick.Occupied;
+            AdvanceGates(wick);
             for (int i = 0; i < _vault.ObjectCount; i++)
             {
                 ObjectDef o = _vault.GetObject(i);

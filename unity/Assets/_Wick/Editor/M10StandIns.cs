@@ -96,6 +96,32 @@ namespace Wick.Editor
                 Set(view, "_wind", wind.transform);
             });
 
+            registry.Gate = Save("Gate", root =>
+            {
+                var bars = new GameObject("Bars").transform;
+                bars.SetParent(root, false);
+                for (int i = 0; i < 4; i++)
+                {
+                    Box(bars, "Bar" + i, new Vector3(-0.36f + i * 0.24f, 0.7f, 0f), new Vector3(0.07f, 1.4f, 0.07f), metal);
+                }
+
+                Box(bars, "Rail", new Vector3(0f, 1.2f, 0f), new Vector3(0.9f, 0.08f, 0.08f), metal);
+                GateView view = root.gameObject.AddComponent<GateView>();
+                Set(view, "_bars", bars);
+            });
+
+            registry.Lever = Save("Lever", root =>
+            {
+                Box(root, "Base", new Vector3(0f, 0.05f, 0f), new Vector3(0.4f, 0.1f, 0.3f), stone);
+                var handle = new GameObject("Handle").transform;
+                handle.SetParent(root, false);
+                handle.localPosition = new Vector3(0f, 0.1f, 0f);
+                Box(handle, "Stick", new Vector3(0f, 0.25f, 0f), new Vector3(0.06f, 0.5f, 0.06f), metal);
+                Prim(PrimitiveType.Sphere, handle, "Knob", new Vector3(0f, 0.52f, 0f), Vector3.one * 0.12f, warning);
+                LeverView view = root.gameObject.AddComponent<LeverView>();
+                Set(view, "_handle", handle);
+            });
+
             EditorUtility.SetDirty(registry);
             AssetDatabase.SaveAssets();
             Debug.Log("M10 stand-ins built");

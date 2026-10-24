@@ -169,6 +169,29 @@ namespace Wick.Game.Tests
             Assert.IsNotNull(d.DecorationBlock(Decorations.Statue));
         }
 
+        // ---- Lever Doors (M10) ----------------------------------------------------------------
+
+        [Test]
+        public void ALever_LinksToAGate_AndDeletingTheGateUnlinksIt()
+        {
+            VaultDraft d = Halls();
+            d.SetLevel(8);
+            DraftObject gate = d.Place(ObjectType.Gate, new TilePos(4, 9));
+            DraftObject lever = d.Place(ObjectType.Lever, new TilePos(2, 12));
+            Assert.IsFalse(d.ToggleLink(lever.Id, new TilePos(2, 6)), "no gate there");
+            Assert.IsTrue(d.ToggleLink(lever.Id, gate.Pos));
+            CollectionAssert.AreEqual(new[] { gate.Id }, lever.Links);
+
+            VaultDraft back = VaultDraft.FromJson(d.ToJson());
+            CollectionAssert.AreEqual(new[] { gate.Id }, back.Find(lever.Id).Links);
+
+            Assert.IsTrue(d.ToggleLink(lever.Id, gate.Pos), "tapping again unlinks");
+            Assert.IsEmpty(lever.Links);
+            d.ToggleLink(lever.Id, gate.Pos);
+            d.Delete(gate.Id);
+            Assert.IsEmpty(lever.Links);
+        }
+
         // ---- Edits ------------------------------------------------------------------------
 
         [Test]

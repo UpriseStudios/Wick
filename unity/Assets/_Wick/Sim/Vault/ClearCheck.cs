@@ -141,6 +141,16 @@ namespace Wick.Sim
                     h.AddInt(p.X);
                     h.AddInt(p.Y);
                 }
+
+                // Only levers have links, so every older layout hashes as before.
+                if (o.Links.Length > 0)
+                {
+                    h.AddInt(o.Links.Length);
+                    foreach (int id in o.Links)
+                    {
+                        h.AddInt(id);
+                    }
+                }
             }
 
             for (int i = 0; i < ObjectTypes.Count; i++)

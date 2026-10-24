@@ -112,6 +112,33 @@ namespace Wick.Sim
             return _objects[index];
         }
 
+        /// <summary>The index of the object with this id, or -1. Objects are sorted by id.</summary>
+        public int IndexOfObject(int id)
+        {
+            int lo = 0;
+            int hi = _objects.Length - 1;
+            while (lo <= hi)
+            {
+                int mid = (lo + hi) / 2;
+                int at = _objects[mid].Id;
+                if (at == id)
+                {
+                    return mid;
+                }
+
+                if (at < id)
+                {
+                    lo = mid + 1;
+                }
+                else
+                {
+                    hi = mid - 1;
+                }
+            }
+
+            return -1;
+        }
+
         public bool InBounds(TilePos p)
         {
             return p.X >= 0 && p.Y >= 0 && p.X < Width && p.Y < Height;

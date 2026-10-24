@@ -78,6 +78,9 @@ namespace Wick.Sim
         /// <summary>The warning rumble starts this many ticks before the spikes rise.</summary>
         public const int SpikeWarnTicks = 15;
 
+        /// <summary>Lever Doors: how long a gate stays open after Wick steps off its lever (level 1).</summary>
+        public const int GateOpenTicks = 8 * TicksPerSecond;
+
         // ---- Guardians -----------------------------------------------------------------
 
         public const int OwlPatrolSpeed = 50;

@@ -29,6 +29,9 @@ namespace Wick.Sim
         BellowsFacesWall,
         CrateInDoorway,
         DefenceLevelTooHigh,
+        GateNotInDoorway,
+        GateWithoutLever,
+        LeverLinks,
         DecorationUnknown,
         DecorationPlacement,
         TooManyDecorations,
@@ -107,6 +110,7 @@ namespace Wick.Sim
             }
 
             CheckObjects(vault, level, issues);
+            CheckGates(vault, issues);
             CheckDecorations(vault, level, issues);
             CheckTreasureAndHoard(vault, level, issues);
             CheckReachability(vault, issues);
@@ -210,6 +214,88 @@ namespace Wick.Sim
             {
                 issues.Add(new VaultIssue(VaultIssueCode.TooManyBraziers, 0, new TilePos(-1, -1),
                     "Vault Level " + level + " allows " + VaultRules.BrazierLimit(level) + " brazier(s)"));
+            }
+        }
+
+        /// <summary>
+        /// Lever Doors: a gate stands in a doorway (a door tile) and needs at least one lever; a
+        /// lever works one gate (two at level 5).
+        /// </summary>
+        private static void CheckGates(VaultDef vault, List<VaultIssue> issues)
+        {
+            int maxLinks = DefenceStats.LeverLinks(vault.LevelOf(ObjectType.Gate));
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                ObjectDef o = vault.GetObject(i);
+                if (o.Type == ObjectType.Gate)
+                {
+                    if (vault.TileAt(o.Pos) != TileType.Door)
+                    {
+                        issues.Add(Issue(VaultIssueCode.GateNotInDoorway, o, "Gates go in doorways (paint a door first)"));
+                    }
+
+                    if (!AnyLeverOpens(vault, o.Id))
+                    {
+                        issues.Add(Issue(VaultIssueCode.GateWithoutLever, o, "Link a lever to this gate"));
+                    }
+                }
+                else if (o.Type == ObjectType.Lever && (o.Links.Length == 0 || o.Links.Length > maxLinks))
+                {
+                    issues.Add(Issue(VaultIssueCode.LeverLinks, o, o.Links.Length == 0
+                        ? "Link this lever to a gate"
+                        : "A lever works " + maxLinks + " gate" + (maxLinks == 1 ? "" : "s") + " at this level"));
+                }
+            }
+        }
+
+        private static bool AnyLeverOpens(VaultDef vault, int gateId)
+        {
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                ObjectDef o = vault.GetObject(i);
+                if (o.Type == ObjectType.Lever && System.Array.IndexOf(o.Links, gateId) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tiles Wick can reach from the entrance, opening gates as he goes: closed gates block,
+        /// until a lever that opens them is itself reachable. Row-major.
+        /// </summary>
+        public static bool[] ReachableWithGates(VaultDef vault)
+        {
+            var opened = new bool[vault.ObjectCount];
+            while (true)
+            {
+                bool[] seen = Reachable(vault, vault.Entrance, opened);
+                bool changed = false;
+                for (int i = 0; i < vault.ObjectCount; i++)
+                {
+                    ObjectDef o = vault.GetObject(i);
+                    if (o.Type != ObjectType.Lever || !IsSet(vault, seen, o.Pos))
+                    {
+                        continue;
+                    }
+
+                    foreach (int id in o.Links)
+                    {
+                        int g = vault.IndexOfObject(id);
+                        if (g >= 0 && !opened[g])
+                        {
+                            opened[g] = true;
+                            changed = true;
+                        }
+                    }
+                }
+
+                if (!changed)
+                {
+                    return seen;
+                }
             }
         }
 
@@ -348,7 +434,7 @@ namespace Wick.Sim
                 return; // already reported; nothing is reachable
             }
 
-            bool[] fromEntrance = Reachable(vault, vault.Entrance);
+            bool[] fromEntrance = ReachableWithGates(vault);
             for (int i = 0; i < vault.ObjectCount; i++)
             {
                 ObjectDef o = vault.GetObject(i);
@@ -397,6 +483,26 @@ namespace Wick.Sim
         /// <summary>Tiles reachable on foot from start (walls and crates block). Row-major.</summary>
         public static bool[] Reachable(VaultDef vault, TilePos start)
         {
+            return Reachable(vault, start, null);
+        }
+
+        /// <summary>As Reachable, with closed gates blocking unless `opened` marks them (by object index).</summary>
+        private static bool[] Reachable(VaultDef vault, TilePos start, bool[] opened)
+        {
+            bool[] closedGate = null;
+            if (opened != null)
+            {
+                closedGate = new bool[vault.Width * vault.Height];
+                for (int i = 0; i < vault.ObjectCount; i++)
+                {
+                    ObjectDef o = vault.GetObject(i);
+                    if (o.Type == ObjectType.Gate && !opened[i] && vault.InBounds(o.Pos))
+                    {
+                        closedGate[o.Pos.Y * vault.Width + o.Pos.X] = true;
+                    }
+                }
+            }
+
             var seen = new bool[vault.Width * vault.Height];
             var queue = new Queue<TilePos>();
             seen[start.Y * vault.Width + start.X] = true;
@@ -407,7 +513,7 @@ namespace Wick.Sim
                 for (int d = 0; d < 4; d++)
                 {
                     TilePos n = p.Step((Dir)d);
-                    if (vault.IsWalkable(n) && !seen[n.Y * vault.Width + n.X])
+                    if (vault.IsWalkable(n) && !seen[n.Y * vault.Width + n.X] && (closedGate == null || !closedGate[n.Y * vault.Width + n.X]))
                     {
                         seen[n.Y * vault.Width + n.X] = true;
                         queue.Enqueue(n);
