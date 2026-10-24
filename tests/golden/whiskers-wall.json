@@ -1,0 +1,164 @@
+{
+  "_note": "Sir Whiskers naps on (3,1), two tiles from the entrance: Wick's moving flame wakes him on tick 0. Wick dashes to the east wall (6,1) and dithers between (5,1) and (6,1); the cat only creeps forward while Wick moves (70 a tick). Beside him at last, he wiggles for 30 ticks from tick 61 and pounces on tick 91: Wick, pinned against the wall, loses a flicker and the 2-tile knockback goes nowhere. While the cat licks his paw (60 ticks) Wick slips past him and walks out on tick 119 with 2 flickers.",
+  "simVersion": 4,
+  "seed": 9119,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_whiskers_wall",
+    "version": 1,
+    "vaultLevel": 10,
+    "theme": "crypt",
+    "grid": {
+      "w": 8,
+      "h": 3
+    },
+    "_map": [
+      "########",
+      "#E.....#",
+      "########"
+    ],
+    "tiles": "AQEBAQEBAQEBAAAAAAAAAQEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "sir_whiskers",
+        "x": 3,
+        "y": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 10,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 15,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 20,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 25,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 30,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 35,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 40,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 45,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 50,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 55,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 60,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 65,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 70,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 75,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 80,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 95,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 100,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 105,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 110,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 115,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 120,
+    "stars": 0,
+    "loot": 0,
+    "hash": "d86e7146d03da1fa"
+  },
+  "expectedEvents": {
+    "GuardianAlerted": [
+      0
+    ],
+    "FlickerLost": [
+      91
+    ],
+    "KnockedBack": [
+      91
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "_note": "Sir Whiskers naps on (6,1). Wick's moving flame wakes him on tick 7; Wick stops on (3,1) (t9) and holds still. The cat stalks only while Wick moves, so he waits, and after 45 still ticks gives up on tick 53 and pads home to sleep. A still flame doesn't wake him. Wick dashes home from tick 150 (waking him again, too late) and walks out on tick 159 with every flicker: 1 star.",
+  "simVersion": 4,
+  "seed": 9121,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_whiskers_freeze",
+    "version": 1,
+    "vaultLevel": 10,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 3
+    },
+    "_map": [
+      "#########",
+      "#E......#",
+      "#########"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "sir_whiskers",
+        "x": 6,
+        "y": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 150,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 155,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 160,
+    "stars": 1,
+    "loot": 0,
+    "hash": "c6588f4f51230a99"
+  },
+  "expectedEvents": {
+    "GuardianAlerted": [
+      7,
+      150
+    ],
+    "FlickerLost": []
+  }
+}

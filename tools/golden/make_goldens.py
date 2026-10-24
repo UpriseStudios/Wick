@@ -432,6 +432,64 @@ GOLDENS = {
         "Escaped", 79, 3, 400,
         {"FlickerLost": [], "TreasureTaken": [57], "TrapFired": [29]},
     ),
+    "whiskers-wall.json": raid(
+        "Sir Whiskers naps on (3,1), two tiles from the entrance: Wick's moving flame wakes him on "
+        "tick 0. Wick dashes to the east wall (6,1) and dithers between (5,1) and (6,1); the cat "
+        "only creeps forward while Wick moves (70 a tick). Beside him at last, he wiggles for 30 "
+        "ticks from tick 61 and pounces on tick 91: Wick, pinned against the wall, loses a flicker "
+        "and the 2-tile knockback goes nowhere. While the cat licks his paw (60 ticks) Wick slips "
+        "past him and walks out on tick 119 with 2 flickers.",
+        9119,
+        vault("v_golden_whiskers_wall", [
+            "########",
+            "#E.....#",
+            "########",
+        ], [{"id": 1, "type": "sir_whiskers", "x": 3, "y": 1}], level=10),
+        cmds((0, "Dash", "E"), (5, "Dash", "E"), (10, "Dash", "E"), (15, "Dash", "E"), (20, "Dash", "E"),
+             (25, "Dash", "W"), (30, "Dash", "E"), (35, "Dash", "W"), (40, "Dash", "E"), (45, "Dash", "W"),
+             (50, "Dash", "E"), (55, "Dash", "W"), (60, "Dash", "E"), (65, "Dash", "W"), (70, "Dash", "E"),
+             (75, "Dash", "W"), (80, "Dash", "E"),
+             (95, "Dash", "W"), (100, "Dash", "W"), (105, "Dash", "W"), (110, "Dash", "W"), (115, "Dash", "W")),
+        "Escaped", 120, 0, 0,
+        {"GuardianAlerted": [0], "FlickerLost": [91], "KnockedBack": [91]},
+    ),
+    "whiskers-trap.json": raid(
+        "Sir Whiskers naps on (7,1) and wakes on tick 12 as Wick comes within 3 tiles. Wick "
+        "dithers between (3,1) and (4,1); the cat closes in, wiggles from tick 43 and pounces on "
+        "tick 73, batting Wick 2 tiles west onto the Drip Pipe at (2,1) (arriving t82). He is "
+        "invulnerable through tick 118, so the drip that starts on 115 only catches him on tick 119. "
+        "He dashes out and escapes on tick 125 with 1 flicker.",
+        9120,
+        vault("v_golden_whiskers_trap", [
+            "#########",
+            "#E......#",
+            "#########",
+        ], [
+            {"id": 1, "type": "sir_whiskers", "x": 7, "y": 1},
+            {"id": 2, "type": "drip_pipe", "x": 2, "y": 1, "cycle": 45, "offset": 20},
+        ], level=10),
+        cmds((0, "Dash", "E"), (5, "Dash", "E"), (10, "Dash", "E"), (15, "Dash", "W"), (20, "Dash", "E"),
+             (25, "Dash", "W"), (30, "Dash", "E"), (35, "Dash", "W"), (40, "Dash", "E"), (45, "Dash", "W"),
+             (50, "Dash", "E"), (55, "Dash", "W"), (60, "Dash", "E"), (121, "Dash", "W")),
+        "Escaped", 126, 0, 0,
+        {"GuardianAlerted": [12], "FlickerLost": [73, 119], "KnockedBack": [73]},
+    ),
+    "whiskers-freeze.json": raid(
+        "Sir Whiskers naps on (6,1). Wick's moving flame wakes him on tick 7; Wick stops on (3,1) "
+        "(t9) and holds still. The cat stalks only while Wick moves, so he waits, and after 45 still "
+        "ticks gives up on tick 53 and pads home to sleep. A still flame doesn't wake him. Wick "
+        "dashes home from tick 150 (waking him again, too late) and walks out on tick 159 with every "
+        "flicker: 1 star.",
+        9121,
+        vault("v_golden_whiskers_freeze", [
+            "#########",
+            "#E......#",
+            "#########",
+        ], [{"id": 1, "type": "sir_whiskers", "x": 6, "y": 1}], level=10),
+        cmds((0, "Dash", "E"), (5, "Dash", "E"), (150, "Dash", "W"), (155, "Dash", "W")),
+        "Escaped", 160, 1, 0,
+        {"GuardianAlerted": [7, 150], "FlickerLost": []},
+    ),
 }
 
 

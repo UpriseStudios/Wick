@@ -122,6 +122,19 @@ namespace Wick.Editor
                 Set(view, "_handle", handle);
             });
 
+            registry.SirWhiskers = Save("SirWhiskers", root =>
+            {
+                // His cushion is a separate prop: it stays put when he gets up.
+                Box(root, "Cushion", new Vector3(0f, 0.06f, 0f), new Vector3(0.8f, 0.12f, 0.8f), warning);
+                var body = new GameObject("Body").transform;
+                body.SetParent(root, false);
+                Prim(PrimitiveType.Sphere, body, "Belly", new Vector3(0f, 0.4f, 0f), new Vector3(0.75f, 0.55f, 0.85f), gold);
+                Prim(PrimitiveType.Sphere, body, "Head", new Vector3(0f, 0.75f, 0.35f), Vector3.one * 0.42f, gold);
+                Box(body, "Tail", new Vector3(0f, 0.45f, -0.5f), new Vector3(0.1f, 0.1f, 0.45f), gold);
+                WhiskersView view = root.gameObject.AddComponent<WhiskersView>();
+                Set(view, "_body", body);
+            });
+
             EditorUtility.SetDirty(registry);
             AssetDatabase.SaveAssets();
             Debug.Log("M10 stand-ins built");

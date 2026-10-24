@@ -28,12 +28,15 @@ namespace Wick.Sim
 
         /// <summary>Opens the gates it is linked to while Wick stands on it, and for a while after.</summary>
         Lever,
+
+        /// <summary>The signature guardian: a vault cat who stalks moving flames and pounces.</summary>
+        SirWhiskers,
     }
 
     public static class ObjectTypes
     {
         /// <summary>How many object types there are (the enum's values are 0 to Count - 1).</summary>
-        public const int Count = (int)ObjectType.Lever + 1;
+        public const int Count = (int)ObjectType.SirWhiskers + 1;
 
         public static ObjectType Parse(string name)
         {
@@ -55,6 +58,7 @@ namespace Wick.Sim
                 case "fan": return ObjectType.Fan;
                 case "gate": return ObjectType.Gate;
                 case "lever": return ObjectType.Lever;
+                case "sir_whiskers": return ObjectType.SirWhiskers;
                 default: throw new FormatException("Unknown object type '" + name + "'");
             }
         }
@@ -79,6 +83,7 @@ namespace Wick.Sim
                 case ObjectType.Fan: return "fan";
                 case ObjectType.Gate: return "gate";
                 case ObjectType.Lever: return "lever";
+                case ObjectType.SirWhiskers: return "sir_whiskers";
                 default: throw new ArgumentOutOfRangeException(nameof(type));
             }
         }
@@ -97,7 +102,7 @@ namespace Wick.Sim
         public static bool IsGuardian(ObjectType type)
         {
             return type == ObjectType.NightOwl || type == ObjectType.WaxMoths || type == ObjectType.MimicChest ||
-                type == ObjectType.SleepyTroll;
+                type == ObjectType.SleepyTroll || type == ObjectType.SirWhiskers;
         }
 
         /// <summary>Lever Doors: a gate and the levers that open it.</summary>
@@ -112,7 +117,8 @@ namespace Wick.Sim
         /// </summary>
         public static bool IsUpgradable(ObjectType type)
         {
-            return IsTrap(type) || IsGuardian(type) || type == ObjectType.Gate;
+            // Sir Whiskers grows as his own feature later; he has no levels in M10.
+            return IsTrap(type) || (IsGuardian(type) && type != ObjectType.SirWhiskers) || type == ObjectType.Gate;
         }
 
         /// <summary>Smallest valid cycle for a timed trap, so its phases never overlap.</summary>

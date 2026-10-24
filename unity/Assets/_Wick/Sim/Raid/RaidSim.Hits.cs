@@ -90,6 +90,13 @@ namespace Wick.Sim
                         knockDir = o.Facing;
                         knockTiles = DefenceStats.BellowsKnockback(_vault.LevelOf(o.Type));
                     }
+                    else if (o.Type == ObjectType.SirWhiskers)
+                    {
+                        // Batted away from the cat, 2 tiles (stopping on the last free one).
+                        GuardianState cat = State.Guardians[_guardianOfObject[i]];
+                        knockDir = DirToward(cat.Tile, at, cat.Facing);
+                        knockTiles = SimTuning.WhiskersKnockback;
+                    }
                 }
             }
 

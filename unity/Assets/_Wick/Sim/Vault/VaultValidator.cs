@@ -29,6 +29,7 @@ namespace Wick.Sim
         BellowsFacesWall,
         CrateInDoorway,
         DefenceLevelTooHigh,
+        TooManySirWhiskers,
         GateNotInDoorway,
         GateWithoutLever,
         LeverLinks,
@@ -111,6 +112,14 @@ namespace Wick.Sim
 
             CheckObjects(vault, level, issues);
             CheckGates(vault, issues);
+            int cats = 0;
+            for (int i = 0; i < vault.ObjectCount; i++)
+            {
+                if (vault.GetObject(i).Type == ObjectType.SirWhiskers && ++cats == 2)
+                {
+                    issues.Add(Issue(VaultIssueCode.TooManySirWhiskers, vault.GetObject(i), "Only one Sir Whiskers per vault"));
+                }
+            }
             CheckDecorations(vault, level, issues);
             CheckTreasureAndHoard(vault, level, issues);
             CheckReachability(vault, issues);

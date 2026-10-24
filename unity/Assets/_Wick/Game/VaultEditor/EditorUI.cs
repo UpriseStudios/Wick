@@ -30,6 +30,7 @@ namespace Wick.Game
             ObjectType.Treasure, ObjectType.DripPipe, ObjectType.SpikeFloor, ObjectType.Bellows, ObjectType.Crate,
             ObjectType.Brazier, ObjectType.SnufferBell, ObjectType.NightOwl, ObjectType.WaxMoths, ObjectType.SwingAxe,
             ObjectType.MimicChest, ObjectType.SleepyTroll, ObjectType.Fan, ObjectType.Gate, ObjectType.Lever,
+            ObjectType.SirWhiskers,
         };
 
         private VisualElement _root;
@@ -69,6 +70,7 @@ namespace Wick.Game
                 case ObjectType.Fan: return "Fan";
                 case ObjectType.Gate: return "Gate";
                 case ObjectType.Lever: return "Lever";
+                case ObjectType.SirWhiskers: return "Sir Whiskers";
                 default: return type.ToString();
             }
         }
@@ -568,6 +570,7 @@ namespace Wick.Game
                 case ObjectType.Crate: return "Crate: blocks the way and gives cover";
                 case ObjectType.Gate: return "Gate: drag into a doorway, then link a lever to it";
                 case ObjectType.Lever: return "Lever: drag onto floor, then tap Link and tap its gate";
+                case ObjectType.SirWhiskers: return "Sir Whiskers: one per vault; he naps on his cushion until a flame comes near";
                 default: return Name(type) + ": drag it onto the vault";
             }
         }

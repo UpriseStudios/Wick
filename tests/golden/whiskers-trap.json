@@ -1,0 +1,133 @@
+{
+  "_note": "Sir Whiskers naps on (7,1) and wakes on tick 12 as Wick comes within 3 tiles. Wick dithers between (3,1) and (4,1); the cat closes in, wiggles from tick 43 and pounces on tick 73, batting Wick 2 tiles west onto the Drip Pipe at (2,1) (arriving t82). He is invulnerable through tick 118, so the drip that starts on 115 only catches him on tick 119. He dashes out and escapes on tick 125 with 1 flicker.",
+  "simVersion": 4,
+  "seed": 9120,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_whiskers_trap",
+    "version": 1,
+    "vaultLevel": 10,
+    "theme": "crypt",
+    "grid": {
+      "w": 9,
+      "h": 3
+    },
+    "_map": [
+      "#########",
+      "#E......#",
+      "#########"
+    ],
+    "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "sir_whiskers",
+        "x": 7,
+        "y": 1
+      },
+      {
+        "id": 2,
+        "type": "drip_pipe",
+        "x": 2,
+        "y": 1,
+        "cycle": 45,
+        "offset": 20
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 10,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 15,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 20,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 25,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 30,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 35,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 40,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 45,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 50,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 55,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 60,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 121,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 126,
+    "stars": 0,
+    "loot": 0,
+    "hash": "2f81f8685d6cc9e0"
+  },
+  "expectedEvents": {
+    "GuardianAlerted": [
+      12
+    ],
+    "FlickerLost": [
+      73,
+      119
+    ],
+    "KnockedBack": [
+      73
+    ]
+  }
+}

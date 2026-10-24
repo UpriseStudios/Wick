@@ -17,7 +17,7 @@ namespace Wick.Sim.Tests
         private static readonly string[] Types =
         {
             "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "treasure", "brazier",
-            "swing_axe", "mimic_chest", "sleepy_troll", "fan", "gate", "lever", "crate",
+            "swing_axe", "mimic_chest", "sleepy_troll", "fan", "gate", "lever", "sir_whiskers", "crate",
         };
 
         [Test]
@@ -84,7 +84,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void Corpus_CombinedHash_IsStable()
         {
-            const string expected = "71ebba2376dc3c3d";
+            const string expected = "9f47f87706b5b030";
 
             var rng = new Pcg32(2026, 77);
             var combined = new Fnv1a64();

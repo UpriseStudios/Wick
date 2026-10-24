@@ -579,6 +579,11 @@ namespace Wick.Game
                 return "No more braziers at this Vault Level";
             }
 
+            if (type == ObjectType.SirWhiskers && Count(type) >= 1)
+            {
+                return "Only one Sir Whiskers per vault";
+            }
+
             if (type == ObjectType.Treasure && Count(type) >= VaultRules.MaxTreasurePiles(Level))
             {
                 return "No more treasure piles at this Vault Level";

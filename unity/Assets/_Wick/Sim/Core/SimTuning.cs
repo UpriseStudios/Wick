@@ -119,6 +119,28 @@ namespace Wick.Sim
         /// <summary>Undisturbed this long, an awake troll falls back asleep.</summary>
         public const int TrollSleepTicks = 3 * TicksPerSecond;
 
+        /// <summary>Sir Whiskers wakes when Wick's flame lights his tile from within this many tiles.</summary>
+        public const int WhiskersWakeRange = 3;
+
+        /// <summary>Sub-tile units per tick: stalking at a crouch (slower than Wick's run), and padding home.</summary>
+        public const int WhiskersStalkSpeed = 70;
+        public const int WhiskersReturnSpeed = 50;
+
+        /// <summary>Wick still for this long and Sir Whiskers loses interest (1.5 s).</summary>
+        public const int WhiskersFreezeTicks = 45;
+
+        /// <summary>The wiggle before every pounce: the tell, exactly 30 ticks (the wiggle clip's length).</summary>
+        public const int WhiskersWiggleTicks = 30;
+
+        /// <summary>After a pounce he sits and licks a paw, very pleased with himself, for this long.</summary>
+        public const int WhiskersLickTicks = 60;
+
+        /// <summary>A swat knocks Wick this many tiles.</summary>
+        public const int WhiskersKnockback = 2;
+
+        /// <summary>He notices a decoy from this far (with line of sight).</summary>
+        public const int WhiskersDecoyRange = 6;
+
         // ---- Treasure ------------------------------------------------------------------
 
         /// <summary>Each treasure pile carried slows Wick by this percentage...</summary>

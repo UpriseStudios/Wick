@@ -35,6 +35,7 @@ namespace Wick.Game
         public GameObject Fan;
         public GameObject Gate;
         public GameObject Lever;
+        public GameObject SirWhiskers;
 
         public GameObject ForObject(ObjectType type)
         {
@@ -55,6 +56,7 @@ namespace Wick.Game
                 case ObjectType.Fan: return Fan;
                 case ObjectType.Gate: return Gate;
                 case ObjectType.Lever: return Lever;
+                case ObjectType.SirWhiskers: return SirWhiskers;
                 default: return null;
             }
         }

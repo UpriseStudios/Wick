@@ -263,6 +263,15 @@ balance simulator to tune.
   gate never closes on anyone standing in it. The validator only counts treasure as reachable if
   every gate on the way has a lever Wick can reach first. Levels shorten the open time by 0.5 s
   (1 s more at level 5); at level 5 one lever can work two gates.
+- **Sir Whiskers** (Vault Level 10, 60 points, one per vault, no levels in M10): asleep on his
+  cushion, he wakes when a *moving* flame lights his tile from within 3 tiles (a still flame
+  doesn't catch his eye, so freezing works and he doesn't wake again the moment he gets home).
+  He stalks at 70 a tick, only while Wick moves. 45 still ticks (1.5 s) and he loses interest
+  and pads home. Next to Wick he stops and wiggles for exactly 30 ticks, then pounces: if Wick is
+  still within a tile, 1 flicker and a 2-tile knockback away from him (the shared knockback rules:
+  invulnerability, never onto a bell plate). Hit or miss, he then sits and licks his paw for 2 s.
+  A decoy he can see within 6 tiles always wins; when it fades he loses interest. Goldens:
+  whiskers-wall, whiskers-trap, whiskers-freeze.
 
 ## Decisions (24 October 2026)
 

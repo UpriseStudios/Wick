@@ -30,3 +30,4 @@ MonoBehaviour:
   Fan: {fileID: 2982306261373101575, guid: 52ee9ef282ce8ac48afb5749ed3d5a37, type: 3}
   Gate: {fileID: 8168421105670581114, guid: 34c18c82442f4e941b1f2aead185b619, type: 3}
   Lever: {fileID: 2855961878437583626, guid: 8fb1a9f5712f9364c8f76d5c96828e11, type: 3}
+  SirWhiskers: {fileID: 7365840582182992141, guid: 103bd170f654ebb4181a961adafcf9a9, type: 3}

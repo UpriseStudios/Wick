@@ -55,6 +55,10 @@ namespace Wick.Sim
                 {
                     UpdateTroll(ref guardian, def, level);
                 }
+                else if (guardian.Kind == ObjectType.SirWhiskers)
+                {
+                    UpdateWhiskers(ref guardian, def);
+                }
                 else
                 {
                     PerceiveMoths(ref guardian);
@@ -271,6 +275,129 @@ namespace Wick.Sim
             return troll.Mode == GuardianMode.Chase && since >= 0 && since % SimTuning.TrollStompCycle == 0;
         }
 
+        // ---- Sir Whiskers ---------------------------------------------------------------
+
+        /// <summary>Sir Whiskers' moments, kept in GuardianState.Waypoint (he has no patrol).</summary>
+        public const int WhiskersStalking = 0;
+        public const int WhiskersWiggling = 1;
+        public const int WhiskersLicking = 2;
+        public const int WhiskersPouncing = 3;
+
+        /// <summary>
+        /// Sir Whiskers (game spec): naps on his cushion (Patrol, at his own tile) until Wick's lit
+        /// flame comes within 3 tiles (a moving flame: a still one doesn't wake him); stalks (Chase) only while Wick moves; loses
+        /// interest after 1.5 s of stillness and pads home; next to Wick he wiggles for 30 ticks,
+        /// then pounces (resolved in step 5) and sits licking a paw. A decoy always wins
+        /// (Distracted). LostTicks counts Wick's still ticks; ContactTicks times the wiggle and lick.
+        /// </summary>
+        private void UpdateWhiskers(ref GuardianState cat, ObjectDef def)
+        {
+            WickState w = State.Wick;
+            if (DecoyActive() && Senses(cat.Occupied, w.DecoyTile, SimTuning.WhiskersDecoyRange))
+            {
+                cat.Mode = GuardianMode.Distracted;
+                cat.Target = w.DecoyTile;
+                cat.Waypoint = WhiskersStalking;
+                Advance(ref cat, SimTuning.WhiskersStalkSpeed);
+                return;
+            }
+
+            if (cat.Mode == GuardianMode.Distracted)
+            {
+                LoseInterest(ref cat, def); // the decoy faded: he wanders home, bored
+            }
+
+            if (cat.Mode == GuardianMode.Patrol)
+            {
+                bool home = cat.Tile == def.Pos && !cat.Moving;
+                // A flame that comes near wakes him; a still one doesn't catch his eye (so freezing works).
+                if (home && w.Moving && IsLit(cat.Tile) &&
+                    Motion.DistSq(cat.Tile, w.Occupied) <= SimTuning.WhiskersWakeRange * SimTuning.WhiskersWakeRange)
+                {
+                    cat.Mode = GuardianMode.Chase;
+                    cat.Waypoint = WhiskersStalking;
+                    cat.LostTicks = 0;
+                    Emit(SimEventType.GuardianAlerted, def.Id, cat.Tile, 0);
+                    return;
+                }
+
+                cat.Target = def.Pos;
+                Advance(ref cat, SimTuning.WhiskersReturnSpeed);
+                return;
+            }
+
+            // Chasing.
+            if (cat.Waypoint == WhiskersLicking)
+            {
+                if (--cat.ContactTicks <= 0)
+                {
+                    cat.Waypoint = WhiskersStalking;
+                    cat.LostTicks = 0;
+                }
+
+                return;
+            }
+
+            if (cat.Waypoint == WhiskersWiggling)
+            {
+                if (--cat.ContactTicks <= 0)
+                {
+                    cat.Waypoint = WhiskersPouncing;
+                    Emit(SimEventType.TrapFired, def.Id, cat.Tile, 0); // the pounce
+                }
+
+                return;
+            }
+
+            cat.LostTicks = w.Moving ? 0 : cat.LostTicks + 1;
+            if (cat.LostTicks >= SimTuning.WhiskersFreezeTicks)
+            {
+                LoseInterest(ref cat, def);
+                return;
+            }
+
+            if (!cat.Moving && Motion.Chebyshev(cat.Tile, w.Occupied) <= 1)
+            {
+                cat.Waypoint = WhiskersWiggling;
+                cat.ContactTicks = SimTuning.WhiskersWiggleTicks;
+                cat.Facing = DirToward(cat.Tile, w.Occupied, cat.Facing);
+                return;
+            }
+
+            if (w.Moving || cat.Moving)
+            {
+                cat.Target = w.Occupied;
+                Advance(ref cat, SimTuning.WhiskersStalkSpeed);
+            }
+        }
+
+        private static void LoseInterest(ref GuardianState cat, ObjectDef def)
+        {
+            cat.Mode = GuardianMode.Patrol;
+            cat.Waypoint = WhiskersStalking;
+            cat.LostTicks = 0;
+            cat.ContactTicks = 0;
+            cat.Target = def.Pos;
+        }
+
+        /// <summary>The main direction from a to b; `fallback` when they share a tile.</summary>
+        public static Dir DirToward(TilePos a, TilePos b, Dir fallback)
+        {
+            int dx = b.X - a.X;
+            int dy = b.Y - a.Y;
+            if (dx == 0 && dy == 0)
+            {
+                return fallback;
+            }
+
+            if (Math.Abs(dx) >= Math.Abs(dy))
+            {
+                return dx > 0 ? Dir.E : Dir.W;
+            }
+
+            return dy > 0 ? Dir.S : Dir.N;
+        }
+
         // ---- Shared --------------------------------------------------------------------
 
         private bool DecoyActive()
@@ -394,6 +521,19 @@ namespace Wick.Sim
                 }
 
                 return false;
+            }
+
+            if (g.Kind == ObjectType.SirWhiskers)
+            {
+                // The pounce lands if Wick is still within reach; hit or miss, he sits and licks a paw.
+                if (g.Waypoint != WhiskersPouncing)
+                {
+                    return false;
+                }
+
+                g.Waypoint = WhiskersLicking;
+                g.ContactTicks = SimTuning.WhiskersLickTicks;
+                return Motion.Chebyshev(g.Tile, at) <= 1;
             }
 
             if (g.Kind == ObjectType.SleepyTroll)
