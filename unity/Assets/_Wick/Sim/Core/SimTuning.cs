@@ -97,6 +97,19 @@ namespace Wick.Sim
         /// <summary>A Mimic Chest's bite costs this many flickers.</summary>
         public const int MimicBiteFlickers = 2;
 
+        /// <summary>Sleepy Troll: Wick's light radius (sub-tile units) that wakes it at level 1.</summary>
+        public const int TrollWakeLight = 3 * SubTile.PerTile;
+
+        /// <summary>A bright enough flame wakes the troll from this many tiles away (Chebyshev).</summary>
+        public const int TrollWakeRange = 2;
+
+        /// <summary>Ticks from waking to the first stomp, then between stomps.</summary>
+        public const int TrollStompDelay = 15;
+        public const int TrollStompCycle = 30;
+
+        /// <summary>Undisturbed this long, an awake troll falls back asleep.</summary>
+        public const int TrollSleepTicks = 3 * TicksPerSecond;
+
         // ---- Treasure ------------------------------------------------------------------
 
         /// <summary>Each treasure pile carried slows Wick by this percentage...</summary>

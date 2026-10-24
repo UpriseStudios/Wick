@@ -1,0 +1,91 @@
+{
+  "_note": "A Sleepy Troll on (3,1). Tiptoeing halves Wick's light to 2 tiles, below the 3 that wakes it, so he creeps past and back at tiptoe speed (10 ticks a tile): (2,1) t9, onto the troll's tile t19, (4,1) t29, (5,1) t39, then home: (4,1) t49, (3,1) t59, (2,1) t69, and out on tick 79. It never wakes. 1 star (all flickers), no loot.",
+  "simVersion": 4,
+  "seed": 6116,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_troll",
+    "version": 1,
+    "vaultLevel": 6,
+    "theme": "crypt",
+    "grid": {
+      "w": 7,
+      "h": 3
+    },
+    "_map": [
+      "#######",
+      "#E....#",
+      "#######"
+    ],
+    "tiles": "AQEBAQEBAQEAAAAAAAEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "sleepy_troll",
+        "x": 3,
+        "y": 1
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "TiptoeOn"
+    },
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 10,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 20,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 30,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 40,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 50,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 60,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 70,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 80,
+    "stars": 1,
+    "loot": 0,
+    "hash": "b41320fd0c280192"
+  },
+  "expectedEvents": {
+    "GuardianAlerted": [],
+    "FlickerLost": []
+  }
+}

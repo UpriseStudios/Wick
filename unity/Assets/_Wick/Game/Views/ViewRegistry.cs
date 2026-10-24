@@ -31,6 +31,7 @@ namespace Wick.Game
         [Header("Objects (M10, stand-ins until phase 2 art)")]
         public GameObject SwingAxe;
         public GameObject MimicChest;
+        public GameObject SleepyTroll;
 
         public GameObject ForObject(ObjectType type)
         {
@@ -47,6 +48,7 @@ namespace Wick.Game
                 case ObjectType.Crate: return Crate;
                 case ObjectType.SwingAxe: return SwingAxe;
                 case ObjectType.MimicChest: return MimicChest;
+                case ObjectType.SleepyTroll: return SleepyTroll;
                 default: return null;
             }
         }

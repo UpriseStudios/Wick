@@ -20,12 +20,13 @@ namespace Wick.Sim
 
         SwingAxe,
         MimicChest,
+        SleepyTroll,
     }
 
     public static class ObjectTypes
     {
         /// <summary>How many object types there are (the enum's values are 0 to Count - 1).</summary>
-        public const int Count = (int)ObjectType.MimicChest + 1;
+        public const int Count = (int)ObjectType.SleepyTroll + 1;
 
         public static ObjectType Parse(string name)
         {
@@ -43,6 +44,7 @@ namespace Wick.Sim
                 case "ice_tiles": return ObjectType.IceTiles;
                 case "swing_axe": return ObjectType.SwingAxe;
                 case "mimic_chest": return ObjectType.MimicChest;
+                case "sleepy_troll": return ObjectType.SleepyTroll;
                 default: throw new FormatException("Unknown object type '" + name + "'");
             }
         }
@@ -63,6 +65,7 @@ namespace Wick.Sim
                 case ObjectType.IceTiles: return "ice_tiles";
                 case ObjectType.SwingAxe: return "swing_axe";
                 case ObjectType.MimicChest: return "mimic_chest";
+                case ObjectType.SleepyTroll: return "sleepy_troll";
                 default: throw new ArgumentOutOfRangeException(nameof(type));
             }
         }
@@ -80,7 +83,8 @@ namespace Wick.Sim
 
         public static bool IsGuardian(ObjectType type)
         {
-            return type == ObjectType.NightOwl || type == ObjectType.WaxMoths || type == ObjectType.MimicChest;
+            return type == ObjectType.NightOwl || type == ObjectType.WaxMoths || type == ObjectType.MimicChest ||
+                type == ObjectType.SleepyTroll;
         }
 
         /// <summary>Traps and guardians have defence upgrade levels; treasure, braziers and crates don't.</summary>

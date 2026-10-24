@@ -244,6 +244,12 @@ balance simulator to tune.
   after 18 ticks it bites for 2 flickers, then starts over. Stepping away resets it. Its tells are
   a slow breath when lit and the lid creaking open during the wind-up. Levels take 2 ticks off the
   wind-up, down to the 10-tick tell floor; level 5's bite also steals one carried pile.
+- **Sleepy Troll** (Vault Level 6, 35 points, a guardian that never moves; Wick can squeeze past
+  it): a flame of 3 tiles' light or more within 2 tiles wakes it. Tiptoeing halves Wick's light,
+  so tiptoeing past at full flame never wakes it. Awake, it stomps its tile 15 ticks later and
+  every 30 ticks after (1 flicker), and falls asleep again after 3 s undisturbed. Its tell is the
+  snore. Levels wake it at a slightly dimmer light (2.3 tiles at level 5, still above a full-flame
+  tiptoe); level 5's stomp also hits the 4 tiles around it.
 
 ## Decisions (24 October 2026)
 

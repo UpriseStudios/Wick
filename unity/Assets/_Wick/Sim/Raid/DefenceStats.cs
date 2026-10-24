@@ -121,6 +121,21 @@ namespace Wick.Sim
             return level >= 5;
         }
 
+        /// <summary>
+        /// Sleepy Troll: the light radius that wakes it: 3 tiles, 0.2 less a level, 0.1 less again at
+        /// level 5 (2.3 tiles). Tiptoeing at full flame (2 tiles) never wakes it, whatever its level.
+        /// </summary>
+        public static int TrollWakeLight(int level)
+        {
+            return SimTuning.TrollWakeLight - Steps(level, 200, 100);
+        }
+
+        /// <summary>Sleepy Troll level 5: a stomp also hits the 4 tiles around it.</summary>
+        public static bool TrollStompsAround(int level)
+        {
+            return level >= 5;
+        }
+
         /// <summary>Ice Tiles: sub-tile units per tick while sliding: 250, +10% a level, +15% more at level 5.</summary>
         public static int IceSlideSpeed(int level)
         {

@@ -61,6 +61,20 @@ namespace Wick.Editor
                 Set(view, "_lid", lid);
             });
 
+            Material owl = Mat("Owl");
+            Material eye = Mat("OwlEye");
+            registry.SleepyTroll = Save("SleepyTroll", root =>
+            {
+                var body = new GameObject("Body").transform;
+                body.SetParent(root, false);
+                Box(body, "Torso", new Vector3(0f, 0.55f, 0f), new Vector3(0.9f, 1.1f, 0.7f), owl);
+                Box(body, "Nightcap", new Vector3(0f, 1.25f, 0f), new Vector3(0.35f, 0.3f, 0.35f), warning);
+                GameObject bubble = Prim(PrimitiveType.Sphere, root, "SnoreBubble", new Vector3(0.45f, 1.2f, 0.2f), Vector3.one * 0.22f, eye);
+                TrollView view = root.gameObject.AddComponent<TrollView>();
+                Set(view, "_body", body);
+                Set(view, "_snore", bubble.transform);
+            });
+
             EditorUtility.SetDirty(registry);
             AssetDatabase.SaveAssets();
             Debug.Log("M10 stand-ins built");

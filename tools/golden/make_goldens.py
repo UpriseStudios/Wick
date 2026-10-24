@@ -369,6 +369,24 @@ GOLDENS = {
         "Escaped", 25, 0, 0,
         {"FlickerLost": [19], "GuardianAlerted": [2, 20]},
     ),
+    "troll-tiptoe.json": raid(
+        "A Sleepy Troll on (3,1). Tiptoeing halves Wick's light to 2 tiles, below the 3 that wakes "
+        "it, so he creeps past and back at tiptoe speed (10 ticks a tile): (2,1) t9, onto the "
+        "troll's tile t19, (4,1) t29, (5,1) t39, then home: (4,1) t49, (3,1) t59, (2,1) t69, and out "
+        "on tick 79. It never wakes. 1 star (all flickers), no loot.",
+        6116,
+        vault("v_golden_troll", [
+            "#######",
+            "#E....#",
+            "#######",
+        ], [
+            {"id": 1, "type": "sleepy_troll", "x": 3, "y": 1},
+        ], level=6),
+        cmds((0, "TiptoeOn"), (0, "Dash", "E"), (10, "Dash", "E"), (20, "Dash", "E"), (30, "Dash", "E"),
+             (40, "Dash", "W"), (50, "Dash", "W"), (60, "Dash", "W"), (70, "Dash", "W")),
+        "Escaped", 80, 1, 0,
+        {"GuardianAlerted": [], "FlickerLost": []},
+    ),
 }
 
 

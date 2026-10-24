@@ -51,6 +51,10 @@ namespace Wick.Sim
                 {
                     PerceiveMimic(ref guardian, def);
                 }
+                else if (guardian.Kind == ObjectType.SleepyTroll)
+                {
+                    UpdateTroll(ref guardian, def, level);
+                }
                 else
                 {
                     PerceiveMoths(ref guardian);
@@ -219,6 +223,54 @@ namespace Wick.Sim
             return wick == mimic.Tile || Motion.DistSq(wick, mimic.Tile) == 1;
         }
 
+        // ---- Sleepy Troll ---------------------------------------------------------------
+
+        /// <summary>
+        /// A Sleepy Troll never moves. A bright flame near it wakes it (Mode Chase); awake, it
+        /// stomps on a rhythm and falls back asleep after TrollSleepTicks undisturbed. ContactTicks
+        /// counts ticks awake; LostTicks counts ticks since it was last disturbed.
+        /// </summary>
+        private void UpdateTroll(ref GuardianState troll, ObjectDef def, int level)
+        {
+            WickState w = State.Wick;
+            bool disturbed = Motion.Chebyshev(w.Occupied, troll.Tile) <= SimTuning.TrollWakeRange &&
+                Lighting.RadiusUnits(in w) >= DefenceStats.TrollWakeLight(level);
+
+            if (troll.Mode != GuardianMode.Chase)
+            {
+                if (disturbed)
+                {
+                    troll.Mode = GuardianMode.Chase;
+                    troll.ContactTicks = 0;
+                    troll.LostTicks = 0;
+                    Emit(SimEventType.GuardianAlerted, def.Id, troll.Tile, 0);
+                }
+
+                return;
+            }
+
+            troll.ContactTicks++;
+            troll.LostTicks = disturbed ? 0 : troll.LostTicks + 1;
+            if (troll.LostTicks >= SimTuning.TrollSleepTicks)
+            {
+                troll.Mode = GuardianMode.Patrol;
+                troll.ContactTicks = 0;
+                troll.LostTicks = 0;
+                return;
+            }
+
+            if (IsStompTick(troll))
+            {
+                Emit(SimEventType.TrapFired, def.Id, troll.Tile, 0);
+            }
+        }
+
+        public static bool IsStompTick(in GuardianState troll)
+        {
+            int since = troll.ContactTicks - SimTuning.TrollStompDelay;
+            return troll.Mode == GuardianMode.Chase && since >= 0 && since % SimTuning.TrollStompCycle == 0;
+        }
+
         // ---- Shared --------------------------------------------------------------------
 
         private bool DecoyActive()
@@ -342,6 +394,16 @@ namespace Wick.Sim
                 }
 
                 return false;
+            }
+
+            if (g.Kind == ObjectType.SleepyTroll)
+            {
+                if (!IsStompTick(g))
+                {
+                    return false;
+                }
+
+                return at == g.Tile || (DefenceStats.TrollStompsAround(_vault.LevelOf(g.Kind)) && Motion.DistSq(at, g.Tile) == 1);
             }
 
             bool touching = g.Occupied == at;
