@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-SIM_VERSION = 3
+SIM_VERSION = 4
 REPO = Path(__file__).resolve().parents[2]
 GOLDEN_DIR = REPO / "tests" / "golden"
 
@@ -38,6 +38,31 @@ def vault(vault_id, rows, objects, level=1, hoard=None):
     if hoard:
         doc["hoard"] = hoard
     return doc
+
+
+def grow(rows, objects, hoard=None, cols=3, rows_after=10, add_rows=3):
+    """Widens a 9 x 13 map to 12 x 16 for the M10 grid: inserts `cols` columns before the east
+    wall (floor where the room runs into it, wall elsewhere) and repeats row `rows_after`
+    `add_rows` times. Objects, patrols and the hoard move with the tiles they stood on."""
+    east = len(rows[0]) - 1
+    wide = [r[:east] + ("." if r[east - 1] == "." else "#") * cols + r[east:] for r in rows]
+    tall = wide[:rows_after + 1] + [wide[rows_after]] * add_rows + wide[rows_after + 1:]
+
+    def move(x, y):
+        return x + (cols if x >= east else 0), y + (add_rows if y > rows_after else 0)
+
+    moved = []
+    for o in objects:
+        o = dict(o)
+        o["x"], o["y"] = move(o["x"], o["y"])
+        if "patrol" in o:
+            o["patrol"] = [list(move(px, py)) for px, py in o["patrol"]]
+        moved.append(o)
+    if hoard:
+        x0, y0 = move(hoard[0], hoard[1])
+        x1, y1 = move(hoard[2], hoard[3])
+        hoard = [x0, y0, x1 + (cols if hoard[2] == east - 1 else 0), y1]
+    return tall, moved, hoard
 
 
 def cmds(*items):

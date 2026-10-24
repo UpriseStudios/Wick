@@ -5,28 +5,31 @@
   "vaultLevel": 2,
   "theme": "crypt",
   "grid": {
-    "w": 9,
-    "h": 13
+    "w": 12,
+    "h": 16
   },
   "_map": [
-    "#########",
-    "#.......#",
-    "#.......#",
-    "#.......#",
-    "###D#####",
-    "#.......#",
-    "#.......#",
-    "#.......#",
-    "#######.#",
-    "#.......#",
-    "#.......#",
-    "#.......#",
-    "####E####"
+    "############",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "###D########",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#######....#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "####E#######"
   ],
-  "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAgEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQEBAQABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+  "tiles": "AQEBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAgEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQEBAQAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQABAQEBAQEB",
   "entrance": [
     4,
-    12
+    15
   ],
   "objects": [
     {
@@ -98,14 +101,14 @@
     {
       "id": 8,
       "type": "brazier",
-      "x": 8,
+      "x": 11,
       "y": 10
     }
   ],
   "hoard": [
     1,
     1,
-    7,
+    10,
     3
   ]
 }

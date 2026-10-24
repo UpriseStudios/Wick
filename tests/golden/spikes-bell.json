@@ -1,6 +1,6 @@
 {
   "_note": "Spike Floor at (4,10), cycle 60: raised ticks 0-19 and 60-79, warning rumble at 45. Steps onto it at tick 42 (occupied), hears the warning at 45, is hit when it rises at 60. Moves on north and steps on the Snuffer Bell plate at (4,8): occupied on tick 72, instant snuff.",
-  "simVersion": 3,
+  "simVersion": 4,
   "seed": 4103,
   "vault": {
     "schema": 1,

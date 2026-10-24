@@ -5,28 +5,31 @@
   "vaultLevel": 1,
   "theme": "crypt",
   "grid": {
-    "w": 9,
-    "h": 13
+    "w": 12,
+    "h": 16
   },
   "_map": [
-    "#########",
-    "#.......#",
-    "#.......#",
-    "#.......#",
-    "####D####",
-    "#.......#",
-    "#.......#",
-    "#.......#",
-    "###.#####",
-    "#.......#",
-    "#.......#",
-    "#.......#",
-    "####E####"
+    "############",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "####D#######",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "###.########",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "####E#######"
   ],
-  "tiles": "AQEBAQEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQIBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAAEBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+  "tiles": "AQEBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQIBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAAEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQABAQEBAQEB",
   "entrance": [
     4,
-    12
+    15
   ],
   "objects": [
     {
@@ -75,7 +78,7 @@
   "hoard": [
     1,
     1,
-    7,
+    10,
     3
   ]
 }

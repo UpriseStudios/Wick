@@ -1,6 +1,6 @@
 {
   "_note": "Night Owl guarding (4,7) facing south; Wax Moths at (1,8). One dash north puts the owl inside Wick's light: alerted on tick 4 (hand-worked). He drops a decoy at (4,11) on tick 5 (it burns until tick 93) and slips west to (2,11). The decoy pulls the owl and the moths; when it burns out the owl walks back north and the moths drift onto Wick, draining a flicker on tick 246 (contact from tick 187; inspected against the 25 ticks/tile drift, not hand-traced). He then dashes home: escapes on tick 274 (hand-worked).",
-  "simVersion": 3,
+  "simVersion": 4,
   "seed": 4104,
   "vault": {
     "schema": 1,

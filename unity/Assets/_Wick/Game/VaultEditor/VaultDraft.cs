@@ -23,6 +23,21 @@ namespace Wick.Game
         }
     }
 
+    /// <summary>What Expand did: how far the old layout moved, and the doorway tiles it opened.</summary>
+    public sealed class ExpandResult
+    {
+        public ExpandResult(TilePos offset, List<TilePos> doorway)
+        {
+            Offset = offset;
+            Doorway = doorway;
+        }
+
+        public TilePos Offset { get; }
+
+        /// <summary>The old outer wall tile, then the new-space tile beyond it; empty if there was no spot.</summary>
+        public List<TilePos> Doorway { get; }
+    }
+
     /// <summary>
     /// The editable vault behind the editor: tiles, entrance, hoard, objects and the clear-check.
     /// Every edit is a plain method so it can be unit-tested; ToVaultDef builds what the sim,
@@ -33,8 +48,6 @@ namespace Wick.Game
         public string DraftId = "";
         public string Name = "New vault";
         public int Level = 1;
-        public readonly int Width = VaultRules.GridWidth;
-        public readonly int Height = VaultRules.GridHeight;
         public TileType[] Tiles;
         public TilePos Entrance;
         public bool HasHoard;
@@ -48,11 +61,22 @@ namespace Wick.Game
         public string PublishedVaultId = "";
         public int PublishedVersion;
 
+        /// <summary>A blank draft on the smallest grid (Vault Level 1's).</summary>
         public VaultDraft()
+            : this(VaultRules.GridWidth(VaultRules.MinVaultLevel), VaultRules.GridHeight(VaultRules.MinVaultLevel))
         {
+        }
+
+        public VaultDraft(int width, int height)
+        {
+            Width = width;
+            Height = height;
             Tiles = new TileType[Width * Height];
             Entrance = new TilePos(Width / 2, Height - 1);
         }
+
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         public static int DefaultCycle(ObjectType type)
         {
@@ -67,7 +91,7 @@ namespace Wick.Game
 
         public VaultDraft Clone()
         {
-            var c = (VaultDraft)MemberwiseClone();
+            var c = (VaultDraft)MemberwiseClone(); // Width and Height copy with it
             c.Tiles = (TileType[])Tiles.Clone();
             c.Objects = new List<DraftObject>(Objects.Count);
             foreach (DraftObject o in Objects)
@@ -271,6 +295,93 @@ namespace Wick.Game
             return true;
         }
 
+        /// <summary>
+        /// Grows the grid to the largest one the draft's Vault Level allows (decision B in
+        /// docs/m10-plan.md). The layout keeps its place against the entrance's edge, the new
+        /// space is solid wall, and a doorway is opened through the old outer wall into it so the
+        /// builder has somewhere to dig. Returns null when the grid is already full size.
+        /// </summary>
+        public ExpandResult Expand()
+        {
+            int width = VaultRules.GridWidth(Level);
+            int height = VaultRules.GridHeight(Level);
+            if (width <= Width && height <= Height)
+            {
+                return null;
+            }
+
+            // New columns split either side; new rows go on the far side from the entrance.
+            int dx = (width - Width) / 2;
+            int dy = Entrance.Y >= Height / 2 ? height - Height : 0;
+            var tiles = new TileType[width * height];
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                tiles[i] = TileType.Wall;
+            }
+
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    tiles[(y + dy) * width + x + dx] = Tiles[y * Width + x];
+                }
+            }
+
+            var offset = new TilePos(dx, dy);
+            int oldHeight = Height;
+            Width = width;
+            Height = height;
+            Tiles = tiles;
+            Entrance = Shift(Entrance, offset);
+            if (HasHoard)
+            {
+                Hoard = new TileRect(Hoard.MinX + dx, Hoard.MinY + dy, Hoard.MaxX + dx, Hoard.MaxY + dy);
+            }
+
+            foreach (DraftObject o in Objects)
+            {
+                o.Pos = Shift(o.Pos, offset);
+                for (int i = 0; i < o.Patrol.Count; i++)
+                {
+                    o.Patrol[i] = Shift(o.Patrol[i], offset);
+                }
+            }
+
+            // The doorway: through the old wall on the side the new rows were added, at the
+            // floor tile nearest the middle, and one tile on into the new space.
+            int wallRow = dy > 0 ? dy : oldHeight - 1;
+            int inside = dy > 0 ? 1 : -1;
+            var doorway = new List<TilePos>();
+            int middle = Width / 2;
+            for (int step = 0; step < Width && doorway.Count == 0; step++)
+            {
+                int x = middle + ((step & 1) == 0 ? step / 2 : -(step / 2 + 1));
+                var wall = new TilePos(x, wallRow);
+                if (TileAt(wall) == TileType.Wall && TileAt(new TilePos(x, wallRow + inside)) == TileType.Floor
+                    && InBounds(new TilePos(x, wallRow - inside)))
+                {
+                    doorway.Add(wall);
+                    doorway.Add(new TilePos(x, wallRow - inside));
+                }
+            }
+
+            foreach (TilePos p in doorway)
+            {
+                PaintTile(p, TileType.Floor);
+            }
+
+            ClearCheck = null; // a new layout needs a new run
+            return new ExpandResult(offset, doorway);
+        }
+
+        /// <summary>Whether the draft's Vault Level allows a bigger grid than it has.</summary>
+        public bool CanExpand => VaultRules.GridWidth(Level) > Width || VaultRules.GridHeight(Level) > Height;
+
+        private static TilePos Shift(TilePos p, TilePos by)
+        {
+            return new TilePos(p.X + by.X, p.Y + by.Y);
+        }
+
         public DraftObject Find(int id)
         {
             return Objects.Find(o => o.Id == id);
@@ -399,7 +510,7 @@ namespace Wick.Game
 
         public static VaultDraft FromVault(VaultDef vault, string name)
         {
-            var d = new VaultDraft
+            var d = new VaultDraft(vault.Width, vault.Height)
             {
                 Name = name,
                 Level = vault.VaultLevel,

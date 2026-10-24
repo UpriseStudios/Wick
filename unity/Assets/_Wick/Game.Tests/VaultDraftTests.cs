@@ -41,6 +41,79 @@ namespace Wick.Game.Tests
             }
         }
 
+        // ---- Expanding (decision B in docs/m10-plan.md) ------------------------------------
+
+        [Test]
+        public void Expand_DoesNothing_WhileTheGridIsFullSizeForTheLevel()
+        {
+            VaultDraft d = Halls();
+            Assert.IsFalse(d.CanExpand);
+            Assert.IsNull(d.Expand());
+            Assert.AreEqual(12, d.Width);
+        }
+
+        [Test]
+        public void Expand_KeepsTheLayoutAgainstTheEntranceEdge_AndAddsWall()
+        {
+            VaultDraft d = Halls();
+            VaultDraft before = d.Clone();
+            d.SetLevel(3);
+            Assert.IsTrue(d.CanExpand);
+
+            ExpandResult r = d.Expand();
+            Assert.AreEqual(14, d.Width);
+            Assert.AreEqual(18, d.Height);
+            Assert.AreEqual(new TilePos(1, 2), r.Offset, "one column each side, two new rows on top");
+            Assert.AreEqual(new TilePos(before.Entrance.X + 1, 17), d.Entrance, "the entrance stays on the bottom edge");
+            Assert.AreEqual(new TilePos(5, 4), d.Objects[0].Pos, "the treasure moved with its tile");
+            Assert.AreEqual(before.Hoard.MinY + 2, d.Hoard.MinY);
+
+            for (int x = 0; x < d.Width; x++)
+            {
+                if (!r.Doorway.Contains(new TilePos(x, 1)))
+                {
+                    Assert.AreEqual(TileType.Wall, d.TileAt(new TilePos(x, 1)), "new space is wall at x " + x);
+                }
+            }
+
+            Assert.AreEqual(2, r.Doorway.Count);
+            Assert.AreEqual(2, r.Doorway[0].Y, "the doorway is in the old top wall");
+            Assert.AreEqual(1, r.Doorway[1].Y, "and reaches one tile into the new space");
+            foreach (TilePos p in r.Doorway)
+            {
+                Assert.AreEqual(TileType.Floor, d.TileAt(p));
+            }
+
+            Assert.AreEqual(TileType.Floor, d.TileAt(new TilePos(r.Doorway[0].X, 3)), "it opens onto the old room");
+            CollectionAssert.IsEmpty(VaultValidator.Validate(d.ToVaultDef()), "the expanded vault is valid");
+            Assert.IsFalse(d.CanExpand);
+        }
+
+        [Test]
+        public void Expand_DropsTheClearCheck_AndUndoes()
+        {
+            VaultDraft d = Halls();
+            d.SetLevel(5);
+            VaultDraft before = d.Clone();
+            d.Expand();
+            Assert.IsNull(d.ClearCheck);
+            Assert.AreEqual(16, d.Width);
+            Assert.AreEqual(12, before.Width, "a clone keeps its own size, so undo restores it");
+            Assert.AreEqual(VaultJson.Write(before.ToVaultDef()), VaultJson.Write(VaultDraft.FromJson(before.ToJson()).ToVaultDef()));
+        }
+
+        [Test]
+        public void ADraftOnAnyTableGrid_RoundTripsItsSize()
+        {
+            VaultDraft d = Halls();
+            d.SetLevel(10);
+            d.Expand();
+            VaultDraft back = VaultDraft.FromJson(d.ToJson());
+            Assert.AreEqual(20, back.Width);
+            Assert.AreEqual(28, back.Height);
+            Assert.AreEqual(d.Entrance, back.Entrance);
+        }
+
         // ---- Edits ------------------------------------------------------------------------
 
         [Test]
@@ -56,14 +129,14 @@ namespace Wick.Game.Tests
         public void PlacingTraps_SpendsBudget()
         {
             VaultDraft d = Halls();
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 8; i++)
             {
                 d.Place(ObjectType.DripPipe, new TilePos(1 + i, 6));
             }
 
-            Assert.AreEqual(60, d.BuildPoints);
+            Assert.AreEqual(80, d.BuildPoints);
             CollectionAssert.IsEmpty(Codes(d));
-            d.Place(ObjectType.DripPipe, new TilePos(7, 6));
+            d.Place(ObjectType.DripPipe, new TilePos(9, 6));
             Assert.That(Codes(d), Has.Member(VaultIssueCode.OverBudget));
         }
 
@@ -108,7 +181,7 @@ namespace Wick.Game.Tests
             d.Rotate(corner.Id);
             Assert.AreEqual((int)Dir.N, corner.Rot, "skips the wall to the west");
 
-            Assert.IsTrue(d.Move(west.Id, new TilePos(8, 6)));
+            Assert.IsTrue(d.Move(west.Id, new TilePos(11, 6)));
             Assert.AreEqual((int)Dir.W, d.Find(west.Id).Rot, "turns to face the room after a move");
         }
 
@@ -204,7 +277,7 @@ namespace Wick.Game.Tests
             d.Place(ObjectType.Treasure, new TilePos(6, 2));
             Assert.AreEqual("No more treasure piles at this Vault Level", d.ShopBlock(ObjectType.Treasure));
 
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 8; i++)
             {
                 d.Place(ObjectType.DripPipe, new TilePos(1 + i, 6));
             }

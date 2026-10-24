@@ -50,9 +50,9 @@ namespace Wick.CloudCode.Tests
         [Test]
         public async Task OverBudgetVault_IsRejected_AndNothingIsWritten()
         {
-            // Seven 10-point drips on a level 1 vault (budget 60).
+            // Nine 10-point drips on a level 1 vault (budget 80).
             VaultDef halls = TestVaults.Halls();
-            var drips = new ObjectDef[7];
+            var drips = new ObjectDef[9];
             for (int i = 0; i < drips.Length; i++)
             {
                 drips[i] = TestVaults.Drip(10 + i, 1 + i, 6);

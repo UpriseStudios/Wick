@@ -198,7 +198,7 @@ namespace Wick.Game
 
         public void ChangeLevel(int delta)
         {
-            Edit(d => d.SetLevel(Mathf.Clamp(d.Level + delta, 1, 3)));
+            Edit(d => d.SetLevel(Mathf.Clamp(d.Level + delta, VaultRules.MinVaultLevel, VaultRules.MaxVaultLevel)));
         }
 
         public void RotateSelected()

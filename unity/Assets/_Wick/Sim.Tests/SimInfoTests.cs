@@ -7,7 +7,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void Version_IsThree()
         {
-            Assert.AreEqual(3, SimInfo.Version);
+            Assert.AreEqual(4, SimInfo.Version);
         }
     }
 }

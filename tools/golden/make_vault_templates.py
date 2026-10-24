@@ -4,7 +4,7 @@ unity/Assets/_Wick/Resources/VaultTemplates.
 Usage (from the repo root):
     python tools/golden/make_vault_templates.py
 
-Each template is a valid Level 1 vault (9 x 13, 3 rooms, entrance, hoard, one treasure pile,
+Each template is a valid Level 1 vault (12 x 16, 3 rooms, entrance, hoard, one treasure pile,
 no traps) for players to build on. Standard library only; Python 3.8+.
 """
 import json
@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from make_goldens import REPO, vault  # noqa: E402
+from make_goldens import REPO, grow, vault  # noqa: E402
 
 OUT_DIR = REPO / "unity" / "Assets" / "_Wick" / "Resources" / "VaultTemplates"
 
@@ -70,9 +70,16 @@ TEMPLATES = {
 }
 
 
+def widened(doc):
+    """The maps below were drawn for the vertical slice's 9 x 13 grid; M10's smallest is 12 x 16."""
+    rows, objects, hoard = grow(doc["_map"], doc["objects"], doc.get("hoard"))
+    return vault(doc["vaultId"], rows, objects, level=doc["vaultLevel"], hoard=hoard)
+
+
 def main():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for name, doc in TEMPLATES.items():
+        doc = widened(doc)
         (OUT_DIR / (name + ".json")).write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8", newline="\n")
         print("wrote", name + ".json")
 

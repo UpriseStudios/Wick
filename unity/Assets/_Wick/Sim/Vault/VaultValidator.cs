@@ -64,18 +64,19 @@ namespace Wick.Sim
             var issues = new List<VaultIssue>();
             var none = new TilePos(-1, -1);
 
-            if (vault.Width != VaultRules.GridWidth || vault.Height != VaultRules.GridHeight)
-            {
-                issues.Add(new VaultIssue(VaultIssueCode.WrongGridSize, 0, none,
-                    "Vaults are " + VaultRules.GridWidth + " x " + VaultRules.GridHeight + " tiles"));
-            }
-
             int level = vault.VaultLevel;
             if (level < VaultRules.MinVaultLevel || level > VaultRules.MaxVaultLevel)
             {
                 issues.Add(new VaultIssue(VaultIssueCode.VaultLevelOutOfRange, 0, none,
                     "Vault Level must be " + VaultRules.MinVaultLevel + " to " + VaultRules.MaxVaultLevel));
                 level = level < VaultRules.MinVaultLevel ? VaultRules.MinVaultLevel : VaultRules.MaxVaultLevel;
+            }
+
+            if (!VaultRules.IsAllowedGrid(vault.Width, vault.Height, level))
+            {
+                issues.Add(new VaultIssue(VaultIssueCode.WrongGridSize, 0, none,
+                    "Vault Level " + level + " vaults are up to " + VaultRules.GridWidth(level) + " x " +
+                    VaultRules.GridHeight(level) + " tiles, in the sizes the Vault Level table lists"));
             }
 
             if (!vault.IsWalkable(vault.Entrance))

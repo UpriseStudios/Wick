@@ -1,6 +1,6 @@
 {
   "_note": "Run north through the door, across the pit and onto the ice (all walkable in M1), then a tiptoe dash west and a decoy, and never come back. Times out at 1800 ticks.",
-  "simVersion": 3,
+  "simVersion": 4,
   "seed": 99120,
   "vault": {
     "schema": 1,

@@ -1,6 +1,6 @@
 {
   "_note": "Dash into a wall, run into a wall, tiptoe dashes west and north, decoy, run north into a wall, run south into a wall, then dash east and south onto the entrance. Escapes at the end of tick 79. Stores its log as base64 (readable copy in _commands).",
-  "simVersion": 3,
+  "simVersion": 4,
   "seed": 7,
   "vault": {
     "schema": 1,

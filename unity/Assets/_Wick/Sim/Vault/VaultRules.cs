@@ -10,9 +10,35 @@ namespace Wick.Sim
         public const int MinVaultLevel = 1;
         public const int MaxVaultLevel = 10;
 
-        /// <summary>Grid size for the vertical slice (larger grids come with higher levels later).</summary>
-        public const int GridWidth = 9;
-        public const int GridHeight = 13;
+        // Per-level lookup tables, never written; index 0 = Vault Level 1.
+        // Numbers from docs/m10-design-notes.md, tuned from tools/balance results.
+        private static readonly int[] GridWidths = { 12, 12, 14, 14, 16, 16, 18, 18, 18, 20 };
+        private static readonly int[] GridHeights = { 16, 16, 18, 18, 22, 22, 24, 24, 24, 28 };
+        private static readonly int[] Budgets = { 80, 110, 150, 180, 230, 270, 330, 380, 430, 520 };
+        private static readonly int[] Braziers = { 1, 1, 2, 2, 2, 3, 3, 3, 3, 4 };
+        private static readonly int[] TreasurePiles = { 3, 4, 4, 5, 5, 6, 6, 7, 7, 8 };
+
+        /// <summary>The largest grid a Vault Level allows, in tiles.</summary>
+        public static int GridWidth(int level) => GridWidths[Index(level)];
+
+        public static int GridHeight(int level) => GridHeights[Index(level)];
+
+        /// <summary>
+        /// Whether a vault at this level may use a w x h grid: any size from the table up to the
+        /// level's own, so a vault stays valid until its owner chooses to expand it.
+        /// </summary>
+        public static bool IsAllowedGrid(int width, int height, int level)
+        {
+            for (int l = MinVaultLevel; l <= Clamp(level); l++)
+            {
+                if (GridWidth(l) == width && GridHeight(l) == height)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>The lowest Vault Level that can place this object.</summary>
         public static int RequiredLevel(ObjectType type)
@@ -45,25 +71,12 @@ namespace Wick.Sim
             }
         }
 
-        /// <summary>Build points available at a Vault Level: 60, 90, 120, then +30 a level.</summary>
-        public static int Budget(int level)
-        {
-            if (level <= 1) return 60;
-            if (level == 2) return 90;
-            return 120 + (level - 3) * 30;
-        }
+        /// <summary>Build points available at a Vault Level.</summary>
+        public static int Budget(int level) => Budgets[Index(level)];
 
-        public static int BrazierLimit(int level)
-        {
-            return level >= 3 ? 2 : 1;
-        }
+        public static int BrazierLimit(int level) => Braziers[Index(level)];
 
-        public static int MaxTreasurePiles(int level)
-        {
-            if (level <= 1) return 3;
-            if (level == 2) return 4;
-            return 5;
-        }
+        public static int MaxTreasurePiles(int level) => TreasurePiles[Index(level)];
 
         /// <summary>Every treasure pile is worth this much at a Vault Level.</summary>
         public static int TreasureValue(int level)
@@ -81,6 +94,16 @@ namespace Wick.Sim
             }
 
             return total;
+        }
+
+        private static int Clamp(int level)
+        {
+            return level < MinVaultLevel ? MinVaultLevel : level > MaxVaultLevel ? MaxVaultLevel : level;
+        }
+
+        private static int Index(int level)
+        {
+            return Clamp(level) - MinVaultLevel;
         }
     }
 }

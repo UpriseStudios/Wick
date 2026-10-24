@@ -1,6 +1,6 @@
 {
   "_note": "Hoard is rows 1-2. Runs up column 3; the Drip Pipe at (3,5) (ticks 60-65) catches him on tick 64. Reaches the hoard, takes the 300 pile at (3,1) on tick 104 (now 10% slower), relights at the wall brazier above (4,1) on tick 113 and takes the 200 pile at (5,1) on tick 119 (20% slower). Runs home through the drip's gap and escapes with 3 flickers: 3 stars, 500 loot.",
-  "simVersion": 3,
+  "simVersion": 4,
   "seed": 4105,
   "vault": {
     "schema": 1,

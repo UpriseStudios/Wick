@@ -6,22 +6,26 @@ namespace Wick.Sim.Tests
     /// <summary>One test per rule: a valid base vault, then exactly one thing broken.</summary>
     public class VaultValidatorTests
     {
-        // 9 x 13, three rooms joined by gaps at (3,3) and (3,9); hoard = rows 1-2; entrance (4,12).
+        // 12 x 16 (the Level 1 grid): three rooms joined by gaps at (3,3) and (3,9); hoard = rows
+        // 1-2; entrance (4,12). Columns 9-11 and rows 13-15 are solid wall.
         private static readonly string[] Rooms =
         {
-            "#########",
-            "#.......#",
-            "#.......#",
-            "###.#####",
-            "#.......#",
-            "#.......#",
-            "#.......#",
-            "#.......#",
-            "#.......#",
-            "###.#####",
-            "#.......#",
-            "#.......#",
-            "####E####",
+            "############",
+            "#.......####",
+            "#.......####",
+            "###.########",
+            "#.......####",
+            "#.......####",
+            "#.......####",
+            "#.......####",
+            "#.......####",
+            "###.########",
+            "#.......####",
+            "#.......####",
+            "####E#######",
+            "############",
+            "############",
+            "############",
         };
 
         [Test]
@@ -36,6 +40,26 @@ namespace Wick.Sim.Tests
             string json = TestVaults.Json(new[] { "#####", "#...#", "#.E.#", "#####" }, "[" + Pile(1, 2, 1, 1) + "]");
             json = json.Substring(0, json.Length - 1) + ",\"hoard\":[1,1,3,1]}";
             AssertOnly(VaultJson.Parse(json), VaultIssueCode.WrongGridSize);
+        }
+
+        [Test]
+        public void GridSizes_FollowTheVaultLevelTable()
+        {
+            Assert.IsTrue(VaultRules.IsAllowedGrid(12, 16, 1));
+            Assert.IsFalse(VaultRules.IsAllowedGrid(14, 18, 2), "Level 3's grid is too big for Level 2");
+            Assert.IsFalse(VaultRules.IsAllowedGrid(9, 13, 1), "the vertical slice grid is gone");
+            Assert.IsFalse(VaultRules.IsAllowedGrid(12, 18, 3), "only the table's sizes");
+
+            // A vault keeps its size when its owner levels up, until they expand it.
+            for (int level = 1; level <= VaultRules.MaxVaultLevel; level++)
+            {
+                Assert.IsTrue(VaultRules.IsAllowedGrid(12, 16, level));
+                Assert.IsTrue(VaultRules.IsAllowedGrid(VaultRules.GridWidth(level), VaultRules.GridHeight(level), level));
+            }
+
+            Assert.AreEqual(20, VaultRules.GridWidth(10));
+            Assert.AreEqual(28, VaultRules.GridHeight(10));
+            CollectionAssert.IsEmpty(VaultValidator.Validate(Vault(3)), "a Level 3 vault may stay 12 x 16");
         }
 
         [TestCase(0)]
@@ -86,7 +110,7 @@ namespace Wick.Sim.Tests
         public void CratesCannotBlockADoorway()
         {
             string[] doors = (string[])Rooms.Clone();
-            doors[9] = "###D#####";
+            doors[9] = "###D########";
             Assert.That(Codes(VaultJson.Parse(Json(doors, 1, Pile(1, 4, 1, 1), Obj(2, "crate", 3, 9)))),
                 Has.Member(VaultIssueCode.CrateInDoorway));
             CollectionAssert.IsEmpty(VaultValidator.Validate(VaultJson.Parse(Json(doors, 1, Pile(1, 4, 1, 1)))));
@@ -150,15 +174,15 @@ namespace Wick.Sim.Tests
         [Test]
         public void OverBudget()
         {
-            // Six drips are 60 points: exactly the Level 1 budget. A seventh is over.
+            // Eight drips are 80 points: exactly the Level 1 budget. A ninth is over.
             var drips = new List<string>();
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 9; i++)
             {
-                drips.Add(Drip(10 + i, 1 + i, 5));
+                drips.Add(Drip(10 + i, 1 + i % 7, 5 + i / 7));
             }
 
             AssertOnly(Vault(1, drips.ToArray()), VaultIssueCode.OverBudget);
-            drips.RemoveAt(6);
+            drips.RemoveAt(8);
             CollectionAssert.IsEmpty(VaultValidator.Validate(Vault(1, drips.ToArray())));
         }
 
@@ -173,7 +197,7 @@ namespace Wick.Sim.Tests
         public void TreasureAndHoardMustBeReachable()
         {
             string[] sealedTop = (string[])Rooms.Clone();
-            sealedTop[3] = "#########";
+            sealedTop[3] = "############";
             List<VaultIssueCode> codes = Codes(VaultJson.Parse(Json(sealedTop, 1, Pile(1, 4, 1, 1))));
             Assert.That(codes, Has.Member(VaultIssueCode.TreasureUnreachable));
             Assert.That(codes, Has.Member(VaultIssueCode.HoardUnreachable));
@@ -207,10 +231,14 @@ namespace Wick.Sim.Tests
         [Test]
         public void Rules_Table()
         {
-            Assert.AreEqual(60, VaultRules.Budget(1));
-            Assert.AreEqual(90, VaultRules.Budget(2));
-            Assert.AreEqual(120, VaultRules.Budget(3));
-            Assert.AreEqual(150, VaultRules.Budget(4));
+            Assert.AreEqual(80, VaultRules.Budget(1));
+            Assert.AreEqual(110, VaultRules.Budget(2));
+            Assert.AreEqual(150, VaultRules.Budget(3));
+            Assert.AreEqual(520, VaultRules.Budget(10));
+            Assert.AreEqual(1, VaultRules.BrazierLimit(2));
+            Assert.AreEqual(4, VaultRules.BrazierLimit(10));
+            Assert.AreEqual(3, VaultRules.MaxTreasurePiles(1));
+            Assert.AreEqual(8, VaultRules.MaxTreasurePiles(10));
             Assert.AreEqual(2, VaultRules.RequiredLevel(ObjectType.NightOwl));
             Assert.AreEqual(3, VaultRules.RequiredLevel(ObjectType.WaxMoths));
             Assert.AreEqual(0, VaultRules.Cost(ObjectType.Treasure));

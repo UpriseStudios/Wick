@@ -7,6 +7,7 @@ namespace Wick.Sim
     public static class SimInfo
     {
         // 2: flame light radius and line of sight. 3: traps, guardians, hits, pickups, scoring.
-        public const int Version = 3;
+        // 4 (M10): vault sizes per Vault Level, raid params, new traps, guardians and defence levels.
+        public const int Version = 4;
     }
 }
