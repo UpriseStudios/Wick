@@ -59,6 +59,9 @@ namespace Wick.Game
         public event Action<int> ReplayScrubbed;
         public event Action ReplayBackPressed;
         public event Action ShareClipPressed;
+
+        /// <summary>Skip the served vault during the scout (mean vault protection: free, a few an hour).</summary>
+        public event Action SkipRaidPressed;
         public event Action ShareLinkPressed;
         public event Action ShareMyVaultPressed;
         public event Action SheetBackPressed;
@@ -130,6 +133,7 @@ namespace Wick.Game
             _root.Q<Button>("replay-pause").clicked += () => ReplayPausePressed?.Invoke();
             _root.Q<Button>("replay-back").clicked += () => ReplayBackPressed?.Invoke();
             _root.Q<Button>("share-clip").clicked += () => ShareClipPressed?.Invoke();
+            _root.Q<Button>("skip-raid").clicked += () => SkipRaidPressed?.Invoke();
             _root.Q<Button>("share-link").clicked += () => ShareLinkPressed?.Invoke();
             _root.Q<Button>("sheet-back").clicked += () => SheetBackPressed?.Invoke();
             _root.Q<Button>("ladder-close").clicked += () => SheetBackPressed?.Invoke();
@@ -752,6 +756,13 @@ namespace Wick.Game
             EnsureReady();
             ShowOnly(_hud);
             SetBanner(banner);
+        }
+
+        /// <summary>Shows or hides the scout's Skip button.</summary>
+        public void ShowSkip(bool visible)
+        {
+            EnsureReady();
+            Show(_root.Q("skip-raid"), visible);
         }
 
         public void SetBanner(string text)

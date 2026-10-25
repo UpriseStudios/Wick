@@ -105,6 +105,11 @@ namespace Wick.CloudCode
         public int Raids { get; set; }
         public int Snuffs { get; set; }
 
+        /// <summary>The latest raids' outcomes, newest first (true = the raider was snuffed), for mean vault protection.</summary>
+        public List<bool> Recent { get; set; } = new List<bool>();
+
+        public const int RecentSize = 50;
+
         /// <summary>Snuffs per object type ("DripPipe": 3, ...), for the deadliest trap.</summary>
         public Dictionary<string, int> SnuffsByType { get; set; } = new Dictionary<string, int>();
 
@@ -188,6 +193,26 @@ namespace Wick.CloudCode
         public int Raids { get; set; }
         public int Snuffs { get; set; }
 
+        /// <summary>The latest raids' outcomes, newest first (true = snuffed), copied from the owner's defence record.</summary>
+        public List<bool> Recent { get; set; } = new List<bool>();
+
+        /// <summary>Snuffs at least MeanSnuffPercent of its last MeanWindow raids (once it has had that many).</summary>
+        public bool IsMean(Wick.Economy.MatchmakingConfig m)
+        {
+            if (Recent == null || m.MeanWindow <= 0 || Recent.Count < m.MeanWindow)
+            {
+                return false;
+            }
+
+            int snuffs = 0;
+            for (int i = 0; i < m.MeanWindow; i++)
+            {
+                snuffs += Recent[i] ? 1 : 0;
+            }
+
+            return snuffs * 100 >= m.MeanSnuffPercent * m.MeanWindow;
+        }
+
         /// <summary>The vault to play (VaultJson, no clear-check).</summary>
         public string Vault { get; set; }
 
@@ -266,6 +291,9 @@ namespace Wick.CloudCode
 
         public List<RaidToken> Tokens { get; set; } = new List<RaidToken>();
         public List<long> IssuedAtMs { get; set; } = new List<long>();
+
+        /// <summary>When the player used a free skip (mean vault protection).</summary>
+        public List<long> SkippedAtMs { get; set; } = new List<long>();
         public List<RecentTarget> Recent { get; set; } = new List<RecentTarget>();
 
         public RaidToken Find(string id)

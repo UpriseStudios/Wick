@@ -64,7 +64,8 @@ namespace Wick.CloudCode
                 return RaidStartResult.Fail(limit);
             }
 
-            MatchEntry target = await FindTargetAsync(playerId, profile, book, now);
+            EconomyConfig cfg = await _economy.GetAsync();
+            MatchEntry target = await FindTargetAsync(playerId, profile, book, now, cfg.Matchmaking);
             if (target == null)
             {
                 return RaidStartResult.Fail("No vaults to raid right now, try again soon");
@@ -73,7 +74,7 @@ namespace Wick.CloudCode
             return await IssueAsync(playerId, target, KindMatch, platform, integrityToken);
         }
 
-        private async Task<MatchEntry> FindTargetAsync(string playerId, Profile profile, TokenBook book, long now)
+        private async Task<MatchEntry> FindTargetAsync(string playerId, Profile profile, TokenBook book, long now, MatchmakingConfig mean)
         {
             string[] pools = { profile.Pool == Pools.Review ? Pools.Review : Pools.Main, Pools.Bot };
             int crowns = profile.Crowns;
@@ -99,12 +100,74 @@ namespace Wick.CloudCode
 
                     if (eligible.Count > 0)
                     {
-                        return eligible[_random.NextIndex(eligible.Count)];
+                        return PickWeighted(eligible, mean, _random);
                     }
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Mean vault protection: a vault that snuffs nearly everyone is served MeanWeightPercent as
+        /// often as any other, so it still gets raided, just less.
+        /// </summary>
+        public static MatchEntry PickWeighted(List<MatchEntry> eligible, MatchmakingConfig mean, IRandomSource random)
+        {
+            int total = 0;
+            foreach (MatchEntry e in eligible)
+            {
+                total += e.IsMean(mean) ? mean.MeanWeightPercent : 100;
+            }
+
+            if (total <= 0)
+            {
+                return eligible[random.NextIndex(eligible.Count)];
+            }
+
+            int roll = random.NextIndex(total);
+            foreach (MatchEntry e in eligible)
+            {
+                roll -= e.IsMean(mean) ? mean.MeanWeightPercent : 100;
+                if (roll < 0)
+                {
+                    return e;
+                }
+            }
+
+            return eligible[eligible.Count - 1];
+        }
+
+        /// <summary>
+        /// A free skip: an unplayed matchmaking raid is dropped and its raid-limit slot returned, and
+        /// that vault isn't served again for a while. A few skips an hour (MatchmakingConfig).
+        /// </summary>
+        public async Task<RaidStartResult> SkipRaidAsync(string playerId, string tokenId)
+        {
+            EconomyConfig cfg = await _economy.GetAsync();
+            return await Locked.UpdateAsync(_store, playerId, new[] { Keys.RaidTokens }, s =>
+            {
+                long now = _clock.NowMs;
+                TokenBook book = Json.Read<TokenBook>(s.Json(Keys.RaidTokens));
+                RaidToken token = book.Find(tokenId);
+                if (token == null || token.Used || token.Kind != KindMatch)
+                {
+                    return new Plan<RaidStartResult>(RaidStartResult.Fail("That raid can't be skipped"));
+                }
+
+                book.SkippedAtMs.RemoveAll(t => t < now - Rules.HourMs);
+                if (book.SkippedAtMs.Count >= cfg.Matchmaking.FreeSkipsPerHour)
+                {
+                    return new Plan<RaidStartResult>(RaidStartResult.Fail("No free skips left this hour"));
+                }
+
+                book.SkippedAtMs.Add(now);
+                book.Tokens.Remove(token);
+                book.IssuedAtMs.Remove(token.IssuedAtMs);
+                book.AddRecent(token.VaultId, now); // not served again soon
+                return new Plan<RaidStartResult>(new RaidStartResult { Ok = true, Reason = "Skipped" })
+                    .Write(Keys.RaidTokens, Json.Write(book));
+            });
         }
 
         /// <summary>A raid on a specific vault: a friend's link, a revenge raid, or (development) your own.</summary>

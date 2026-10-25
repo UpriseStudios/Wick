@@ -73,6 +73,12 @@ namespace Wick.CloudCode
                 profile.Crowns = CrownRules.DefenderAfter(profile.Crowns, ev.RaiderCrownsDelta, false);
 
                 defence.Raids++;
+                defence.Recent.Insert(0, ev.Outcome == Outcome.Snuffed.ToString());
+                if (defence.Recent.Count > DefenceState.RecentSize)
+                {
+                    defence.Recent.RemoveRange(DefenceState.RecentSize, defence.Recent.Count - DefenceState.RecentSize);
+                }
+
                 defence.BonusEarned += bonus;
                 defence.GoldLost += lost;
                 if (ev.Outcome == Outcome.Snuffed.ToString())

@@ -19,6 +19,7 @@ namespace Wick.Economy
         public int Version { get; set; }
         public LootConfig Loot { get; set; } = new LootConfig();
         public RaidConfig Raid { get; set; } = new RaidConfig();
+        public MatchmakingConfig Matchmaking { get; set; } = new MatchmakingConfig();
         public List<VaultLevelStep> VaultLevels { get; set; } = new List<VaultLevelStep>();
         public List<LanternStep> Lantern { get; set; } = new List<LanternStep>();
 
@@ -129,6 +130,25 @@ namespace Wick.Economy
 
             return Sim.ObjectTypes.IsUpgradable(type);
         }
+    }
+
+    /// <summary>
+    /// Mean vault protection (M10): a vault that snuffs almost everyone is served less often, and
+    /// a raider can skip a served vault for free (a few times an hour).
+    /// </summary>
+    public sealed class MatchmakingConfig
+    {
+        /// <summary>A vault is "mean" when at least this share of its recent raids snuffed the raider...</summary>
+        public int MeanSnuffPercent { get; set; } = 85;
+
+        /// <summary>...over its last this-many raids (and only once it has had that many).</summary>
+        public int MeanWindow { get; set; } = 20;
+
+        /// <summary>A mean vault's chance of being served, relative to any other (percent).</summary>
+        public int MeanWeightPercent { get; set; } = 25;
+
+        /// <summary>Free skips of a served vault per hour.</summary>
+        public int FreeSkipsPerHour { get; set; } = 5;
     }
 
     public sealed class RaidConfig

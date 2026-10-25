@@ -166,6 +166,13 @@ namespace Wick.CloudCode
         }
 
         /// <summary>kind: "friend" (a shared link) or "revenge" (from the defence log).</summary>
+        /// <summary>Mean vault protection: drop an unplayed matchmaking raid for free (a few times an hour).</summary>
+        [CloudCodeFunction("SkipRaid")]
+        public async Task<RaidStartResult> SkipRaid(IExecutionContext context, string token)
+        {
+            return await (await Raids(context)).SkipRaidAsync(context.PlayerId, token);
+        }
+
         [CloudCodeFunction("StartFriendRaid")]
         public async Task<RaidStartResult> StartFriendRaid(IExecutionContext context, string vaultId, string kind, string platform,
             string integrityToken)

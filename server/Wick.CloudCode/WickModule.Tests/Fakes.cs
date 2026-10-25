@@ -220,9 +220,12 @@ namespace Wick.CloudCode.Tests
             return "tok" + (++_ids).ToString("D5");
         }
 
+        /// <summary>What NextIndex returns (clamped to the range); 0 unless a test sets it.</summary>
+        public int Index;
+
         public int NextIndex(int count)
         {
-            return 0;
+            return System.Math.Min(Index, count - 1);
         }
     }
 

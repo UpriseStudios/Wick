@@ -95,6 +95,7 @@ namespace Wick.Game
             _ui.ReplayScrubbed += Scrub;
             _ui.ReplayBackPressed += LeaveReplay;
             _ui.ShareClipPressed += ShareClip;
+            _ui.SkipRaidPressed += SkipRaid;
             _ui.ShareLinkPressed += ShareLink;
             _ui.ShareMyVaultPressed += ShareMyVault;
             _ui.HomeScreenPressed += ShowScreen;
@@ -201,6 +202,7 @@ namespace Wick.Game
                 _camera.EndScout();
                 _runner.StartClock();
                 _ui.SetBanner(null);
+                _ui.ShowSkip(false);
             }
         }
 
@@ -511,6 +513,37 @@ namespace Wick.Game
             }
         }
 
+        /// <summary>
+        /// Mean vault protection: during the scout, drop this vault for free (the server returns the
+        /// raid-limit slot) and serve another.
+        /// </summary>
+        private async void SkipRaid()
+        {
+            RaidStartReply raid = _serverRaid;
+            if (raid == null || _runner.Mode != RaidMode.Scout)
+            {
+                return;
+            }
+
+            _ui.ShowSkip(false);
+            try
+            {
+                RaidStartReply skipped = await _backend.SkipRaidAsync(raid.Token);
+                if (!skipped.Ok)
+                {
+                    _ui.SetBanner(skipped.Reason);
+                    return;
+                }
+
+                _serverRaid = null;
+                RaidMatch();
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("Skip: " + e.Message);
+            }
+        }
+
         private void Revenge(string vaultId)
         {
             StartServerRaid(() => _backend.StartFriendRaidAsync(vaultId, "revenge"), "REVENGE");
@@ -540,6 +573,7 @@ namespace Wick.Game
                 _ui.SetMenuLabel("Home");
                 _runner.LoadLive(VaultJson.Parse(reply.Vault), reply.Seed, ParamsFor(reply.RaidTicks, reply.LightBonus, reply.Decoys));
                 BeginScout(banner);
+                _ui.ShowSkip(reply.Kind == "match"); // only matchmaking raids can be skipped
             }
             catch (Exception e)
             {

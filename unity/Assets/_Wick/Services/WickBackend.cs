@@ -175,6 +175,12 @@ namespace Wick.Services
             return _cloudCode.CallAsync<ReplayReply>("GetReplay", new Dictionary<string, object> { { "raidId", raidId } });
         }
 
+        /// <summary>Drops an unplayed matchmaking raid for free (mean vault protection), returning its raid-limit slot.</summary>
+        public Task<RaidStartReply> SkipRaidAsync(string token)
+        {
+            return _cloudCode.CallAsync<RaidStartReply>("SkipRaid", new Dictionary<string, object> { { "token", token } });
+        }
+
         /// <summary>Sends the device's FCM token so the server can push defence news.</summary>
         public Task<bool> RegisterPushTokenAsync(string token)
         {

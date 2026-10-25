@@ -98,6 +98,9 @@ ECONOMY = {
         "shieldMinutes": 120,
     },
     "raid": {"secondsByLevel": RAID_SECONDS},
+    # Mean vault protection: vaults snuffing >= 85% of their last 20 raids are served a quarter as often,
+    # and raiders get 5 free skips an hour.
+    "matchmaking": {"meanSnuffPercent": 85, "meanWindow": 20, "meanWeightPercent": 25, "freeSkipsPerHour": 5},
     "vaultLevels": [{"level": l, "gold": g, "minutes": m, "stars": s} for (l, g, m, s) in VAULT_LEVELS],
     "defenceUpgrades": [{"level": l, "gold": g, "wax": x, "minutes": m} for (l, g, x, m) in DEFENCE_UPGRADES],
     "lantern": [{"level": l, "wax": w, "minutes": m, "minVaultLevel": v, "lightBonus": b} for (l, w, m, v, b) in LANTERN],
