@@ -84,7 +84,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void RouteTiles_CountsCratesAndGatesAsOpen()
         {
-            // A crate can be pushed and a gate opened, so neither lengthens the route; only walls do.
+            // Crates and gates don't lengthen the route; only walls do.
             Assert.AreEqual(36, VaultValidator.RouteTiles(Vault(1, Obj(2, "crate", 10, 8))));
             Assert.AreEqual(-1, VaultValidator.RouteTiles(VaultJson.Parse(TestVaults.Json(Rooms, "[" + Pile(1, 4, 1, 1) + "]"))),
                 "no hoard, no route");

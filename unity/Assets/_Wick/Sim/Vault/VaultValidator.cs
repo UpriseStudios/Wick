@@ -506,8 +506,8 @@ namespace Wick.Sim
 
         /// <summary>
         /// The shortest walk, in tiles, from the entrance to the nearest hoard tile, or -1 with no hoard
-        /// or none reachable. Only walls count: crates can be pushed and gates opened, so neither makes
-        /// the route longer.
+        /// or none reachable. Only walls count, so the winding has to come from the layout: crates (cheap
+        /// in build points) and gates (which open) don't make the route longer.
         /// </summary>
         public static int RouteTiles(VaultDef vault)
         {
