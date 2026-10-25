@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>vault-audit</AssemblyName>
+    <RootNamespace>Wick.VaultAudit</RootNamespace>
+    <!-- Match Unity's compiler so sim code that builds here also builds in Unity. -->
+    <LangVersion>9.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Sim is linked, never copied: the same VaultValidator the editor and PublishVault run. -->
+    <Compile Include="../../unity/Assets/_Wick/Sim/**/*.cs" LinkBase="Sim" />
+  </ItemGroup>
+
+</Project>

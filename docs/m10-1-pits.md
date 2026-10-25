@@ -28,6 +28,19 @@ Agreed with Jamie before M10.1a. Where they differ from the rest of this pack, t
 - **Analytics:** the `pit_fall` event and the `raid_end` fields are sent now; checking them in the dashboard waits for the analytics pass before test publishing.
 - **Edge cases added:** guardians (owl, moths, troll, Sir Whiskers) path around pits and owl patrols may not cross one; the solver, balance bot and seed generator avoid pits, and the balance generator places them; pits cost 5 build points a tile to start, tuned from the balance run.
 
+## M10.1b as built (25 October 2026)
+
+How the agreed rules were read in code (change any you disagree with):
+
+- **Doorways:** a pit may not be on the entrance or a door tile, or on any tile next to one. A door sits in a wall, so its other neighbours are wall and this is exactly "in front of and behind". Gaps in walls are not doorways, but a pit in a one-tile gap still fails the route rule.
+- **Route rule:** the pit-free flood fill treats pits like walls; gates open only if their lever is reachable without crossing a pit. A pile or hoard room reachable only across a pit is `PitBlocksRoute` (with the pile's id and the first pit on the walk, or the pile's tile if the pit isn't on the walk itself, such as when it cuts off a lever). Cut off by walls alone is still `TreasureUnreachable` / `HoardUnreachable`.
+- **New rule `ObjectOnPit`:** nothing (trap, guardian, pile, lever) may stand on a pit. An owl patrol point may not be a pit, and patrols must be walkable round pits.
+- **Editor:** the Pit tool (Rooms tab) refuses a tile that breaks a rule. The tile goes red and a toast gives the reason. While the tool is selected, a green line shows the pit-free route to the hoard. Pit level isn't chosen per tile: every pit is at the owner's Pit upgrade level, shown on the tool ("Pit Lv N"). There is no icon yet; tools are text buttons until the editor art pass.
+- **Bots:** the balance bot and seed solver path round pits and won't step onto ice that slides into one. BalanceGen digs pit lines of 2 to 4 tiles outside the hoard, mostly on or beside the route, keeping the route at or above MinRouteTiles.
+- **Migration check:** `dotnet run --project tools/vault-audit` (bundled templates, seeds, designer and dev vaults, this PC's editor drafts: all 26 pass). Add `-- --live development` with a service account key in `WICK_UGS_KEY_ID` / `WICK_UGS_SECRET` to check every live vault. It only reports.
+
+Balance run with pits in the generator (200 vaults a level, knockback into pits off): escapes fell at VL3 (89% to 81%), VL4 (81% to 76%), VL5 (71% to 62%), VL7 (64% to 58%) and VL9 (26% to 20%); free-player time to VL10 is 74.5 days. With knockback into pits on, only VL8 moved (51% to 50%), so the switch barely matters in worst-case vaults. Not yet acted on: pit cost and the switch are for M10.1c tuning.
+
 ## Pit rules
 
 | Rule | Detail |

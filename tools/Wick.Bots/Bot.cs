@@ -226,7 +226,10 @@ namespace Wick.Bots
                 for (int d = 0; d < 4; d++)
                 {
                     TilePos n = p.Step((Dir)d);
-                    if (!sim.IsWalkableNow(n) || prev[n.Y * w + n.X] >= 0)
+                    // Searching back from the goal: the step taken is n to p. Never into a pit, nor onto
+                    // ice that slides into one.
+                    if (!sim.IsWalkableNow(n) || prev[n.Y * w + n.X] >= 0 || vault.TileAt(n) == TileType.Pit ||
+                        SlidesIntoPit(vault, sim.IsWalkableNow, p, (Dir)((d + 2) % 4)))
                     {
                         continue;
                     }
@@ -242,6 +245,26 @@ namespace Wick.Bots
             }
 
             return null;
+        }
+
+        /// <summary>Whether stepping onto `onto` heading dir ends in a pit: ice keeps Wick sliding while the next tile is walkable.</summary>
+        public static bool SlidesIntoPit(VaultDef vault, Func<TilePos, bool> walkable, TilePos onto, Dir dir)
+        {
+            for (TilePos t = onto; vault.TileAt(t) == TileType.Ice;)
+            {
+                t = t.Step(dir);
+                if (!walkable(t))
+                {
+                    return false;
+                }
+
+                if (vault.TileAt(t) == TileType.Pit)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>Tiles a careful player steps around: armed bell plates, a mimic and its reach, an awake troll.</summary>

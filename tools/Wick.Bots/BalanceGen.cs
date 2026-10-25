@@ -17,7 +17,7 @@ namespace Wick.Bots
         {
             ObjectType.DripPipe, ObjectType.SpikeFloor, ObjectType.Bellows, ObjectType.Crate, ObjectType.SnufferBell,
             ObjectType.NightOwl, ObjectType.WaxMoths, ObjectType.SwingAxe, ObjectType.MimicChest, ObjectType.SleepyTroll,
-            ObjectType.Fan, ObjectType.Gate, ObjectType.IceTiles, ObjectType.SirWhiskers,
+            ObjectType.Fan, ObjectType.Gate, ObjectType.IceTiles, ObjectType.Pit, ObjectType.SirWhiskers,
         };
 
         /// <summary>A valid worst-case vault for this level, or null after too many tries.</summary>
@@ -75,7 +75,7 @@ namespace Wick.Bots
                     continue;
                 }
 
-                int cost = type == ObjectType.IceTiles ? 0 : VaultRules.Cost(type);
+                int cost = type == ObjectType.IceTiles || type == ObjectType.Pit ? 0 : VaultRules.Cost(type);
                 if (spent + cost > budget)
                 {
                     continue;
@@ -101,7 +101,7 @@ namespace Wick.Bots
                 objects.ToArray(), true, layout.Hoard, "crypt", levels);
         }
 
-        /// <summary>Places one defence (or an ice patch, or a gate and its lever); returns the build points spent.</summary>
+        /// <summary>Places one defence (or an ice patch, a pit line, or a gate and its lever); returns the build points spent.</summary>
         private static int Place(ObjectType type, LayoutGen.Layout layout, List<ObjectDef> objects, HashSet<TilePos> used,
             HashSet<TilePos> route, ref int id, Random rng, int level, int left)
         {
@@ -140,6 +140,62 @@ namespace Wick.Bots
                     }
 
                     return cost;
+                }
+
+                case ObjectType.Pit:
+                {
+                    // A line of 2 to 4 pits across a room outside the hoard, mostly on or beside the route,
+                    // as a maze wall: never in or beside a doorway, and kept only if the pit-free walk to
+                    // the hoard is still there and long enough. Walls of pits are what players build.
+                    var rooms = layout.Rooms.Where(r => !(r.MinX <= layout.Hoard.MaxX && r.MaxX >= layout.Hoard.MinX &&
+                        r.MinY <= layout.Hoard.MaxY && r.MaxY >= layout.Hoard.MinY)).ToList();
+                    if (rooms.Count == 0)
+                    {
+                        return 0;
+                    }
+
+                    TileRect room = rooms[rng.Next(rooms.Count)];
+                    bool across = rng.Next(2) == 0;
+                    int length = 2 + rng.Next(3);
+                    var start = new TilePos(rng.Next(room.MinX, room.MaxX + 1), rng.Next(room.MinY, room.MaxY + 1));
+                    VaultDef doorways = Trial(layout, level);
+                    var dug = new List<TilePos>();
+                    for (int i = 0; i < length && (dug.Count + 1) * VaultRules.Cost(type) <= left; i++)
+                    {
+                        var p = across ? new TilePos(start.X + i, start.Y) : new TilePos(start.X, start.Y + i);
+                        if (room.Contains(p) && layout.At(p) == TileType.Floor && !used.Contains(p) &&
+                            !VaultValidator.InOrBesideDoorway(doorways, p))
+                        {
+                            dug.Add(p);
+                        }
+                    }
+
+                    if (dug.Count == 0 || (!dug.Any(route.Contains) && rng.Next(4) > 0))
+                    {
+                        return 0;
+                    }
+
+                    foreach (TilePos p in dug)
+                    {
+                        layout.Set(p, TileType.Pit);
+                    }
+
+                    if (VaultValidator.RouteTiles(Trial(layout, level)) < VaultRules.MinRouteTiles(layout.Width, layout.Height))
+                    {
+                        foreach (TilePos p in dug)
+                        {
+                            layout.Set(p, TileType.Floor);
+                        }
+
+                        return 0;
+                    }
+
+                    foreach (TilePos p in dug)
+                    {
+                        used.Add(p);
+                    }
+
+                    return dug.Count * VaultRules.Cost(type);
                 }
 
                 case ObjectType.Gate:
@@ -205,6 +261,13 @@ namespace Wick.Bots
             objects.Add(new ObjectDef(id++, type, at, rng.Next(4), c, c > 0 ? rng.Next(c) : 0, 0, patrol));
             used.Add(at);
             return VaultRules.Cost(type);
+        }
+
+        /// <summary>The layout alone (no objects) as a vault, for tile rules such as doorways and the route.</summary>
+        private static VaultDef Trial(LayoutGen.Layout layout, int level)
+        {
+            return new VaultDef(1, "trial", 1, level, layout.Width, layout.Height, (TileType[])layout.Tiles.Clone(), layout.Entrance,
+                new ObjectDef[0], true, layout.Hoard);
         }
 
         /// <summary>The shortest walk from the entrance to the hoard, and every tile beside it.</summary>

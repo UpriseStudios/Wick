@@ -132,7 +132,8 @@ namespace Wick.Bots
                 for (int d = 0; d < 4; d++)
                 {
                     TilePos n = p.Step((Dir)d);
-                    if (v.IsWalkable(n) && !prev.ContainsKey(n) && !IsBell(v, n))
+                    if (v.IsWalkable(n) && !prev.ContainsKey(n) && !IsBell(v, n) && v.TileAt(n) != TileType.Pit &&
+                        !Bot.SlidesIntoPit(v, v.IsWalkable, n, (Dir)d))
                     {
                         prev[n] = p;
                         queue.Enqueue(n);
