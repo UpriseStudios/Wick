@@ -172,6 +172,18 @@ Level 2), raids of 75 s at Level 8 and 90 s at 9 and 10, a lower loot cap (150 p
 and slower Vault Levels, defence first builds and gold for walls. A daily free player now reaches
 Level 10 in about 71 days; see tools/balance/report.md.
 
+Winding routes, decided 25 October 2026: Levels 1 to 3 still cleared in 7 to 10 s because a dash
+crosses a 12 x 16 vault in about 2 s each way. Rather than slow movement (a feel change that would
+re-record every golden), a vault's shortest walk from the entrance to the hoard must be at least
+36 tiles on the 12 x 16 and 14 x 18 grids, 44 on 16 x 22, 48 on 18 x 24 and 56 on 20 x 28
+(VaultRules.MinRouteTiles, by grid so an unexpanded vault never needs a tighter maze). Only walls
+count: crates and gates are treated as open. It is a publish rule, not a raid rule, so no SimVersion
+bump. The editor shows "Route n / m tiles" under the build points. The templates, seed vaults and
+dev vaults were redrawn to wind (Twin Wings became Long Columns: its 4-wide wings couldn't reach
+36), and the balance generator zigzags its band doors and puts a lever each side of a gate. Bot
+median raids are now 17 to 37 s at Levels 1 to 7 (were 7 to 22 s). Levels 3 to 5, 9 and 10 got
+cheaper to keep every step under the 50% flag: about 70 days to Level 10.
+
 ### B4. Mean vault protection
 
 - Each vault tracks its snuff rate over its recent raids.
@@ -326,4 +338,6 @@ On a phone, against development:
   and stand still to make him give up.
 - Place a decoration and a trophy, then raid that vault and check both show and change nothing.
 - Skip a served vault and check it costs nothing.
+- In the editor, watch "Route n / m tiles" change as you paint walls, and check a vault with a
+  short route is refused with the route message.
 - Read the balance report together and decide the raid timer.
