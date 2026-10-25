@@ -168,22 +168,30 @@ namespace Wick.Sim.Tests
         {
             VaultDef wrong = VaultJson.Parse(Json(Rooms, 1, Pile(1, 4, 1, 1).Replace("100", "150")));
             AssertOnly(wrong, VaultIssueCode.WrongTreasureValue, 1);
-            CollectionAssert.IsEmpty(VaultValidator.Validate(VaultJson.Parse(Json(Rooms, 3, Pile(1, 4, 1, 3)))));
+            CollectionAssert.IsEmpty(VaultValidator.Validate(Vault(3)), "worth 300 at Level 3");
         }
 
         [Test]
         public void OverBudget()
         {
-            // Eight drips are 80 points: exactly the Level 1 budget. A ninth is over.
+            // Twelve drips are 120 points: exactly the Level 1 budget. A thirteenth is over.
             var drips = new List<string>();
-            for (int i = 0; i < 9; i++)
+            for (int i = 0; i < 13; i++)
             {
-                drips.Add(Drip(10 + i, 1 + i % 7, 5 + i / 7));
+                drips.Add(Drip(10 + i, 1 + i % 7, 4 + i / 7));
             }
 
             AssertOnly(Vault(1, drips.ToArray()), VaultIssueCode.OverBudget);
-            drips.RemoveAt(8);
+            drips.RemoveAt(12);
             CollectionAssert.IsEmpty(VaultValidator.Validate(Vault(1, drips.ToArray())));
+        }
+
+        [Test]
+        public void FromLevel2_AVaultMustUseMostOfItsBudget()
+        {
+            AssertOnly(VaultJson.Parse(Json(Rooms, 2, Pile(1, 4, 1, 2))), VaultIssueCode.UnderBudget);
+            CollectionAssert.IsEmpty(VaultValidator.Validate(Vault(2)), "padded to the minimum");
+            CollectionAssert.IsEmpty(VaultValidator.Validate(VaultJson.Parse(Json(Rooms, 1, Pile(1, 4, 1, 1)))), "Level 1 may be empty");
         }
 
         [Test]
@@ -224,17 +232,20 @@ namespace Wick.Sim.Tests
         {
             VaultDef v = Vault(3, Drip(2, 1, 5), Obj(3, "night_owl", 2, 5), Obj(4, "wax_moths", 3, 5),
                 Obj(5, "crate", 5, 6), Obj(6, "brazier", 0, 5));
-            Assert.AreEqual(10 + 30 + 25 + 4, VaultRules.BuildPoints(v));
+            Assert.AreEqual(10 + 30 + 25 + 4 + PaddingPoints(3), VaultRules.BuildPoints(v));
             CollectionAssert.IsEmpty(VaultValidator.Validate(v));
         }
 
         [Test]
         public void Rules_Table()
         {
-            Assert.AreEqual(80, VaultRules.Budget(1));
-            Assert.AreEqual(110, VaultRules.Budget(2));
-            Assert.AreEqual(150, VaultRules.Budget(3));
-            Assert.AreEqual(520, VaultRules.Budget(10));
+            Assert.AreEqual(120, VaultRules.Budget(1));
+            Assert.AreEqual(160, VaultRules.Budget(2));
+            Assert.AreEqual(210, VaultRules.Budget(3));
+            Assert.AreEqual(540, VaultRules.Budget(10));
+            Assert.AreEqual(0, VaultRules.MinBuildPoints(1), "Level 1 is free-form");
+            Assert.AreEqual(96, VaultRules.MinBuildPoints(2));
+            Assert.AreEqual(324, VaultRules.MinBuildPoints(10));
             Assert.AreEqual(1, VaultRules.BrazierLimit(2));
             Assert.AreEqual(4, VaultRules.BrazierLimit(10));
             Assert.AreEqual(3, VaultRules.MaxTreasurePiles(1));
@@ -261,7 +272,30 @@ namespace Wick.Sim.Tests
         {
             var objects = new List<string> { Pile(1, 4, 1, level) };
             objects.AddRange(extra);
+            objects.AddRange(Padding(level));
             return VaultJson.Parse(Json(Rooms, level, objects.ToArray()));
+        }
+
+        /// <summary>
+        /// Spike Floors on tiles no test uses (x 5-7 of rows 7-8 and 10-11), enough to meet the
+        /// minimum build points from Vault Level 2, so each test sees only the rule it breaks.
+        /// </summary>
+        private static List<string> Padding(int level)
+        {
+            var spikes = new List<string>();
+            int needed = VaultRules.MinBuildPoints(level < 1 ? 1 : level > 10 ? 10 : level);
+            int[] rows = { 7, 8, 10, 11 };
+            for (int i = 0; spikes.Count * VaultRules.Cost(ObjectType.SpikeFloor) < needed && i < 12; i++)
+            {
+                spikes.Add(Obj(200 + i, "spike_floor", 5 + i % 3, rows[i / 3], ",\"cycle\":60"));
+            }
+
+            return spikes;
+        }
+
+        private static int PaddingPoints(int level)
+        {
+            return Padding(level).Count * VaultRules.Cost(ObjectType.SpikeFloor);
         }
 
         private static string Json(string[] map, int level, params string[] objects)

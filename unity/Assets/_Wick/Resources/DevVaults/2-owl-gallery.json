@@ -103,6 +103,38 @@
       "type": "brazier",
       "x": 11,
       "y": 10
+    },
+    {
+      "id": 9,
+      "type": "spike_floor",
+      "x": 10,
+      "y": 14,
+      "cycle": 60,
+      "offset": 57
+    },
+    {
+      "id": 10,
+      "type": "spike_floor",
+      "x": 9,
+      "y": 14,
+      "cycle": 60,
+      "offset": 10
+    },
+    {
+      "id": 11,
+      "type": "spike_floor",
+      "x": 10,
+      "y": 13,
+      "cycle": 60,
+      "offset": 23
+    },
+    {
+      "id": 12,
+      "type": "spike_floor",
+      "x": 9,
+      "y": 13,
+      "cycle": 60,
+      "offset": 36
     }
   ],
   "hoard": [

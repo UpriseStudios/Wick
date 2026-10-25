@@ -19,6 +19,7 @@ namespace Wick.Sim
         TooManyTreasurePiles,
         WrongTreasureValue,
         OverBudget,
+        UnderBudget,
         NoHoard,
         HoardWithoutTreasure,
         TreasureUnreachable,
@@ -130,6 +131,11 @@ namespace Wick.Sim
             {
                 issues.Add(new VaultIssue(VaultIssueCode.OverBudget, 0, none,
                     "Uses " + points + " build points; Vault Level " + level + " allows " + budget));
+            }
+            else if (points < VaultRules.MinBuildPoints(level))
+            {
+                issues.Add(new VaultIssue(VaultIssueCode.UnderBudget, 0, none,
+                    "Uses " + points + " build points; Vault Level " + level + " vaults need at least " + VaultRules.MinBuildPoints(level)));
             }
 
             return issues;

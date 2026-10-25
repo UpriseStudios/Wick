@@ -48,8 +48,8 @@ namespace Wick.CloudCode.Tests
             ObjectDef pile = halls.GetObject(0);
             objects.Add(new ObjectDef(pile.Id, pile.Type, pile.Pos, pile.Rot, 0, 0, VaultRules.TreasureValue(level), pile.Patrol));
             objects.AddRange(extra);
-            return new VaultDef(halls.Schema, halls.VaultId, halls.Version, level, halls.Width, halls.Height, tiles, halls.Entrance,
-                objects.ToArray(), halls.HasHoard, halls.Hoard, halls.Theme, levels);
+            return TestVaults.Padded(new VaultDef(halls.Schema, halls.VaultId, halls.Version, level, halls.Width, halls.Height, tiles,
+                halls.Entrance, objects.ToArray(), halls.HasHoard, halls.Hoard, halls.Theme, levels));
         }
 
         private Task<PublishResult> Publish(string player, VaultDef vault)

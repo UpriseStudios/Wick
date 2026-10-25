@@ -179,8 +179,8 @@ namespace Wick.CloudCode.Tests
         public async Task APlayerPublishesUpToTheirVaultLevel()
         {
             VaultDef halls = TestVaults.Halls();
-            VaultDef level2 = new VaultDef(halls.Schema, halls.VaultId, halls.Version, 2, halls.Width, halls.Height, Tiles(halls), halls.Entrance,
-                new[] { Revalued(halls.GetObject(0), 2) }, halls.HasHoard, halls.Hoard);
+            VaultDef level2 = TestVaults.Padded(new VaultDef(halls.Schema, halls.VaultId, halls.Version, 2, halls.Width, halls.Height,
+                Tiles(halls), halls.Entrance, new[] { Revalued(halls.GetObject(0), 2) }, halls.HasHoard, halls.Hoard));
 
             PublishResult refused = await new PublishService(_w.Store, _w.Clock).PublishAsync("p1", "req-pub-0001", TestVaults.PublishDocument(level2));
             Assert.IsFalse(refused.Ok);
@@ -194,8 +194,8 @@ namespace Wick.CloudCode.Tests
         public async Task PublishingUsesAVaultLevelWhoseBuildHasEnded()
         {
             VaultDef halls = TestVaults.Halls();
-            VaultDef level2 = new VaultDef(halls.Schema, halls.VaultId, halls.Version, 2, halls.Width, halls.Height, Tiles(halls), halls.Entrance,
-                new[] { Revalued(halls.GetObject(0), 2) }, halls.HasHoard, halls.Hoard);
+            VaultDef level2 = TestVaults.Padded(new VaultDef(halls.Schema, halls.VaultId, halls.Version, 2, halls.Width, halls.Height,
+                Tiles(halls), halls.Entrance, new[] { Revalued(halls.GetObject(0), 2) }, halls.HasHoard, halls.Hoard));
             long now = _w.Clock.NowMs;
             await _w.Set("p1", EconomyKeys.Upgrades, new Upgrades
             {

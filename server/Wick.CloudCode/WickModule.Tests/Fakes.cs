@@ -269,6 +269,31 @@ namespace Wick.CloudCode.Tests
                 objects.ToArray(), v.HasHoard, v.Hoard, v.Theme, v.DefenceLevels);
         }
 
+        /// <summary>
+        /// The vault plus Spike Floors on tiles away from the Escape run (columns 6-7 and 9-10), enough
+        /// to meet its Vault Level's minimum build points.
+        /// </summary>
+        public static VaultDef Padded(VaultDef v)
+        {
+            var spikes = new List<ObjectDef>();
+            int needed = VaultRules.MinBuildPoints(v.VaultLevel) - VaultRules.BuildPoints(v);
+            int id = 300;
+            foreach (int y in new[] { 10, 11, 12, 13, 14, 5, 6, 7, 8 })
+            {
+                foreach (int x in y >= 10 ? new[] { 6, 7, 9, 10 } : new[] { 9, 10 })
+                {
+                    if (spikes.Count * VaultRules.Cost(ObjectType.SpikeFloor) >= needed)
+                    {
+                        break;
+                    }
+
+                    spikes.Add(new ObjectDef(id++, ObjectType.SpikeFloor, new TilePos(x, y), 0, 60, 0, 0, new TilePos[0]));
+                }
+            }
+
+            return spikes.Count == 0 ? v : WithObjects(v, spikes.ToArray());
+        }
+
         public static ObjectDef Drip(int id, int x, int y)
         {
             return new ObjectDef(id, ObjectType.DripPipe, new TilePos(x, y), 0, 45, 0, 0, new TilePos[0]);

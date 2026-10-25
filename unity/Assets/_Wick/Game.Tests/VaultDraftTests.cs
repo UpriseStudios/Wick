@@ -85,7 +85,8 @@ namespace Wick.Game.Tests
             }
 
             Assert.AreEqual(TileType.Floor, d.TileAt(new TilePos(r.Doorway[0].X, 3)), "it opens onto the old room");
-            CollectionAssert.IsEmpty(VaultValidator.Validate(d.ToVaultDef()), "the expanded vault is valid");
+            CollectionAssert.AreEqual(new[] { VaultIssueCode.UnderBudget }, Codes(d),
+                "the expanded vault is sound; only short of Level 3's minimum build points");
             Assert.IsFalse(d.CanExpand);
         }
 
@@ -207,14 +208,14 @@ namespace Wick.Game.Tests
         public void PlacingTraps_SpendsBudget()
         {
             VaultDraft d = Halls();
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 12; i++)
             {
-                d.Place(ObjectType.DripPipe, new TilePos(1 + i, 6));
+                d.Place(ObjectType.DripPipe, new TilePos(1 + i % 10, 6 + i / 10));
             }
 
-            Assert.AreEqual(80, d.BuildPoints);
+            Assert.AreEqual(120, d.BuildPoints);
             CollectionAssert.IsEmpty(Codes(d));
-            d.Place(ObjectType.DripPipe, new TilePos(9, 6));
+            d.Place(ObjectType.DripPipe, new TilePos(3, 7));
             Assert.That(Codes(d), Has.Member(VaultIssueCode.OverBudget));
         }
 
@@ -299,7 +300,7 @@ namespace Wick.Game.Tests
             d.SetLevel(2);
             VaultDef v = d.ToVaultDef();
             Assert.AreEqual(200, v.GetObject(0).Value);
-            CollectionAssert.IsEmpty(VaultValidator.Validate(v));
+            CollectionAssert.AreEqual(new[] { VaultIssueCode.UnderBudget }, Codes(d), "right value; only short of Level 2's minimum");
         }
 
         [Test]
@@ -314,7 +315,7 @@ namespace Wick.Game.Tests
             Assert.AreEqual(3, d.Find(owl).Patrol.Count);
             d.AddWaypoint(owl, new TilePos(6, 8));
             Assert.AreEqual(2, d.Find(owl).Patrol.Count);
-            CollectionAssert.IsEmpty(Codes(d));
+            Assert.That(Codes(d), Has.No.Member(VaultIssueCode.PatrolBlocked).And.No.Member(VaultIssueCode.PatrolUnreachable));
             Assert.IsTrue(d.ClearPatrol(owl));
             Assert.AreEqual(0, d.Find(owl).Patrol.Count);
         }
@@ -355,9 +356,9 @@ namespace Wick.Game.Tests
             d.Place(ObjectType.Treasure, new TilePos(6, 2));
             Assert.AreEqual("No more treasure piles at this Vault Level", d.ShopBlock(ObjectType.Treasure));
 
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 12; i++)
             {
-                d.Place(ObjectType.DripPipe, new TilePos(1 + i, 6));
+                d.Place(ObjectType.DripPipe, new TilePos(1 + i % 10, 6 + i / 10));
             }
 
             Assert.AreEqual("Not enough build points", d.ShopBlock(ObjectType.Crate));

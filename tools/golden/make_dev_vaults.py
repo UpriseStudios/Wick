@@ -96,10 +96,29 @@ VAULTS = {
 }
 
 
+# Vault Level budgets and the 60% minimum from Level 2 (VaultRules), and what each object costs.
+BUDGETS = [120, 160, 210, 250, 300, 340, 400, 440, 480, 540]
+COSTS = {"drip_pipe": 10, "spike_floor": 12, "bellows": 15, "crate": 4, "snuffer_bell": 20, "night_owl": 30, "wax_moths": 25}
+
+
 def widened(doc):
-    """The maps below were drawn for the vertical slice's 9 x 13 grid; M10's smallest is 12 x 16."""
+    """The maps below were drawn for the vertical slice's 9 x 13 grid; M10's smallest is 12 x 16.
+    From Vault Level 2 a vault must use 60% of its budget, so Spike Floors fill the new east columns."""
     rows, objects, hoard = grow(doc["_map"], doc["objects"], doc.get("hoard"))
-    return vault(doc["vaultId"], rows, objects, level=doc["vaultLevel"], hoard=hoard)
+    level = doc["vaultLevel"]
+    need = BUDGETS[level - 1] * 60 // 100 if level >= 2 else 0
+    spent = sum(COSTS.get(o["type"], 0) for o in objects)
+    used = {(o["x"], o["y"]) for o in objects}
+    next_id = max(o["id"] for o in objects) + 1
+    for y in range(len(rows) - 2, 0, -1):
+        for x in (10, 9):
+            if spent >= need:
+                break
+            if rows[y][x] == "." and (x, y) not in used:
+                objects.append({"id": next_id, "type": "spike_floor", "x": x, "y": y, "cycle": 60, "offset": (next_id * 13) % 60})
+                next_id += 1
+                spent += COSTS["spike_floor"]
+    return vault(doc["vaultId"], rows, objects, level=level, hoard=hoard)
 
 
 def main():

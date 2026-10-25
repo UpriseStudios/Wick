@@ -14,7 +14,9 @@ namespace Wick.Sim
         // Numbers from docs/m10-design-notes.md, tuned from tools/balance results.
         private static readonly int[] GridWidths = { 12, 12, 14, 14, 16, 16, 18, 18, 18, 20 };
         private static readonly int[] GridHeights = { 16, 16, 18, 18, 22, 22, 24, 24, 24, 28 };
-        private static readonly int[] Budgets = { 80, 110, 150, 180, 230, 270, 330, 380, 430, 520 };
+        // Raised for Levels 1 to 7 on 2026-10-25: the balance report found worst-case vaults there
+        // escaped in 6 to 20 s.
+        private static readonly int[] Budgets = { 120, 160, 210, 250, 300, 340, 400, 440, 480, 540 };
         private static readonly int[] Braziers = { 1, 1, 2, 2, 2, 3, 3, 3, 3, 4 };
         private static readonly int[] TreasurePiles = { 3, 4, 4, 5, 5, 6, 6, 7, 7, 8 };
         private static readonly int[] DecorationLimits = { 4, 6, 8, 10, 12, 14, 16, 18, 20, 22 };
@@ -95,6 +97,12 @@ namespace Wick.Sim
 
         /// <summary>Build points available at a Vault Level.</summary>
         public static int Budget(int level) => Budgets[Index(level)];
+
+        /// <summary>
+        /// The fewest build points a vault must use: 60% of its budget from Vault Level 2, so vaults
+        /// can't stay sparse (Level 1 is free-form while players learn the editor).
+        /// </summary>
+        public static int MinBuildPoints(int level) => level <= 1 ? 0 : Budget(level) * 60 / 100;
 
         public static int BrazierLimit(int level) => Braziers[Index(level)];
 
