@@ -185,6 +185,7 @@ namespace Wick.CloudCode.Tests
             var none = new Dictionary<string, int>();
             Assert.AreEqual(1, OwnedDefences.Level(none, ObjectType.DripPipe));
             Assert.AreEqual(1, OwnedDefences.Level(none, ObjectType.Crate));
+            Assert.AreEqual(1, OwnedDefences.Level(none, ObjectType.Pit), "pits need no first build");
             Assert.AreEqual(0, OwnedDefences.Level(none, ObjectType.NightOwl));
             Assert.AreEqual(0, OwnedDefences.Level(none, ObjectType.Lever), "levers come with gates");
             Assert.AreEqual(1, OwnedDefences.Level(new Dictionary<string, int> { ["gate"] = 1 }, ObjectType.Lever));

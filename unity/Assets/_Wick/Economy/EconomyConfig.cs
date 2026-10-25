@@ -239,6 +239,7 @@ namespace Wick.Economy
                 case Sim.ObjectType.Treasure:
                 case Sim.ObjectType.Brazier:
                 case Sim.ObjectType.Crate:
+                case Sim.ObjectType.Pit: // pits come with the editor from Vault Level 1 (M10.1)
                     return true;
                 default:
                     return false;
