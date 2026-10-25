@@ -265,6 +265,13 @@ namespace Wick.Game
             fill.style.width = Length.Percent(Mathf.Clamp01(points / (float)budget) * 100f);
             fill.EnableInClassList("over", points > budget);
 
+            // The walk from the entrance to the hoard must wind (VaultRules.MinRouteTiles).
+            int route = VaultValidator.RouteTiles(d.ToVaultDef());
+            int minRoute = VaultRules.MinRouteTiles(d.Width, d.Height);
+            var routeLabel = _root.Q<Label>("route-label");
+            routeLabel.text = route < 0 ? "Route: no way to the hoard yet" : "Route " + route + " / " + minRoute + " tiles";
+            routeLabel.EnableInClassList("short", route < minRoute);
+
             var issuesButton = _root.Q<Button>("issues-button");
             int n = c.Issues.Count;
             issuesButton.text = n == 0 ? "Ready" : n + (n == 1 ? " problem" : " problems");

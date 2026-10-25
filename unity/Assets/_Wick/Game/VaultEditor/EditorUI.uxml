@@ -30,6 +30,7 @@
                     <ui:VisualElement class="budget-track">
                         <ui:VisualElement name="budget-fill" class="budget-fill" />
                     </ui:VisualElement>
+                    <ui:Label name="route-label" text="Route 0 / 36 tiles" class="route-label" />
                 </ui:VisualElement>
                 <ui:Button name="issues-button" text="Ready" class="pill" />
             </ui:VisualElement>

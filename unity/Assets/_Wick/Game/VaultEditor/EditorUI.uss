@@ -165,6 +165,15 @@
     -unity-background-image-tint-color: rgb(255, 110, 100);
 }
 
+.route-label {
+    font-size: 26px;
+    margin-top: 6px;
+}
+
+.route-label.short {
+    color: rgb(255, 110, 100);
+}
+
 .pill {
     height: 96px;
     padding: 0 30px 10px 30px;
