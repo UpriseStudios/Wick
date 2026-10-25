@@ -7,24 +7,25 @@ namespace Wick.Sim.Tests
     public class VaultValidatorTests
     {
         // 12 x 16 (the Level 1 grid): three rooms joined by gaps at (3,3) and (3,9); hoard = rows
-        // 1-2; entrance (4,12). Columns 9-11 and rows 13-15 are solid wall.
+        // 1-2. The entrance (10,1) opens on a corridor down the east side and back along row 14 to
+        // the bottom room, so the walk to the hoard is 36 tiles (VaultRules.MinRouteTiles for 12 x 16).
         private static readonly string[] Rooms =
         {
             "############",
-            "#.......####",
-            "#.......####",
-            "###.########",
-            "#.......####",
-            "#.......####",
-            "#.......####",
-            "#.......####",
-            "#.......####",
-            "###.########",
-            "#.......####",
-            "#.......####",
-            "####E#######",
-            "############",
-            "############",
+            "#.......##E#",
+            "#.......##.#",
+            "###.######.#",
+            "#.......##.#",
+            "#.......##.#",
+            "#.......##.#",
+            "#.......##.#",
+            "#.......##.#",
+            "###.######.#",
+            "#.......##.#",
+            "#.......##.#",
+            "#.########.#",
+            "#.########.#",
+            "#..........#",
             "############",
         };
 
@@ -62,6 +63,33 @@ namespace Wick.Sim.Tests
             CollectionAssert.IsEmpty(VaultValidator.Validate(Vault(3)), "a Level 3 vault may stay 12 x 16");
         }
 
+        [Test]
+        public void TheWayInMustWind()
+        {
+            Assert.AreEqual(36, VaultValidator.RouteTiles(Vault(1)));
+
+            // A gap beside the entrance cuts the walk to 3 tiles.
+            string[] shortcut = (string[])Rooms.Clone();
+            shortcut[1] = "#.........E#";
+            VaultDef cut = VaultJson.Parse(Json(shortcut, 1, Pile(1, 4, 1, 1)));
+            Assert.AreEqual(3, VaultValidator.RouteTiles(cut));
+            AssertOnly(cut, VaultIssueCode.RouteTooShort);
+
+            // Bigger grids need longer walks; a vault nobody has expanded keeps the small grid's minimum.
+            Assert.That(Codes(Vault(5)), Has.No.Member(VaultIssueCode.RouteTooShort));
+            Assert.AreEqual(36, VaultRules.MinRouteTiles(12, 16));
+            Assert.AreEqual(56, VaultRules.MinRouteTiles(20, 28));
+        }
+
+        [Test]
+        public void RouteTiles_CountsCratesAndGatesAsOpen()
+        {
+            // A crate can be pushed and a gate opened, so neither lengthens the route; only walls do.
+            Assert.AreEqual(36, VaultValidator.RouteTiles(Vault(1, Obj(2, "crate", 10, 8))));
+            Assert.AreEqual(-1, VaultValidator.RouteTiles(VaultJson.Parse(TestVaults.Json(Rooms, "[" + Pile(1, 4, 1, 1) + "]"))),
+                "no hoard, no route");
+        }
+
         [TestCase(0)]
         [TestCase(11)]
         public void VaultLevelOutOfRange(int level)
@@ -72,7 +100,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void EntranceBlocked()
         {
-            VaultDef v = VaultJson.Parse(Json(Rooms, 1, Pile(1, 4, 1, 1)).Replace("\"entrance\":[4,12]", "\"entrance\":[3,12]"));
+            VaultDef v = VaultJson.Parse(Json(Rooms, 1, Pile(1, 4, 1, 1)).Replace("\"entrance\":[10,1]", "\"entrance\":[9,1]"));
             Assert.That(Codes(v), Has.Member(VaultIssueCode.EntranceBlocked));
         }
 
@@ -110,7 +138,7 @@ namespace Wick.Sim.Tests
         public void CratesCannotBlockADoorway()
         {
             string[] doors = (string[])Rooms.Clone();
-            doors[9] = "###D########";
+            doors[9] = "###D######.#";
             Assert.That(Codes(VaultJson.Parse(Json(doors, 1, Pile(1, 4, 1, 1), Obj(2, "crate", 3, 9)))),
                 Has.Member(VaultIssueCode.CrateInDoorway));
             CollectionAssert.IsEmpty(VaultValidator.Validate(VaultJson.Parse(Json(doors, 1, Pile(1, 4, 1, 1)))));
@@ -132,8 +160,8 @@ namespace Wick.Sim.Tests
         [Test]
         public void CrateOrBellCannotSitOnTheEntrance()
         {
-            Assert.That(Codes(Vault(1, Obj(2, "crate", 4, 12))), Has.Member(VaultIssueCode.ObjectOnEntrance));
-            Assert.That(Codes(Vault(2, Obj(2, "snuffer_bell", 4, 12))), Has.Member(VaultIssueCode.ObjectOnEntrance));
+            Assert.That(Codes(Vault(1, Obj(2, "crate", 10, 1))), Has.Member(VaultIssueCode.ObjectOnEntrance));
+            Assert.That(Codes(Vault(2, Obj(2, "snuffer_bell", 10, 1))), Has.Member(VaultIssueCode.ObjectOnEntrance));
         }
 
         [Test]
@@ -205,7 +233,7 @@ namespace Wick.Sim.Tests
         public void TreasureAndHoardMustBeReachable()
         {
             string[] sealedTop = (string[])Rooms.Clone();
-            sealedTop[3] = "############";
+            sealedTop[3] = "##########.#";
             List<VaultIssueCode> codes = Codes(VaultJson.Parse(Json(sealedTop, 1, Pile(1, 4, 1, 1))));
             Assert.That(codes, Has.Member(VaultIssueCode.TreasureUnreachable));
             Assert.That(codes, Has.Member(VaultIssueCode.HoardUnreachable));
@@ -223,7 +251,7 @@ namespace Wick.Sim.Tests
             AssertOnly(Vault(2, Obj(2, "night_owl", 5, 5, ",\"patrol\":[[5,5],[0,5]]")), VaultIssueCode.PatrolBlocked, 2);
 
             // (1,11) is boxed in by crates on (2,11) and (1,10): the owl in the middle room cannot get there.
-            AssertOnly(Vault(2, Obj(2, "night_owl", 5, 5, ",\"patrol\":[[5,5],[1,11]]"), Obj(3, "crate", 2, 11), Obj(4, "crate", 1, 10)),
+            AssertOnly(Vault(2, Obj(2, "night_owl", 5, 5, ",\"patrol\":[[5,5],[7,11]]"), Obj(3, "crate", 6, 11), Obj(4, "crate", 7, 10)),
                 VaultIssueCode.PatrolUnreachable, 2);
         }
 

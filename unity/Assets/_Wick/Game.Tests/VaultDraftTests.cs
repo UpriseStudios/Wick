@@ -441,11 +441,31 @@ namespace Wick.Game.Tests
 
         // ---- Clear-check and storage ------------------------------------------------------
 
-        /// <summary>Runs up the middle of Three Halls to the hoard and back out.</summary>
+        /// <summary>
+        /// Zigzags through Three Halls' entry corridors, runs up the middle to the hoard and back out:
+        /// each turn is a run to the next wall, started a few ticks after Wick stops.
+        /// </summary>
         private static (RaidResult, InputLog, int) EscapeHalls(VaultDef vault)
         {
-            var log = new InputLog(new[] { Command.RunStart(0, Dir.N), Command.RunStart(150, Dir.S) });
             const int seed = 4242;
+            var sim = new Sim.RaidSim(vault, seed, InputLog.Empty);
+            Dir[] turns = { Dir.N, Dir.W, Dir.N, Dir.E, Dir.N, Dir.W, Dir.N, Dir.S, Dir.E, Dir.S, Dir.W, Dir.S, Dir.E, Dir.S };
+            foreach (Dir d in turns)
+            {
+                for (int wait = 0; wait < 10 && !sim.IsOver; wait++)
+                {
+                    sim.Step();
+                }
+
+                sim.Submit(Command.RunStart(sim.State.Tick, d));
+                do
+                {
+                    sim.Step();
+                }
+                while (!sim.IsOver && sim.State.Wick.Moving);
+            }
+
+            InputLog log = sim.RecordedLog;
             return (Sim.RaidRunner.RunToEnd(vault, seed, log), log, seed);
         }
 

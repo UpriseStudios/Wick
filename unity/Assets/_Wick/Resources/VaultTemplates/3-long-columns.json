@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "vaultId": "v_template_columns",
+  "version": 1,
+  "vaultLevel": 1,
+  "theme": "crypt",
+  "grid": {
+    "w": 12,
+    "h": 16
+  },
+  "_map": [
+    "############",
+    "#..........#",
+    "#..........#",
+    "##########D#",
+    "#..#..D..#.#",
+    "#..#..#..#.#",
+    "#..#..#..#.#",
+    "#..#..#..#.#",
+    "#..#..#..#.#",
+    "#..#..#..#.#",
+    "#..#..#..#.#",
+    "#..#..#..#.#",
+    "#..#..#..#.#",
+    "#..#..#..#.#",
+    "#..D..#..D.#",
+    "####E#######"
+  ],
+  "tiles": "AQEBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQEBAQEBAQIBAQAAAQAAAgAAAQABAQAAAQAAAQAAAQABAQAAAQAAAQAAAQABAQAAAQAAAQAAAQABAQAAAQAAAQAAAQABAQAAAQAAAQAAAQABAQAAAQAAAQAAAQABAQAAAQAAAQAAAQABAQAAAQAAAQAAAQABAQAAAQAAAQAAAQABAQAAAgAAAQAAAgABAQEBAQABAQEBAQEB",
+  "entrance": [
+    4,
+    15
+  ],
+  "objects": [
+    {
+      "id": 1,
+      "type": "treasure",
+      "x": 5,
+      "y": 1,
+      "value": 100
+    }
+  ],
+  "hoard": [
+    1,
+    1,
+    10,
+    2
+  ]
+}

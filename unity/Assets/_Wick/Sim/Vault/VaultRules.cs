@@ -20,6 +20,9 @@ namespace Wick.Sim
         private static readonly int[] Braziers = { 1, 1, 2, 2, 2, 3, 3, 3, 3, 4 };
         private static readonly int[] TreasurePiles = { 3, 4, 4, 5, 5, 6, 6, 7, 7, 8 };
         private static readonly int[] DecorationLimits = { 4, 6, 8, 10, 12, 14, 16, 18, 20, 22 };
+        // By grid (see MinRouteTiles). Added 2026-10-25: Levels 1 to 3 cleared in 7 to 10 s because a
+        // dash crossed the vault in about 2 s each way. Winding routes slow raids without touching movement.
+        private static readonly int[] MinRoutes = { 36, 36, 36, 36, 44, 44, 48, 48, 48, 56 };
 
         /// <summary>The largest grid a Vault Level allows, in tiles.</summary>
         public static int GridWidth(int level) => GridWidths[Index(level)];
@@ -103,6 +106,25 @@ namespace Wick.Sim
         /// can't stay sparse (Level 1 is free-form while players learn the editor).
         /// </summary>
         public static int MinBuildPoints(int level) => level <= 1 ? 0 : Budget(level) * 60 / 100;
+
+        /// <summary>
+        /// The shortest walk from the entrance to the hoard a vault this size must have, in tiles
+        /// (VaultValidator.RouteTiles): about twice the grid's height, so the way in must wind. Set by
+        /// grid, not Vault Level, so a vault nobody has expanded never needs a tighter maze; 0 for a
+        /// grid the table doesn't list.
+        /// </summary>
+        public static int MinRouteTiles(int width, int height)
+        {
+            for (int l = MinVaultLevel; l <= MaxVaultLevel; l++)
+            {
+                if (GridWidth(l) == width && GridHeight(l) == height)
+                {
+                    return MinRoutes[Index(l)];
+                }
+            }
+
+            return 0;
+        }
 
         public static int BrazierLimit(int level) => Braziers[Index(level)];
 

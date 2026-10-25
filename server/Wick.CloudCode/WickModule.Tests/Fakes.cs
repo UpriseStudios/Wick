@@ -229,17 +229,45 @@ namespace Wick.CloudCode.Tests
         }
     }
 
-    /// <summary>Vaults and runs built from the Three Halls template.</summary>
+    /// <summary>
+    /// Vaults and runs built from the Three Halls template: a hoard and middle hall joined to the
+    /// entrance by a zigzag along the bottom, so the route is 36 tiles (VaultRules.MinRouteTiles). The run up the middle column passes (4,5) to (4,7).
+    /// </summary>
     public static class TestVaults
     {
         public static VaultDef Halls()
         {
-            string path = Path.Combine(TestContext.CurrentContext.TestDirectory, "Data", "three-halls.json");
+            string path = Path.Combine(AppContext.BaseDirectory, "Data", "three-halls.json");
             return VaultJson.Parse(File.ReadAllText(path));
         }
 
-        /// <summary>Runs up the middle to the hoard and back out: escapes with 3 stars.</summary>
-        public static readonly InputLog Escape = new InputLog(new[] { Command.RunStart(0, Dir.N), Command.RunStart(150, Dir.S) });
+        /// <summary>
+        /// Zigzags in, runs up the middle column to the hoard and back out the same way: escapes with
+        /// 3 stars. Each turn is a run to the next wall, started a few ticks after Wick stops.
+        /// </summary>
+        public static readonly InputLog Escape = Turns(Halls(),
+            Dir.N, Dir.W, Dir.N, Dir.E, Dir.N, Dir.W, Dir.N, Dir.S, Dir.E, Dir.S, Dir.W, Dir.S, Dir.E, Dir.S);
+
+        private static InputLog Turns(VaultDef vault, params Dir[] turns)
+        {
+            var sim = new RaidSim(vault, Seed, InputLog.Empty);
+            foreach (Dir d in turns)
+            {
+                for (int wait = 0; wait < 10 && !sim.IsOver; wait++)
+                {
+                    sim.Step();
+                }
+
+                sim.Submit(Command.RunStart(sim.State.Tick, d));
+                do
+                {
+                    sim.Step();
+                }
+                while (!sim.IsOver && sim.State.Wick.Moving);
+            }
+
+            return sim.RecordedLog;
+        }
 
         public const int Seed = 4242;
 
@@ -275,12 +303,14 @@ namespace Wick.CloudCode.Tests
         /// </summary>
         public static VaultDef Padded(VaultDef v)
         {
+            // Spike Floors off the escape run (the hoard's east end, the middle hall's sides) up to the
+            // minimum build points.
             var spikes = new List<ObjectDef>();
             int needed = VaultRules.MinBuildPoints(v.VaultLevel) - VaultRules.BuildPoints(v);
             int id = 300;
-            foreach (int y in new[] { 10, 11, 12, 13, 14, 5, 6, 7, 8 })
+            foreach (int y in new[] { 1, 2, 3, 5, 6, 7, 8 })
             {
-                foreach (int x in y >= 10 ? new[] { 6, 7, 9, 10 } : new[] { 9, 10 })
+                foreach (int x in y <= 3 ? new[] { 6, 7, 8, 9, 10 } : new[] { 1, 9, 10 })
                 {
                     if (spikes.Count * VaultRules.Cost(ObjectType.SpikeFloor) >= needed)
                     {

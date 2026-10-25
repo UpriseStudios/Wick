@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Wick.Sim;
@@ -68,7 +69,7 @@ namespace Wick.CloudCode.Tests
     public static class Players
     {
         /// <summary>
-        /// Plays Three Halls up the middle column to the treasure and back: a bot moves the instant a
+        /// Plays the test halls in along the zigzag and up the middle column to the treasure, and back: a bot moves the instant a
         /// move allows and onto each drip the frame it turns safe; a person waits a few frames.
         /// </summary>
         public static InputLog UpAndBack(VaultDef vault, int seed, bool bot, int humanSeed = 7)
@@ -82,13 +83,8 @@ namespace Wick.CloudCode.Tests
                 WickState w = sim.State.Wick;
                 if (!w.Moving && tick >= readyAt)
                 {
-                    Dir dir = w.CarriedPiles == 0 ? Dir.N : Dir.S;
+                    Dir dir = StepToward(vault, w.Tile, w.CarriedPiles == 0 ? vault.GetObject(0).Pos : vault.Entrance);
                     TilePos next = w.Tile.Step(dir);
-                    if (vault.TileAt(next) == TileType.Wall)
-                    {
-                        dir = Dir.S;
-                        next = w.Tile.Step(dir);
-                    }
 
                     ObjectDef drip = DripAt(vault, next);
                     bool go = drip == null
@@ -105,6 +101,41 @@ namespace Wick.CloudCode.Tests
             }
 
             return sim.RecordedLog;
+        }
+
+        /// <summary>The first step of a shortest walk from `from` to `to` (walls block).</summary>
+        private static Dir StepToward(VaultDef vault, TilePos from, TilePos to)
+        {
+            // Walk back from the goal: the neighbour of `from` nearest to it is the next step.
+            var dist = new Dictionary<TilePos, int> { [to] = 0 };
+            var queue = new Queue<TilePos>();
+            queue.Enqueue(to);
+            while (queue.Count > 0)
+            {
+                TilePos p = queue.Dequeue();
+                for (int d = 0; d < 4; d++)
+                {
+                    TilePos n = p.Step((Dir)d);
+                    if (vault.TileAt(n) != TileType.Wall && !dist.ContainsKey(n))
+                    {
+                        dist[n] = dist[p] + 1;
+                        queue.Enqueue(n);
+                    }
+                }
+            }
+
+            Dir best = Dir.S;
+            int bestDist = int.MaxValue;
+            for (int d = 0; d < 4; d++)
+            {
+                if (dist.TryGetValue(from.Step((Dir)d), out int n) && n < bestDist)
+                {
+                    best = (Dir)d;
+                    bestDist = n;
+                }
+            }
+
+            return best;
         }
 
         private static ObjectDef DripAt(VaultDef vault, TilePos p)

@@ -17,18 +17,18 @@
     "#..........#",
     "#..........#",
     "#..........#",
-    "#######....#",
+    "##########D#",
+    "#..........#",
+    "#..........#",
+    "#D##########",
     "#..........#",
     "#..........#",
     "#..........#",
-    "#..........#",
-    "#..........#",
-    "#..........#",
-    "####E#######"
+    "#########E##"
   ],
-  "tiles": "AQEBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAgEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQEBAQAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQABAQEBAQEB",
+  "tiles": "AQEBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAgEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQEBAQEBAQIBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQIBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQEBAQEBAAEB",
   "entrance": [
-    4,
+    9,
     15
   ],
   "objects": [
@@ -44,11 +44,11 @@
           6
         ],
         [
-          7,
+          10,
           6
         ],
         [
-          7,
+          10,
           5
         ],
         [
@@ -61,7 +61,7 @@
       "id": 2,
       "type": "bellows",
       "x": 0,
-      "y": 10,
+      "y": 13,
       "rot": 1,
       "cycle": 75
     },
@@ -69,13 +69,13 @@
       "id": 3,
       "type": "crate",
       "x": 5,
-      "y": 10
+      "y": 13
     },
     {
       "id": 4,
       "type": "crate",
-      "x": 2,
-      "y": 9
+      "x": 3,
+      "y": 12
     },
     {
       "id": 5,
@@ -102,7 +102,7 @@
       "id": 8,
       "type": "brazier",
       "x": 11,
-      "y": 10
+      "y": 13
     },
     {
       "id": 9,
@@ -115,8 +115,8 @@
     {
       "id": 10,
       "type": "spike_floor",
-      "x": 9,
-      "y": 14,
+      "x": 10,
+      "y": 13,
       "cycle": 60,
       "offset": 10
     },
@@ -124,15 +124,15 @@
       "id": 11,
       "type": "spike_floor",
       "x": 10,
-      "y": 13,
+      "y": 12,
       "cycle": 60,
       "offset": 23
     },
     {
       "id": 12,
       "type": "spike_floor",
-      "x": 9,
-      "y": 13,
+      "x": 2,
+      "y": 7,
       "cycle": 60,
       "offset": 36
     }

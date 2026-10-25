@@ -38,6 +38,7 @@ namespace Wick.Sim
         DecorationPlacement,
         TooManyDecorations,
         TrophyOutsideHoard,
+        RouteTooShort,
     }
 
     /// <summary>One problem with a vault. ObjectId is 0 when the issue is not about an object.</summary>
@@ -124,6 +125,14 @@ namespace Wick.Sim
             CheckDecorations(vault, level, issues);
             CheckTreasureAndHoard(vault, level, issues);
             CheckReachability(vault, issues);
+            int route = RouteTiles(vault);
+            int minRoute = VaultRules.MinRouteTiles(vault.Width, vault.Height);
+            if (route >= 0 && route < minRoute)
+            {
+                issues.Add(new VaultIssue(VaultIssueCode.RouteTooShort, 0, vault.Entrance,
+                    "The walk from the entrance to the hoard is " + route + " tiles; a " + vault.Width + " x " + vault.Height +
+                    " vault needs at least " + minRoute + ". Add walls to make it wind"));
+            }
 
             int points = VaultRules.BuildPoints(vault);
             int budget = VaultRules.Budget(level);
@@ -493,6 +502,50 @@ namespace Wick.Sim
                         new TilePos(vault.Hoard.MinX, vault.Hoard.MinY), "Wick cannot reach the hoard room"));
                 }
             }
+        }
+
+        /// <summary>
+        /// The shortest walk, in tiles, from the entrance to the nearest hoard tile, or -1 with no hoard
+        /// or none reachable. Only walls count: crates can be pushed and gates opened, so neither makes
+        /// the route longer.
+        /// </summary>
+        public static int RouteTiles(VaultDef vault)
+        {
+            if (!vault.HasHoard || !vault.InBounds(vault.Entrance))
+            {
+                return -1;
+            }
+
+            var dist = new int[vault.Width * vault.Height];
+            for (int i = 0; i < dist.Length; i++)
+            {
+                dist[i] = -1;
+            }
+
+            var queue = new Queue<TilePos>();
+            dist[vault.Entrance.Y * vault.Width + vault.Entrance.X] = 0;
+            queue.Enqueue(vault.Entrance);
+            while (queue.Count > 0)
+            {
+                TilePos p = queue.Dequeue();
+                int here = dist[p.Y * vault.Width + p.X];
+                if (vault.Hoard.Contains(p))
+                {
+                    return here;
+                }
+
+                for (int d = 0; d < 4; d++)
+                {
+                    TilePos n = p.Step((Dir)d);
+                    if (vault.TileAt(n) != TileType.Wall && dist[n.Y * vault.Width + n.X] < 0)
+                    {
+                        dist[n.Y * vault.Width + n.X] = here + 1;
+                        queue.Enqueue(n);
+                    }
+                }
+            }
+
+            return -1;
         }
 
         /// <summary>Tiles reachable on foot from start (walls and crates block). Row-major.</summary>

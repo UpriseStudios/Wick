@@ -6,24 +6,25 @@ namespace Wick.Sim.Tests
     /// <summary>M10 decorations: cosmetic props the raid sim never reads (docs/m10-plan.md, A5).</summary>
     public class DecorationTests
     {
-        // 12 x 16 three rooms (as VaultValidatorTests): hoard rows 1-2, entrance (4,12).
+        // 12 x 16 three rooms (as VaultValidatorTests): hoard rows 1-2, entrance (10,1) at the top of
+        // a corridor that winds round to the bottom room.
         private static readonly string[] Rooms =
         {
             "############",
-            "#.......####",
-            "#.......####",
-            "###.########",
-            "#.......####",
-            "#.......####",
-            "#.......####",
-            "#.......####",
-            "#.......####",
-            "###.########",
-            "#.......####",
-            "#.......####",
-            "####E#######",
-            "############",
-            "############",
+            "#.......##E#",
+            "#.......##.#",
+            "###.######.#",
+            "#.......##.#",
+            "#.......##.#",
+            "#.......##.#",
+            "#.......##.#",
+            "#.......##.#",
+            "###.######.#",
+            "#.......##.#",
+            "#.......##.#",
+            "#.########.#",
+            "#.########.#",
+            "#..........#",
             "############",
         };
 
@@ -84,7 +85,7 @@ namespace Wick.Sim.Tests
             Assert.That(Codes(Vault(Decor(20, Decorations.Statue, 0, 5))), Has.Member(VaultIssueCode.DecorationPlacement), "floor prop on a wall");
             Assert.That(Codes(Vault(Decor(20, Decorations.Banner, 2, 5))), Has.Member(VaultIssueCode.DecorationPlacement), "wall prop on floor");
             Assert.That(Codes(Vault(Decor(20, Decorations.Torch, 11, 15))), Has.Member(VaultIssueCode.DecorationPlacement), "a wall with no floor beside it");
-            Assert.That(Codes(Vault(Decor(20, Decorations.Statue, 4, 12))), Has.Member(VaultIssueCode.DecorationPlacement), "the entrance");
+            Assert.That(Codes(Vault(Decor(20, Decorations.Statue, 10, 1))), Has.Member(VaultIssueCode.DecorationPlacement), "the entrance");
             Assert.That(Codes(Vault(Decor(20, Decorations.Statue, 4, 1))), Has.Member(VaultIssueCode.DecorationPlacement), "on the treasure");
             Assert.That(Codes(Vault(Decor(20, Decorations.Statue, 2, 6), Decor(21, Decorations.GoldPile, 2, 6))),
                 Has.Member(VaultIssueCode.DecorationPlacement), "two on one tile");

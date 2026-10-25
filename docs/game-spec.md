@@ -119,6 +119,7 @@ You can only publish a vault you have beaten yourself. That one rule keeps every
 
 - **Grid:** vaults start at 12 x 16 tiles with 2 to 3 rooms and grow to 20 x 28 at Vault Level 10. Raising your Vault Level (the Town Hall equivalent) unlocks more space, rooms and trap slots.
 - **Build budget:** each trap and guardian costs build points. The budget grows with Vault Level, so a level 3 vault can't be packed with level 10 traps.
+- **Winding route:** the shortest walk from the entrance to the hoard must be at least about twice the grid's height (36 tiles at 12 x 16, up to 56 at 20 x 28), so a raid is never a straight dash.
 - **Editor:** drag-and-drop from a tray, tap to rotate, pinch to zoom. A Test button drops you straight into a raid of your own vault.
 - **Clear-check:** to publish, you must escape your own vault with at least 1 star. The input log of that run is uploaded and re-simulated on the server before the vault goes live.
 - **Defence rewards:** each failed raid on your vault pays you a defence bonus. A successful raid on you triggers a short shield so you aren't robbed repeatedly.

@@ -13,20 +13,20 @@
     "#..........#",
     "#..........#",
     "#..........#",
-    "####D#######",
+    "##########D#",
     "#..........#",
     "#..........#",
     "#..........#",
-    "###.########",
+    "#D##########",
     "#..........#",
     "#..........#",
-    "#..........#",
+    "##########D#",
     "#..........#",
     "#..........#",
     "#..........#",
     "####E#######"
   ],
-  "tiles": "AQEBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQIBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAAEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQABAQEBAQEB",
+  "tiles": "AQEBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQEBAQEBAQIBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQIBAQEBAQEBAQEBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQEBAQEBAQIBAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQAAAAAAAAAAAAABAQEBAQABAQEBAQEB",
   "entrance": [
     4,
     15
@@ -35,14 +35,14 @@
     {
       "id": 1,
       "type": "drip_pipe",
-      "x": 3,
-      "y": 9,
+      "x": 10,
+      "y": 11,
       "cycle": 45
     },
     {
       "id": 2,
       "type": "spike_floor",
-      "x": 4,
+      "x": 10,
       "y": 5,
       "cycle": 60,
       "offset": 20
@@ -50,14 +50,14 @@
     {
       "id": 3,
       "type": "spike_floor",
-      "x": 3,
-      "y": 7,
+      "x": 9,
+      "y": 6,
       "cycle": 70
     },
     {
       "id": 4,
       "type": "treasure",
-      "x": 4,
+      "x": 5,
       "y": 2,
       "value": 100
     },
