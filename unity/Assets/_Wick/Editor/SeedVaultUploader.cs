@@ -16,6 +16,8 @@ namespace Wick.Editor
     /// Code function, which checks it again. Runs as a UGS service account whose key is kept in
     /// this machine's EditorPrefs, never in the project.
     /// Regenerate the vaults with: dotnet run --project tools/seedgen
+    /// Designer vaults: put them in Data/DesignerVaults (Wick > Export Drafts as Designer Vaults) and run
+    /// dotnet run --project tools/seedgen -- designer
     /// </summary>
     public sealed class SeedVaultUploader : EditorWindow
     {
@@ -101,14 +103,24 @@ namespace Wick.Editor
             }
         }
 
+        /// <summary>Designer vaults (designer.json, from tools/seedgen designer) first, then the generated seeds.</summary>
         public static List<Seed> LoadSeeds()
         {
             var seeds = new List<Seed>();
-            JsonNode manifest = JsonReader.Parse(File.ReadAllText(Path.Combine(SeedDir, "seeds.json")));
-            for (int i = 0; i < manifest.Count; i++)
+            foreach (string list in new[] { "designer.json", "seeds.json" })
             {
-                string name = manifest[i].GetString("name");
-                seeds.Add(new Seed(name, manifest[i].GetInt("crowns"), File.ReadAllText(Path.Combine(SeedDir, name + ".json"))));
+                string path = Path.Combine(SeedDir, list);
+                if (!File.Exists(path))
+                {
+                    continue;
+                }
+
+                JsonNode manifest = JsonReader.Parse(File.ReadAllText(path));
+                for (int i = 0; i < manifest.Count; i++)
+                {
+                    string name = manifest[i].GetString("name");
+                    seeds.Add(new Seed(name, manifest[i].GetInt("crowns"), File.ReadAllText(Path.Combine(SeedDir, name + ".json"))));
+                }
             }
 
             return seeds;

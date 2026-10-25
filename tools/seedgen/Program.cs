@@ -15,6 +15,7 @@ namespace Wick.SeedGen
     /// which becomes its clear-check. Deterministic: the same run gives the same files.
     ///
     /// Usage (from the repo root): dotnet run --project tools/seedgen
+    /// Designer vaults: dotnet run --project tools/seedgen -- designer (see Designer.cs)
     /// Then in Unity: Wick > Upload Seed Vaults.
     /// </summary>
     public static class Program
@@ -37,6 +38,11 @@ namespace Wick.SeedGen
 
         public static int Main(string[] args)
         {
+            if (args.Length > 0 && args[0] == "designer")
+            {
+                return Designer.Run();
+            }
+
             VaultDef[] templates = Directory.GetFiles(TemplateDir, "*.json").OrderBy(f => f, StringComparer.Ordinal)
                 .Select(f => VaultJson.Parse(File.ReadAllText(f))).ToArray();
             Directory.CreateDirectory(OutDir);
