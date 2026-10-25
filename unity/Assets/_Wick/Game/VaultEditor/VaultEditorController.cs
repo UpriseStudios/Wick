@@ -912,7 +912,8 @@ namespace Wick.Game
 
                     Telemetry.VaultPublished(traps, draft.BuildPoints, _testRuns);
                     _testRuns = 0;
-                    _ui.Toast("Your vault is live (version " + reply.Version + ")");
+                    _ui.Toast("Your vault is live (version " + reply.Version + ")" +
+                        (reply.GoldSpent > 0 ? ": " + reply.WallsAdded + " new walls cost " + reply.GoldSpent + " gold" : ""));
                 }
                 else
                 {

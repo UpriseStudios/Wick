@@ -109,6 +109,8 @@ ECONOMY = {
     "raid": {"secondsByLevel": RAID_SECONDS},
     # Mean vault protection: vaults snuffing >= 85% of their last 20 raids are served a quarter as often,
     # and raiders get 5 free skips an hour.
+    # Walls cost gold: each wall tile added since the last published version, 15 gold x Vault Level.
+    "walls": {"goldPerLevel": 15},
     "matchmaking": {"meanSnuffPercent": 85, "meanWindow": 20, "meanWeightPercent": 25, "freeSkipsPerHour": 5},
     "vaultLevels": [{"level": l, "gold": g, "minutes": m, "stars": s} for (l, g, m, s) in VAULT_LEVELS],
     "defenceBuilds": DEFENCE_BUILDS,

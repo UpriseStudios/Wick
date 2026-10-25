@@ -14,6 +14,10 @@ namespace Wick.CloudCode
         /// <summary>Short code for the vault's share link.</summary>
         public string Code { get; set; }
 
+        /// <summary>Wall tiles added since the last published version, and the gold they cost.</summary>
+        public int WallsAdded { get; set; }
+        public long GoldSpent { get; set; }
+
         public static PublishResult Fail(string reason, List<string> issues = null)
         {
             return new PublishResult { Ok = false, Reason = reason, Issues = issues };

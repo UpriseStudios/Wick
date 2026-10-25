@@ -73,7 +73,7 @@ namespace Wick.CloudCode
             }
 
             string code = await VaultCodes.AssignAsync(_store, VaultIds.ForOwner(playerId));
-            PublishResult result = await Locked.UpdateAsync(_store, playerId, new[] { Keys.VaultLive, Keys.Idempotency }, s =>
+            PublishResult result = await Locked.UpdateAsync(_store, playerId, new[] { Keys.VaultLive, Keys.Idempotency, Keys.Wallet }, s =>
             {
                 if (Idempotency.TryGet(s, requestId, out PublishResult prior))
                 {
@@ -81,6 +81,18 @@ namespace Wick.CloudCode
                 }
 
                 string json = s.Json(Keys.VaultLive);
+
+                // Walls cost gold: every wall tile added since the last published version.
+                VaultDef previous = json == null ? null : VaultJson.Parse(Json.Read<LiveVault>(json).Document);
+                int walls = WallCost.WallsAdded(previous, passed.Vault);
+                long wallGold = cfg.Walls.CostFor(walls, passed.Vault.VaultLevel);
+                Wallet wallet = Json.Read<Wallet>(s.Json(Keys.Wallet));
+                if (wallet.Gold < wallGold)
+                {
+                    return new Plan<PublishResult>(PublishResult.Fail("Your " + walls + " new wall" + (walls == 1 ? "" : "s") + " cost " +
+                        wallGold + " gold; you have " + wallet.Gold));
+                }
+
                 int version = json == null ? 1 : Json.Read<LiveVault>(json).Version + 1;
                 string vaultId = VaultIds.ForOwner(playerId);
                 VaultDef stamped = VaultIds.Stamp(passed.Vault, vaultId, version);
@@ -98,8 +110,16 @@ namespace Wick.CloudCode
                 var published = new PublishResult
                 {
                     Ok = true, Reason = "Published", VaultId = vaultId, Version = version, Stars = passed.Replay.Stars, Code = code,
+                    WallsAdded = walls, GoldSpent = wallGold,
                 };
-                return new Plan<PublishResult>(published)
+                var plan = new Plan<PublishResult>(published);
+                if (wallGold > 0)
+                {
+                    wallet.Gold -= wallGold;
+                    plan.Write(Keys.Wallet, Json.Write(wallet));
+                }
+
+                return plan
                     .Write(Keys.VaultLive, Json.Write(live))
                     .Write(Keys.Idempotency, Idempotency.Add(s, requestId, published));
             });

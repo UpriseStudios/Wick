@@ -25,6 +25,9 @@
           90
         ]
       },
+      "walls": {
+        "goldPerLevel": 15
+      },
       "matchmaking": {
         "meanSnuffPercent": 85,
         "meanWindow": 20,

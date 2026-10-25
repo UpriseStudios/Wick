@@ -20,6 +20,7 @@ namespace Wick.Economy
         public LootConfig Loot { get; set; } = new LootConfig();
         public RaidConfig Raid { get; set; } = new RaidConfig();
         public MatchmakingConfig Matchmaking { get; set; } = new MatchmakingConfig();
+        public WallsConfig Walls { get; set; } = new WallsConfig();
         public List<VaultLevelStep> VaultLevels { get; set; } = new List<VaultLevelStep>();
         public List<LanternStep> Lantern { get; set; } = new List<LanternStep>();
 
@@ -146,6 +147,17 @@ namespace Wick.Economy
     /// Mean vault protection (M10): a vault that snuffs almost everyone is served less often, and
     /// a raider can skip a served vault for free (a few times an hour).
     /// </summary>
+    /// <summary>Walls cost gold: each wall tile added since the last published version, per Vault Level.</summary>
+    public sealed class WallsConfig
+    {
+        public int GoldPerLevel { get; set; } = 15;
+
+        public long CostFor(int walls, int vaultLevel)
+        {
+            return (long)walls * GoldPerLevel * vaultLevel;
+        }
+    }
+
     public sealed class MatchmakingConfig
     {
         /// <summary>A vault is "mean" when at least this share of its recent raids snuffed the raider...</summary>

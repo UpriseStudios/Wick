@@ -20,6 +20,8 @@ namespace Wick.Services
         public int Version;
         public int Stars;
         public string Code;
+        public int WallsAdded;
+        public long GoldSpent;
     }
 
     [Preserve]
