@@ -80,7 +80,7 @@
     "ticks": 1800,
     "stars": 2,
     "loot": 0,
-    "hash": "ca99225eb2a3f1ee"
+    "hash": "87d1eadd672a7962"
   },
   "expectedEvents": {
     "TreasureTaken": [

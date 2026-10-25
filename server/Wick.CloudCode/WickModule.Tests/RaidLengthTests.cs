@@ -107,5 +107,29 @@ namespace Wick.CloudCode.Tests
             Assert.AreEqual(75 * SimTuning.TicksPerSecond, raid.TicksFor(10), "past the list: its last entry");
             Assert.AreEqual(60 * SimTuning.TicksPerSecond, raid.TicksFor(0));
         }
+
+        [Test]
+        public async Task TheToken_CarriesTheRaidersWickUpgrades()
+        {
+            await _store.SetProtectedBatchAsync(Raider, new[]
+            {
+                new ItemWrite(EconomyKeys.Upgrades, Json.Write(new Upgrades { Levels = new Progression { VaultLevel = 6, Lantern = 2, Decoys = 1 } }), null),
+            });
+            RaidStartResult start = await Raids.StartFriendRaidAsync(Raider, "v_owner01", false);
+            Assert.AreEqual(_economy.LanternTo(2).LightBonus, start.LightBonus);
+            Assert.AreEqual(2, start.Decoys);
+        }
+
+        [Test]
+        public async Task AClearCheckPlayedWithWickUpgrades_IsRefused()
+        {
+            VaultDef halls = TestVaults.Halls();
+            RaidParams upgraded = new RaidParams(SimTuning.RaidTicks, 300, 2);
+            RaidResult run = RaidRunner.RunToEnd(halls, TestVaults.Seed, TestVaults.Escape, upgraded);
+            PublishResult r = await Publish(VaultJson.WriteDocument(halls, ClearCheck.FromRun(halls, TestVaults.Seed, TestVaults.Escape, run, upgraded)));
+            Assert.IsFalse(r.Ok);
+            StringAssert.Contains("without Wick's upgrades", r.Reason);
+        }
+
     }
 }

@@ -55,6 +55,8 @@ namespace Wick.Sim
             State.Wick.Tile = vault.Entrance;
             State.Wick.Facing = Dir.N;
             State.Wick.Flickers = SimTuning.StartFlickers;
+            State.Wick.DecoysLeft = raidParams.Decoys;
+            State.Wick.LightBonus = raidParams.LightBonus;
             State.Spent = new bool[vault.ObjectCount];
             State.GateOpen = new int[vault.ObjectCount];
             State.Guardians = CreateGuardians(vault);
@@ -242,9 +244,9 @@ namespace Wick.Sim
                     break;
 
                 case CommandType.Decoy:
-                    if (!w.DecoyUsed)
+                    if (w.DecoysLeft > 0 && w.DecoyTicksLeft == 0)
                     {
-                        w.DecoyUsed = true;
+                        w.DecoysLeft--;
                         w.DecoyTile = w.Tile;
                         w.DecoyTicksLeft = SimTuning.DecoyTicks;
                     }

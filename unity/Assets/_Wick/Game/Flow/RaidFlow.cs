@@ -379,6 +379,11 @@ namespace Wick.Game
                 return "Vault Level";
             }
 
+            if (kind == UpgradeKinds.Decoys)
+            {
+                return "Decoys";
+            }
+
             return UpgradeKinds.TryParseDefence(kind, out ObjectType type) ? EditorUI.Name(type) : "Lantern";
         }
 
@@ -533,7 +538,7 @@ namespace Wick.Game
                 _serverBanner = banner;
                 _serverRaid = reply;
                 _ui.SetMenuLabel("Home");
-                _runner.LoadLive(VaultJson.Parse(reply.Vault), reply.Seed, ParamsFor(reply.RaidTicks));
+                _runner.LoadLive(VaultJson.Parse(reply.Vault), reply.Seed, ParamsFor(reply.RaidTicks, reply.LightBonus, reply.Decoys));
                 BeginScout(banner);
             }
             catch (Exception e)
@@ -616,7 +621,7 @@ namespace Wick.Game
                 ClearModes();
                 _serverReplay = replay;
                 _ui.SetMenuLabel("Raids on your vault");
-                _runner.LoadReplay(VaultJson.Parse(replay.Vault), replay.Seed, InputLog.FromBase64(replay.Log), ParamsFor(replay.RaidTicks));
+                _runner.LoadReplay(VaultJson.Parse(replay.Vault), replay.Seed, InputLog.FromBase64(replay.Log), ParamsFor(replay.RaidTicks, replay.LightBonus, replay.Decoys));
                 _camera.EndScout();
                 _ui.ShowReplayHud("REPLAY", replay.Ticks);
                 _lastCode = replay.Code;
@@ -629,10 +634,10 @@ namespace Wick.Game
             }
         }
 
-        /// <summary>A server's raid length; 0 comes from a server older than M10 and means 60 s.</summary>
-        private static RaidParams ParamsFor(int raidTicks)
+        /// <summary>A server's raid settings; a 0 length comes from a server older than M10 and means 60 s.</summary>
+        private static RaidParams ParamsFor(int raidTicks, int lightBonus, int decoys)
         {
-            return raidTicks == 0 ? RaidParams.Default : new RaidParams(raidTicks);
+            return raidTicks == 0 ? RaidParams.Default : new RaidParams(raidTicks, lightBonus, Math.Max(1, decoys));
         }
 
         private void StartGolden(int index)

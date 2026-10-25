@@ -27,6 +27,8 @@ namespace Wick.Services
         public List<RunningUpgradeReply> Running;
         public VaultLevelStep NextVaultLevel;
         public LanternStep NextLantern;
+        public int Decoys;
+        public DecoyStep NextDecoy;
         public long ClubUntilMs;
         public List<string> Cosmetics;
         public int DailyVaultRetries;

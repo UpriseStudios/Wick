@@ -11,7 +11,8 @@ namespace Wick.CloudCode.Tests
     /// <summary>
     /// Acceptance: nothing bought or earned from ads changes a value the raid sim reads (game spec,
     /// fairness rules). Grants are limited to currency, cosmetics, slots and access; and a raid
-    /// plays out identically for a player who owns everything and one who owns nothing.
+    /// plays out identically for a player who owns everything and one who owns nothing but has
+    /// raised the same levels (Wick's upgrades follow Vault Level, which money can't skip).
     /// </summary>
     public class FairnessTests
     {
@@ -72,16 +73,35 @@ namespace Wick.CloudCode.Tests
             await w.Set("whale", Keys.Wallet, wallet);
             await w.Set("whale", EconomyKeys.Inventory, inventory);
             await w.Set("whale", EconomyKeys.Pass, pass);
-            await w.Set("whale", EconomyKeys.Upgrades, new Upgrades { Levels = new Progression { VaultLevel = 10, Lantern = 5 } });
+            // Wick's upgrades (Lantern, extra decoy) are earned through Vault Level, which needs raid
+            // stars: the M10 rule is that a raid plays the same for everyone at the same progression,
+            // whatever they have bought. So the free player here has raised the same levels.
+            var progression = new Progression { VaultLevel = 10, Lantern = 5, Decoys = 1 };
+            await w.Set("whale", EconomyKeys.Upgrades, new Upgrades { Levels = progression });
+            await w.Set("grinder", EconomyKeys.Upgrades, new Upgrades { Levels = new Progression { VaultLevel = 10, Lantern = 5, Decoys = 1 } });
 
             SubmitResult whale = await w.RaidVault("whale", "v_owner", TestVaults.Escape);
             w.Clock.Advance(Rules.ShieldMs(TestEconomy.Loot) + 1);
-            SubmitResult free = await w.RaidVault("newcomer", "v_owner", TestVaults.Escape);
+            SubmitResult free = await w.RaidVault("grinder", "v_owner", TestVaults.Escape);
 
-            Assert.AreEqual(free.Hash, whale.Hash, "same vault, seed and inputs: same raid");
+            Assert.AreEqual(free.Hash, whale.Hash, "same vault, seed, inputs and progression: same raid");
             Assert.AreEqual(free.Stars, whale.Stars);
             Assert.AreEqual(free.Loot, whale.Loot);
             Assert.AreEqual(free.Ticks, whale.Ticks);
+        }
+
+        [Test]
+        public void WickUpgrades_AreCappedByVaultLevel_SoBuyingCantGetAhead()
+        {
+            foreach (LanternStep l in TestEconomy.Default.Lantern)
+            {
+                Assert.Greater(l.MinVaultLevel, 1, "every Lantern level waits for a Vault Level");
+            }
+
+            foreach (DecoyStep d in TestEconomy.Default.Decoys)
+            {
+                Assert.Greater(d.MinVaultLevel, 1, "every extra decoy waits for a Vault Level");
+            }
         }
     }
 }

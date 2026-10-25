@@ -42,6 +42,9 @@ namespace Wick.CloudCode
         public int VaultLevel { get; set; } = 1;
         public int Lantern { get; set; }
 
+        /// <summary>Extra decoys bought (Wick upgrade).</summary>
+        public int Decoys { get; set; }
+
         /// <summary>Defence upgrade levels by type name ("drip_pipe"); missing types are level 1.</summary>
         public Dictionary<string, int> Defences { get; set; } = new Dictionary<string, int>();
 
@@ -107,6 +110,10 @@ namespace Wick.CloudCode
             if (running.Kind == UpgradeKinds.VaultLevel)
             {
                 Levels.VaultLevel = Math.Max(Levels.VaultLevel, running.ToLevel);
+            }
+            else if (running.Kind == UpgradeKinds.Decoys)
+            {
+                Levels.Decoys = Math.Max(Levels.Decoys, running.ToLevel);
             }
             else if (UpgradeKinds.TryParseDefence(running.Kind, out Wick.Sim.ObjectType type))
             {

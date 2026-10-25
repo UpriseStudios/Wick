@@ -163,6 +163,9 @@ namespace Wick.CloudCode
             IntegrityVerdict verdict = await _integrity.VerifyAsync(playerId, platform, integrityToken);
             EconomyConfig cfg = await _economy.GetAsync();
             long now = _clock.NowMs;
+            var raider = await _store.GetProtectedAsync(playerId, new[] { EconomyKeys.Upgrades });
+            Progression levels = Upgrades.Read(raider.TryGetValue(EconomyKeys.Upgrades, out StoredItem u) ? u.Json : null, now).Levels;
+            RaidParams wick = cfg.WickParams(cfg.Raid.TicksFor(target.VaultLevel), levels.Lantern, levels.Decoys);
             var token = new RaidToken
             {
                 Id = _random.NextId(),
@@ -178,7 +181,9 @@ namespace Wick.CloudCode
                 ClearTicks = target.ClearTicks,
                 Seed = _random.NextSeed(),
                 SimVersion = SimInfo.Version,
-                RaidTicks = cfg.Raid.TicksFor(target.VaultLevel),
+                RaidTicks = wick.RaidTicks,
+                LightBonus = wick.LightBonus,
+                Decoys = wick.Decoys,
                 IssuedAtMs = now,
                 ExpiresAtMs = now + Rules.TokenLifetimeMs,
                 Vault = target.Vault,
@@ -236,6 +241,8 @@ namespace Wick.CloudCode
                 VaultVersion = token.VaultVersion,
                 Vault = token.Vault,
                 RaidTicks = token.RaidTicks,
+                LightBonus = token.LightBonus,
+                Decoys = token.Decoys,
                 ExpiresAtMs = token.ExpiresAtMs,
             };
         }
@@ -498,7 +505,7 @@ namespace Wick.CloudCode
         /// <summary>The raid settings a token was issued with (tokens from before M10 had none: 60 s).</summary>
         public static RaidParams ParamsOf(RaidToken token)
         {
-            return token.RaidTicks == 0 ? RaidParams.Default : new RaidParams(token.RaidTicks);
+            return token.RaidTicks == 0 ? RaidParams.Default : new RaidParams(token.RaidTicks, token.LightBonus, Math.Max(1, token.Decoys));
         }
 
         /// <summary>The submitted raid, kept server-only for the defence log's replays.</summary>
@@ -517,6 +524,8 @@ namespace Wick.CloudCode
                 Seed = token.Seed,
                 SimVersion = SimInfo.Version,
                 RaidTicks = token.RaidTicks,
+                LightBonus = token.LightBonus,
+                Decoys = token.Decoys,
                 Vault = token.Vault,
                 Log = log,
                 Claimed = claim,
@@ -554,6 +563,8 @@ namespace Wick.CloudCode
         public int Seed { get; set; }
         public int SimVersion { get; set; }
         public int RaidTicks { get; set; }
+        public int LightBonus { get; set; }
+        public int Decoys { get; set; }
         public string Vault { get; set; }
         public string Log { get; set; }
         public RaidClaim Claimed { get; set; }

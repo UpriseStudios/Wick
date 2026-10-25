@@ -56,6 +56,14 @@ LANTERN = [
 ]
 
 
+# Extra decoy: a second decoy per raid, bought with wax once Vault Level 6 is reached, the same
+# for everyone at that level (a raid tool, so it's star-gated through Vault Level, never sold).
+DECOYS = [
+    # level, wax, minutes, min vault level
+    (1, 2_000, 720, 6),
+]
+
+
 def pass_rewards():
     """40 tiers. Free: a chest about every third tier. Premium: cosmetics, more resources, gems."""
     skins = {1: "skin_twist", 20: "skin_twist_gilded", 40: "skin_twist_flame"}
@@ -93,6 +101,7 @@ ECONOMY = {
     "vaultLevels": [{"level": l, "gold": g, "minutes": m, "stars": s} for (l, g, m, s) in VAULT_LEVELS],
     "defenceUpgrades": [{"level": l, "gold": g, "wax": x, "minutes": m} for (l, g, x, m) in DEFENCE_UPGRADES],
     "lantern": [{"level": l, "wax": w, "minutes": m, "minVaultLevel": v, "lightBonus": b} for (l, w, m, v, b) in LANTERN],
+    "decoys": [{"level": l, "wax": w, "minutes": m, "minVaultLevel": v} for (l, w, m, v) in DECOYS],
     "workshops": {"base": 1, "max": 3},
     "speedUp": {"gemsPerHour": 20, "minGems": 1},
     "ads": {

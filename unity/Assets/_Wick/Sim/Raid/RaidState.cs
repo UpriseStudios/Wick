@@ -22,7 +22,14 @@ namespace Wick.Sim
         public int Flickers;
         public bool Tiptoe;
         public int CarriedTreasure;
-        public bool DecoyUsed;
+
+        /// <summary>Decoys still to throw (RaidParams.Decoys at the start).</summary>
+        public int DecoysLeft;
+
+        /// <summary>Lantern: light radius added for this raid (RaidParams.LightBonus).</summary>
+        public int LightBonus;
+
+        public bool DecoyUsed => DecoysLeft == 0;
 
         // Movement
         public bool Moving;

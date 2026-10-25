@@ -168,8 +168,14 @@ namespace Wick.Game
             LanternStep l = _state.NextLantern;
             rows.Add(UpgradeRow(UpgradeKinds.Lantern, "Lantern " + _state.Lantern,
                 l == null ? null : "Level " + l.Level + ": " + l.Wax + " wax, needs Vault Level " + l.MinVaultLevel + ", " + Duration(l.Minutes * 60_000L) +
-                    " (a slightly bigger light, from the next balance update)",
+                    " (a slightly bigger light in your raids)",
                 l != null && _state.Wax >= l.Wax && _state.VaultLevel >= l.MinVaultLevel, cfg));
+
+            DecoyStep dc = _state.NextDecoy;
+            rows.Add(UpgradeRow(UpgradeKinds.Decoys, "Decoys " + (1 + _state.Decoys),
+                dc == null ? null : "Carry " + (2 + _state.Decoys) + ": " + dc.Wax + " wax, needs Vault Level " + dc.MinVaultLevel + ", " +
+                    Duration(dc.Minutes * 60_000L),
+                dc != null && _state.Wax >= dc.Wax && _state.VaultLevel >= dc.MinVaultLevel, cfg));
 
             // Defences: every trap or guardian of a type, vault-wide, capped at half the Vault Level.
             int cap = DefenceLevels.Cap(_state.VaultLevel);

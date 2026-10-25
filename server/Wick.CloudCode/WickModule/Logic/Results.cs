@@ -37,6 +37,10 @@ namespace Wick.CloudCode
         /// <summary>How long the raid lasts, in sim ticks.</summary>
         public int RaidTicks { get; set; }
 
+        /// <summary>The raider's Wick upgrades for this raid.</summary>
+        public int LightBonus { get; set; }
+        public int Decoys { get; set; }
+
         public long ExpiresAtMs { get; set; }
 
         public static RaidStartResult Fail(string reason)
@@ -104,6 +108,8 @@ namespace Wick.CloudCode
         public string Vault { get; set; }
         public int Seed { get; set; }
         public int RaidTicks { get; set; }
+        public int LightBonus { get; set; }
+        public int Decoys { get; set; }
         public string Log { get; set; }
         public string Hash { get; set; }
         public string Outcome { get; set; }

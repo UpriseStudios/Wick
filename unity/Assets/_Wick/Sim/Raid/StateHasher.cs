@@ -18,7 +18,8 @@ namespace Wick.Sim
             h.AddInt(w.Flickers);
             h.AddBool(w.Tiptoe);
             h.AddInt(w.CarriedTreasure);
-            h.AddBool(w.DecoyUsed);
+            h.AddInt(w.DecoysLeft);
+            h.AddInt(w.LightBonus);
             h.AddBool(w.Moving);
             h.AddByte((byte)w.MoveDir);
             h.AddBool(w.MoveIsRun);

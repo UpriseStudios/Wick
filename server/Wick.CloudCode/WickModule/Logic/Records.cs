@@ -219,6 +219,10 @@ namespace Wick.CloudCode
         /// <summary>How long the raid lasts in sim ticks, from Remote Config for the defender's Vault Level.</summary>
         public int RaidTicks { get; set; }
 
+        /// <summary>The raider's Wick upgrades when the raid was issued: Lantern light bonus and decoys.</summary>
+        public int LightBonus { get; set; }
+        public int Decoys { get; set; }
+
         public long IssuedAtMs { get; set; }
         public long ExpiresAtMs { get; set; }
         public bool Used { get; set; }

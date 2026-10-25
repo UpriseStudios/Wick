@@ -201,6 +201,8 @@ namespace Wick.CloudCode
                 Code = r.Code,
                 SimVersion = r.SimVersion,
                 RaidTicks = r.RaidTicks,
+                LightBonus = r.LightBonus,
+                Decoys = r.Decoys,
                 Vault = r.Vault,
                 Seed = r.Seed,
                 Log = r.Log,

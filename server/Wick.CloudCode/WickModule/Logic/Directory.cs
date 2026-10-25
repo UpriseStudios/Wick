@@ -150,6 +150,13 @@ namespace Wick.CloudCode
                 return null;
             }
 
+            // The proof run is played as base Wick: no Lantern bonus, one decoy, whatever the owner owns.
+            if (clearCheck != null && !clearCheck.Params.IsBaseWick)
+            {
+                fail = PublishResult.Fail("The clear-check run must be played without Wick's upgrades; test the vault again");
+                return null;
+            }
+
             // The proof run must not have had more time than raiders get at this level.
             int raidTicks = raid.TicksFor(vault.VaultLevel);
             if (clearCheck != null && clearCheck.Params.RaidTicks > raidTicks)

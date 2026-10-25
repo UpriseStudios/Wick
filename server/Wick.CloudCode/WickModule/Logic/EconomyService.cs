@@ -224,6 +224,28 @@ namespace Wick.CloudCode
                     toLevel = step.Level;
                     minutes = step.Minutes;
                 }
+                else if (kind == UpgradeKinds.Decoys)
+                {
+                    DecoyStep step = cfg.DecoyTo(upgrades.Levels.Decoys + 1);
+                    if (step == null)
+                    {
+                        return new Plan<EconomyResult>(EconomyResult.Fail("You carry every decoy there is"));
+                    }
+
+                    if (upgrades.Levels.VaultLevel < step.MinVaultLevel)
+                    {
+                        return new Plan<EconomyResult>(EconomyResult.Fail("Needs Vault Level " + step.MinVaultLevel));
+                    }
+
+                    if (wallet.Wax < step.Wax)
+                    {
+                        return new Plan<EconomyResult>(EconomyResult.Fail("Needs " + step.Wax + " wax"));
+                    }
+
+                    wallet.Wax -= step.Wax;
+                    toLevel = step.Level;
+                    minutes = step.Minutes;
+                }
                 else if (UpgradeKinds.TryParseDefence(kind, out ObjectType defence))
                 {
                     int unlock = VaultRules.RequiredLevel(defence);
@@ -488,6 +510,8 @@ namespace Wick.CloudCode
         public List<RunningUpgrade> Running { get; set; } = new List<RunningUpgrade>();
         public VaultLevelStep NextVaultLevel { get; set; }
         public LanternStep NextLantern { get; set; }
+        public int Decoys { get; set; }
+        public DecoyStep NextDecoy { get; set; }
         public long ClubUntilMs { get; set; }
         public List<string> Cosmetics { get; set; } = new List<string>();
         public int DailyVaultRetries { get; set; }
@@ -522,6 +546,8 @@ namespace Wick.CloudCode
                 Running = upgrades.Running,
                 NextVaultLevel = cfg.VaultLevelTo(upgrades.Levels.VaultLevel + 1),
                 NextLantern = cfg.LanternTo(upgrades.Levels.Lantern + 1),
+                Decoys = upgrades.Levels.Decoys,
+                NextDecoy = cfg.DecoyTo(upgrades.Levels.Decoys + 1),
                 ClubUntilMs = inventory.ClubUntilMs,
                 Cosmetics = inventory.Cosmetics,
                 DailyVaultRetries = inventory.DailyVaultRetries,

@@ -22,6 +22,9 @@ namespace Wick.Economy
         public List<VaultLevelStep> VaultLevels { get; set; } = new List<VaultLevelStep>();
         public List<LanternStep> Lantern { get; set; } = new List<LanternStep>();
 
+        /// <summary>The extra decoy (Wick upgrade): each level adds a decoy per raid.</summary>
+        public List<DecoyStep> Decoys { get; set; } = new List<DecoyStep>();
+
         /// <summary>The cost of raising any defence to each level (2 to 5); the same for every defence.</summary>
         public List<DefenceStep> DefenceUpgrades { get; set; } = new List<DefenceStep>();
         public WorkshopConfig Workshops { get; set; } = new WorkshopConfig();
@@ -54,6 +57,21 @@ namespace Wick.Economy
             return Lantern.Find(s => s.Level == level);
         }
 
+        public DecoyStep DecoyTo(int level)
+        {
+            return Decoys.Find(s => s.Level == level);
+        }
+
+        /// <summary>
+        /// The raid settings for a raider with these Wick upgrades (Lantern light bonus, decoys) on
+        /// a raid of raidTicks.
+        /// </summary>
+        public Sim.RaidParams WickParams(int raidTicks, int lantern, int decoyLevel)
+        {
+            LanternStep l = LanternTo(lantern);
+            return new Sim.RaidParams(raidTicks, l?.LightBonus ?? 0, 1 + decoyLevel);
+        }
+
         /// <summary>The step that raises a defence to level, or null past the top.</summary>
         public DefenceStep DefenceTo(int level)
         {
@@ -81,6 +99,7 @@ namespace Wick.Economy
     {
         public const string VaultLevel = "vaultLevel";
         public const string Lantern = "lantern";
+        public const string Decoys = "decoys";
 
         /// <summary>Defence upgrades are "defence:" plus the type's JSON name, e.g. "defence:drip_pipe".</summary>
         public const string DefencePrefix = "defence:";
@@ -201,6 +220,15 @@ namespace Wick.Economy
         public long Gold { get; set; }
         public long Wax { get; set; }
         public int Minutes { get; set; }
+    }
+
+    /// <summary>The extra decoy: wax, build time and the Vault Level it waits for.</summary>
+    public sealed class DecoyStep
+    {
+        public int Level { get; set; }
+        public long Wax { get; set; }
+        public int Minutes { get; set; }
+        public int MinVaultLevel { get; set; }
     }
 
     public sealed class LanternStep

@@ -38,6 +38,10 @@ namespace Wick.Services
         /// <summary>How long the raid lasts in sim ticks; 0 from a server older than M10 (60 s).</summary>
         public int RaidTicks;
 
+        /// <summary>The raider's Wick upgrades for this raid (Lantern light bonus, decoys).</summary>
+        public int LightBonus;
+        public int Decoys;
+
         public long ExpiresAtMs;
     }
 
@@ -104,6 +108,8 @@ namespace Wick.Services
         public string Vault;
         public int Seed;
         public int RaidTicks;
+        public int LightBonus;
+        public int Decoys;
         public string Log;
         public string Hash;
         public string Outcome;

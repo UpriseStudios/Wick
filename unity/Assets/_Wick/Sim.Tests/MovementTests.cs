@@ -213,6 +213,45 @@ namespace Wick.Sim.Tests
         }
 
         [Test]
+        public void TheLanternBonus_WidensTheLight_BeforeTiptoeHalvesIt()
+        {
+            Assert.AreEqual(4750, Lighting.RadiusUnits(3, false, false, 750));
+            Assert.AreEqual(2375, Lighting.RadiusUnits(3, true, false, 750));
+            var sim = new RaidSim(Vault(), 1, InputLog.Empty, new RaidParams(SimTuning.RaidTicks, lightBonus: 750));
+            Assert.AreEqual(4750, Lighting.RadiusUnits(in sim.State.Wick));
+        }
+
+        [Test]
+        public void TheDecoyUpgrade_GivesASecondDecoy_OnceTheFirstHasFaded()
+        {
+            var log = new InputLog(new[] { Command.Decoy(0), Command.Decoy(10), Command.Decoy(100), Command.Decoy(200) });
+            var sim = new RaidSim(Vault(), 1, log, new RaidParams(SimTuning.RaidTicks, decoys: 2));
+            StepN(sim, 11);
+            Assert.AreEqual(1, sim.State.Wick.DecoysLeft, "a second throw while the first is out does nothing");
+            StepN(sim, 100);
+            Assert.AreEqual(0, sim.State.Wick.DecoysLeft, "thrown once the first faded");
+            Assert.IsTrue(sim.State.Wick.DecoyUsed);
+            StepN(sim, 100);
+            Assert.AreEqual(0, sim.State.Wick.DecoysLeft);
+        }
+
+        [Test]
+        public void WickUpgrades_RoundTripInParams_AndBaseWickWritesOnlyTheLength()
+        {
+            var w = new JsonWriter();
+            RaidParams.Default.Write(w);
+            Assert.AreEqual("{\"raidTicks\":1800}", w.ToString());
+            var up = new RaidParams(SimTuning.RaidTicks, 600, 2);
+            var w2 = new JsonWriter();
+            up.Write(w2);
+            RaidParams back = RaidParams.FromNode(JsonReader.Parse(w2.ToString()));
+            Assert.AreEqual(600, back.LightBonus);
+            Assert.AreEqual(2, back.Decoys);
+            Assert.IsFalse(back.IsBaseWick);
+            Assert.IsTrue(back.AsBaseWick.IsBaseWick);
+        }
+
+        [Test]
         public void EndBetweenIntervals_AddsFinalCheckpoint()
         {
             RaidResult r = RaidRunner.RunToEnd(Vault(), 1, Log(Command.Dash(40, Dir.N), Command.Dash(45, Dir.S)));
