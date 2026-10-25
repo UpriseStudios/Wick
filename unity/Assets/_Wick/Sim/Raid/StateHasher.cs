@@ -36,6 +36,8 @@ namespace Wick.Sim
             h.AddBool(w.ReachedHoard);
             h.AddInt(w.KnockTiles);
             h.AddBool(w.Sliding);
+            h.AddInt(w.FallTicks);
+            h.AddInt(w.ExitLockTicks);
 
             // Entities, each in id order. Timed traps are a pure function of the tick, so only
             // their spent flags (bells) carry state.
@@ -43,6 +45,12 @@ namespace Wick.Sim
             for (int i = 0; i < s.Spent.Length; i++)
             {
                 h.AddBool(s.Spent[i]);
+            }
+
+            h.AddInt(s.Carried.Length);
+            for (int i = 0; i < s.Carried.Length; i++)
+            {
+                h.AddBool(s.Carried[i]);
             }
 
             h.AddInt(s.BellFall.Length);

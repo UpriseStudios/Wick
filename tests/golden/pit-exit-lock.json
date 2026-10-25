@@ -1,0 +1,80 @@
+{
+  "_note": "The exit lock stops a pit dive from saving time. Wick drops into the pit on (3,1) on tick 9 and pops out at the entrance on 33. He steps out and straight back (on the entrance again on tick 43): no escape, the exit is shut until tick 273. Out and back once it opens: he escapes on tick 289.",
+  "simVersion": 5,
+  "seed": 10106,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_pit_lock",
+    "version": 1,
+    "vaultLevel": 1,
+    "theme": "crypt",
+    "grid": {
+      "w": 8,
+      "h": 3
+    },
+    "_map": [
+      "########",
+      "#E.O...#",
+      "########"
+    ],
+    "tiles": "AQEBAQEBAQEBAAADAAAAAQEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": []
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 34,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 39,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 280,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 285,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 290,
+    "stars": 0,
+    "loot": 0,
+    "hash": "37e71f5dd1a3992b"
+  },
+  "expectedEvents": {
+    "PitFall": [
+      9
+    ],
+    "PitRespawn": [
+      33
+    ],
+    "ExitLocked": [
+      33
+    ],
+    "ExitUnlocked": [
+      273
+    ]
+  }
+}

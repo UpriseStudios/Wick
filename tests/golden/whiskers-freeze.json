@@ -1,6 +1,6 @@
 {
   "_note": "Sir Whiskers naps on (6,1). Wick's moving flame wakes him on tick 7; Wick stops on (3,1) (t9) and holds still. The cat stalks only while Wick moves, so he waits, and after 45 still ticks gives up on tick 53 and pads home to sleep. A still flame doesn't wake him. Wick dashes home from tick 150 (waking him again, too late) and walks out on tick 159 with every flicker: 1 star.",
-  "simVersion": 4,
+  "simVersion": 5,
   "seed": 9121,
   "vault": {
     "schema": 1,
@@ -58,7 +58,7 @@
     "ticks": 160,
     "stars": 1,
     "loot": 0,
-    "hash": "8c5d7416eb424bcd"
+    "hash": "4e40174fdd5bc029"
   },
   "expectedEvents": {
     "GuardianAlerted": [

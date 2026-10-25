@@ -1,6 +1,6 @@
 {
   "_note": "Bellows at (7,9) facing west, cycle 60: gusts on ticks 0-14, 60-74, 120-134 along row 9 until the crate at (3,9). Runs north and stops on (4,9) (occupied from tick 24): the tick-60 gust hits and dims him. Goes round via row 10 to shelter at (2,9) behind the crate (arrives tick 80); the tick-120 gust misses. Home on tick 164.",
-  "simVersion": 4,
+  "simVersion": 5,
   "seed": 4102,
   "vault": {
     "schema": 1,
@@ -110,7 +110,7 @@
     "ticks": 165,
     "stars": 0,
     "loot": 0,
-    "hash": "5133190e7a25c0d0"
+    "hash": "a2f0579f8a8793a4"
   },
   "expectedEvents": {
     "TrapFired": [

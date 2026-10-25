@@ -1,6 +1,6 @@
 {
-  "_note": "Run north through the door, across the pit and onto the ice (all walkable in M1), then a tiptoe dash west and a decoy, and never come back. Times out at 1800 ticks.",
-  "simVersion": 4,
+  "_note": "Run north through the door, past the pit at (3,3) (moved off the run in M10.1, when pits started to swallow Wick) and onto the ice, then a tiptoe dash west and a decoy, and never come back. Times out at 1800 ticks.",
+  "simVersion": 5,
   "seed": 99120,
   "vault": {
     "schema": 1,
@@ -16,7 +16,7 @@
       "#########",
       "#.~~~~~.#",
       "#.~...~.#",
-      "#.~.O.~.#",
+      "#.~O..~.#",
       "#.......#",
       "####D####",
       "#.......#",
@@ -27,7 +27,7 @@
       "#.......#",
       "####E####"
     ],
-    "tiles": "AQEBAQEBAQEBAQAEBAQEBAABAQAEAAAABAABAQAEAAMABAABAQAAAAAAAAABAQEBAQIBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
+    "tiles": "AQEBAQEBAQEBAQAEBAQEBAABAQAEAAAABAABAQAEAwAABAABAQAAAAAAAAABAQEBAQIBAQEBAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQAAAAAAAAABAQEBAQABAQEB",
     "entrance": [
       4,
       12
@@ -80,7 +80,7 @@
     "ticks": 1800,
     "stars": 2,
     "loot": 0,
-    "hash": "f00e01466293b86e"
+    "hash": "a0797ae84c73ba29"
   },
   "expectedEvents": {
     "TreasureTaken": [

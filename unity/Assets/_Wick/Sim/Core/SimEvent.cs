@@ -28,6 +28,21 @@ namespace Wick.Sim
 
         /// <summary>Wick was knocked back. Value = tiles he will slide; Tile = where he slides from.</summary>
         KnockedBack,
+
+        /// <summary>Wick fell into a pit. Tile = the pit; Value = flickers left.</summary>
+        PitFall,
+
+        /// <summary>Wick popped back out of a pit at the entrance. Tile = the entrance; Value = flickers left.</summary>
+        PitRespawn,
+
+        /// <summary>A level 5 pit put a pile back. EntityId = the pile; Tile = where it lies; Value = its value.</summary>
+        LootDropped,
+
+        /// <summary>The exit shut after a pit respawn. Tile = the entrance; Value = ticks it stays shut.</summary>
+        ExitLocked,
+
+        /// <summary>The exit opened again. Tile = the entrance.</summary>
+        ExitUnlocked,
     }
 
     /// <summary>

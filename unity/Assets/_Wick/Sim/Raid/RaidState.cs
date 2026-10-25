@@ -60,6 +60,14 @@ namespace Wick.Sim
         /// <summary>Sliding on ice: he keeps going in MoveDir until something stops him or the ice ends.</summary>
         public bool Sliding;
 
+        /// <summary>Ticks left in a pit (0 = not falling). Meanwhile Tile is the pit, his light is out and nothing touches him.</summary>
+        public int FallTicks;
+
+        /// <summary>After a pit respawn: ticks the exit stays shut (0 = open).</summary>
+        public int ExitLockTicks;
+
+        public bool Falling => FallTicks > 0;
+
         /// <summary>The tile Wick counts as standing on for hits, contacts and pickups.</summary>
         public TilePos Occupied => Motion.OccupiedTile(Tile, Moving, MoveDir, Progress);
     }
@@ -122,6 +130,9 @@ namespace Wick.Sim
         /// </summary>
         public bool[] Spent;
 
+        /// <summary>Per vault object: a treasure pile Wick is carrying (taken and not lost), so a pit can put it back.</summary>
+        public bool[] Carried;
+
         /// <summary>Night Owls and Wax Moths, sorted by entity id.</summary>
         public GuardianState[] Guardians;
 
@@ -154,6 +165,7 @@ namespace Wick.Sim
                 Rng = Rng,
                 Hash = Hash,
                 Spent = (bool[])Spent.Clone(),
+                Carried = (bool[])Carried.Clone(),
                 Guardians = (GuardianState[])Guardians.Clone(),
                 GateOpen = (int[])GateOpen.Clone(),
                 BellFall = (int[])BellFall.Clone(),

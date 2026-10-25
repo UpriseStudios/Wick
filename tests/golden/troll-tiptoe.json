@@ -1,6 +1,6 @@
 {
   "_note": "A Sleepy Troll on (3,1). Tiptoeing halves Wick's light to 2 tiles, below the 3 that wakes it, so he creeps past and back at tiptoe speed (10 ticks a tile): (2,1) t9, onto the troll's tile t19, (4,1) t29, (5,1) t39, then home: (4,1) t49, (3,1) t59, (2,1) t69, and out on tick 79. It never wakes. 1 star (all flickers), no loot.",
-  "simVersion": 4,
+  "simVersion": 5,
   "seed": 6116,
   "vault": {
     "schema": 1,
@@ -82,7 +82,7 @@
     "ticks": 80,
     "stars": 1,
     "loot": 0,
-    "hash": "10f2aede5d9f7bed"
+    "hash": "2984913fde28cb5a"
   },
   "expectedEvents": {
     "GuardianAlerted": [],

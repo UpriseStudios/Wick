@@ -1,0 +1,63 @@
+{
+  "_note": "Ice on (2,1) and (3,1), then a pit on (4,1). One dash east: onto the ice on tick 4, sliding 4 ticks a tile, into the pit on tick 12. Out at the entrance on tick 36 (exit shut until 276); he steps south and back from tick 280 and escapes on tick 289.",
+  "simVersion": 5,
+  "seed": 10105,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_pit_ice",
+    "version": 1,
+    "vaultLevel": 3,
+    "theme": "crypt",
+    "grid": {
+      "w": 8,
+      "h": 4
+    },
+    "_map": [
+      "########",
+      "#E~~O..#",
+      "#.######",
+      "########"
+    ],
+    "tiles": "AQEBAQEBAQEBAAQEAwAAAQEAAQEBAQEBAQEBAQEBAQE=",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": []
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 280,
+      "type": "Dash",
+      "dir": "S"
+    },
+    {
+      "tick": 285,
+      "type": "Dash",
+      "dir": "N"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 290,
+    "stars": 0,
+    "loot": 0,
+    "hash": "ec9eb6c26fa788ee"
+  },
+  "expectedEvents": {
+    "PitFall": [
+      12
+    ],
+    "PitRespawn": [
+      36
+    ],
+    "ExitUnlocked": [
+      276
+    ]
+  }
+}

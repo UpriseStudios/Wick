@@ -88,6 +88,7 @@ namespace Wick.Sim
                 case ObjectType.NightOwl: return 30;
                 case ObjectType.WaxMoths: return 25;
                 case ObjectType.IceTiles: return 3; // per tile
+                case ObjectType.Pit: return 5; // per tile
                 case ObjectType.SwingAxe: return 22;
                 case ObjectType.MimicChest: return 28;
                 case ObjectType.SleepyTroll: return 35;
@@ -148,15 +149,19 @@ namespace Wick.Sim
                 total += Cost(vault.GetObject(i).Type);
             }
 
-            return total + IceTileCount(vault) * Cost(ObjectType.IceTiles);
+            return total + IceTileCount(vault) * Cost(ObjectType.IceTiles) + PitTileCount(vault) * Cost(ObjectType.Pit);
         }
 
-        public static int IceTileCount(VaultDef vault)
+        public static int IceTileCount(VaultDef vault) => TileCount(vault, TileType.Ice);
+
+        public static int PitTileCount(VaultDef vault) => TileCount(vault, TileType.Pit);
+
+        private static int TileCount(VaultDef vault, TileType type)
         {
             int n = 0;
             for (int i = 0; i < vault.Width * vault.Height; i++)
             {
-                n += vault.TileAtIndex(i) == TileType.Ice ? 1 : 0;
+                n += vault.TileAtIndex(i) == type ? 1 : 0;
             }
 
             return n;

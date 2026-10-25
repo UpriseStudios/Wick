@@ -6,8 +6,8 @@ using NUnit.Framework;
 namespace Wick.Sim.Tests
 {
     /// <summary>
-    /// 2000 random raids on random small vaults, generated from a seeded Pcg32 so Unity and .NET
-    /// run exactly the same corpus. Checks: no exceptions, invariants every tick, determinism, and
+    /// 2000 random raids on random small vaults (ice and pits included), generated from a seeded
+    /// Pcg32 so Unity and .NET run exactly the same corpus. Checks: no exceptions, invariants every tick, determinism, and
     /// one combined hash that both runtimes must reproduce.
     /// </summary>
     public class FuzzTests
@@ -84,7 +84,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void Corpus_CombinedHash_IsStable()
         {
-            const string expected = "917e5e5f0ae1c40b";
+            const string expected = "da382bc01355433f";
 
             var rng = new Pcg32(2026, 77);
             var combined = new Fnv1a64();
@@ -119,6 +119,11 @@ namespace Wick.Sim.Tests
                 if (!vault.IsWalkable(w.Tile) || (w.Moving && !vault.IsWalkable(w.Tile.Step(w.MoveDir))))
                 {
                     Assert.Fail("raid " + index + " tick " + sim.State.Tick + ": Wick off the walkable floor at " + w.Tile);
+                }
+
+                if (w.Falling && (w.Moving || vault.TileAt(w.Tile) != TileType.Pit))
+                {
+                    Assert.Fail("raid " + index + " tick " + sim.State.Tick + ": falling but not still in a pit at " + w.Tile);
                 }
 
                 foreach (GuardianState g in sim.State.Guardians)
@@ -228,7 +233,11 @@ namespace Wick.Sim.Tests
             var bytes = new byte[w * h];
             for (int i = 0; i < bytes.Length; i++)
             {
-                bytes[i] = walls[i] ? (byte)TileType.Wall : rng.NextInt(8) == 0 ? (byte)TileType.Ice : (byte)TileType.Floor;
+                int roll = rng.NextInt(16);
+                bytes[i] = walls[i] ? (byte)TileType.Wall
+                    : roll < 2 ? (byte)TileType.Ice
+                    : roll == 2 && i != entrance.Y * w + entrance.X ? (byte)TileType.Pit
+                    : (byte)TileType.Floor;
             }
 
             string hoard = rng.NextInt(2) == 0 ? "" : ",\"hoard\":[1,1," + (w - 2) + "," + (1 + rng.NextInt(h - 2)) + "]";
@@ -237,7 +246,7 @@ namespace Wick.Sim.Tests
             var levels = new List<string>();
             if (rng.NextInt(2) == 0)
             {
-                foreach (string type in new[] { "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "swing_axe", "mimic_chest", "sleepy_troll", "fan", "gate" })
+                foreach (string type in new[] { "drip_pipe", "bellows", "spike_floor", "snuffer_bell", "night_owl", "wax_moths", "swing_axe", "mimic_chest", "sleepy_troll", "fan", "gate", "pit" })
                 {
                     levels.Add("\"" + type + "\":" + (1 + rng.NextInt(DefenceLevels.MaxLevel)));
                 }

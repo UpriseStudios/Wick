@@ -39,6 +39,11 @@ namespace Wick.Sim
 
         public static int RadiusUnits(in WickState wick)
         {
+            if (wick.Falling)
+            {
+                return 0; // down a pit: no light, so nothing sees him
+            }
+
             return RadiusUnits(wick.Flickers, wick.Tiptoe, wick.GustDimTicks > 0, wick.LightBonus);
         }
 

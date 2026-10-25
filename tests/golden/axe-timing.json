@@ -1,6 +1,6 @@
 {
   "_note": "A Swing Axe over (3,1), cycle 60: its blade is live there on ticks 0-5 and 30-35 of each cycle. Wick dashes to (2,1) (t4), then onto the axe's tile (his on t8, arriving t10), waits, and is caught by the return swing on tick 30. He dashes on to (4,1) inside his invulnerability, then comes back across on safe ticks (on the axe's tile t72) and walks out on tick 86 with 2 flickers: 0 stars, no loot.",
-  "simVersion": 4,
+  "simVersion": 5,
   "seed": 4404,
   "vault": {
     "schema": 1,
@@ -70,7 +70,7 @@
     "ticks": 87,
     "stars": 0,
     "loot": 0,
-    "hash": "b124bb71fdd60410"
+    "hash": "e6d04e13648e5f83"
   },
   "expectedEvents": {
     "FlickerLost": [

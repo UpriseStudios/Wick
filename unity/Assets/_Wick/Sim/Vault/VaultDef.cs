@@ -159,7 +159,7 @@ namespace Wick.Sim
         /// <summary>Walls, crates and off-grid block movement.</summary>
         public bool IsWalkable(TilePos p)
         {
-            // Pits are walkable floor for now (no rules for them yet); ice is walkable but slippery.
+            // Wick can walk onto a pit (and falls in: RaidSim.StartFall); ice is walkable but slippery.
             return InBounds(p) && !_blocked[p.Y * Width + p.X];
         }
 

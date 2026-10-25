@@ -58,6 +58,7 @@ namespace Wick.Sim
             State.Wick.DecoysLeft = raidParams.Decoys;
             State.Wick.LightBonus = raidParams.LightBonus;
             State.Spent = new bool[vault.ObjectCount];
+            State.Carried = new bool[vault.ObjectCount];
             State.GateOpen = new int[vault.ObjectCount];
             State.BellFall = new int[vault.ObjectCount];
             State.Guardians = CreateGuardians(vault);
@@ -225,6 +226,11 @@ namespace Wick.Sim
         private void Apply(Command c)
         {
             ref WickState w = ref State.Wick;
+            if (w.Falling && (c.Type == CommandType.Dash || c.Type == CommandType.RunStart || c.Type == CommandType.Decoy))
+            {
+                return; // nothing to move or throw from the bottom of a pit
+            }
+
             switch (c.Type)
             {
                 case CommandType.Dash:
@@ -291,6 +297,21 @@ namespace Wick.Sim
                 w.DecoyTicksLeft--;
             }
 
+            if (w.ExitLockTicks > 0 && --w.ExitLockTicks == 0)
+            {
+                Emit(SimEventType.ExitUnlocked, 0, _vault.Entrance, 0);
+            }
+
+            if (w.Falling)
+            {
+                if (--w.FallTicks == 0)
+                {
+                    RespawnFromPit();
+                }
+
+                return;
+            }
+
             if (!w.Moving)
             {
                 // TODO M2: retry a blocked run if doors or other blockers can change.
@@ -319,6 +340,12 @@ namespace Wick.Sim
             if (w.Tile != _vault.Entrance)
             {
                 w.LeftEntrance = true;
+            }
+
+            if (_vault.TileAt(w.Tile) == TileType.Pit)
+            {
+                StartFall(); // running, sliding or knocked in: he drops
+                return;
             }
 
             if (w.KnockTiles > 0)
@@ -367,6 +394,76 @@ namespace Wick.Sim
             }
         }
 
+        /// <summary>
+        /// Pits: Wick has just arrived on one. He loses a flicker (unless invulnerable); if that was
+        /// his last he is snuffed, otherwise he spends PitFallTicks in the pit and pops out at the
+        /// entrance. A level 5 pit also puts every carried pile back where it came from.
+        /// </summary>
+        private void StartFall()
+        {
+            ref WickState w = ref State.Wick;
+            int level = _vault.LevelOf(ObjectType.Pit);
+            w.Moving = false;
+            w.Progress = 0;
+            w.Running = false;
+            w.HasQueued = false;
+            w.KnockTiles = 0;
+            w.Sliding = false;
+            if (w.InvulnTicks == 0)
+            {
+                w.Flickers--;
+            }
+
+            Emit(SimEventType.PitFall, 0, w.Tile, w.Flickers);
+            if (w.Flickers <= 0)
+            {
+                Emit(SimEventType.Snuffed, 0, w.Tile, 0);
+                return;
+            }
+
+            w.FallTicks = DefenceStats.PitFallTicks(level);
+            if (DefenceStats.PitDropsLoot(level))
+            {
+                for (int i = 0; i < _vault.ObjectCount; i++)
+                {
+                    if (State.Carried[i])
+                    {
+                        ObjectDef pile = _vault.GetObject(i);
+                        State.Carried[i] = false;
+                        State.Spent[i] = false;
+                        Emit(SimEventType.LootDropped, pile.Id, pile.Pos, pile.Value);
+                    }
+                }
+
+                w.CarriedTreasure = 0;
+                w.CarriedPiles = 0;
+            }
+        }
+
+        /// <summary>Out of the pit: on the entrance facing in, briefly invulnerable, with the exit shut for a while.</summary>
+        private void RespawnFromPit()
+        {
+            ref WickState w = ref State.Wick;
+            w.Tile = _vault.Entrance;
+            w.Facing = Dir.N;
+            for (int d = 0; d < 4; d++)
+            {
+                if (_vault.IsWalkable(_vault.Entrance.Step((Dir)d)))
+                {
+                    w.Facing = (Dir)d;
+                    break;
+                }
+            }
+
+            w.InvulnTicks = SimTuning.InvulnTicks + 1; // step 5 counts it down this tick, as after a hit
+            Emit(SimEventType.PitRespawn, 0, w.Tile, w.Flickers);
+            w.ExitLockTicks = SimTuning.PitRespawnExitLockTicks;
+            if (w.ExitLockTicks > 0)
+            {
+                Emit(SimEventType.ExitLocked, 0, w.Tile, w.ExitLockTicks);
+            }
+        }
+
         /// <summary>A Drip Pipe level 5 puddle under Wick slows him to tiptoe speed.</summary>
         private int PuddleSlowed(int speed, in WickState w)
         {
@@ -412,7 +509,7 @@ namespace Wick.Sim
             {
                 State.Outcome = Outcome.Snuffed;
             }
-            else if (_arrivedThisTick && w.LeftEntrance && w.Tile == _vault.Entrance)
+            else if (_arrivedThisTick && w.LeftEntrance && w.Tile == _vault.Entrance && w.ExitLockTicks == 0)
             {
                 State.Outcome = Outcome.Escaped;
             }

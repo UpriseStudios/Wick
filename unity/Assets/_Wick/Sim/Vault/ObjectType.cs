@@ -31,12 +31,15 @@ namespace Wick.Sim
 
         /// <summary>The signature guardian: a vault cat who stalks moving flames and pounces.</summary>
         SirWhiskers,
+
+        /// <summary>Pits are painted as tiles, never placed as an object; this type carries their cost, unlock and upgrade level.</summary>
+        Pit,
     }
 
     public static class ObjectTypes
     {
         /// <summary>How many object types there are (the enum's values are 0 to Count - 1).</summary>
-        public const int Count = (int)ObjectType.SirWhiskers + 1;
+        public const int Count = (int)ObjectType.Pit + 1;
 
         public static ObjectType Parse(string name)
         {
@@ -59,6 +62,7 @@ namespace Wick.Sim
                 case "gate": return ObjectType.Gate;
                 case "lever": return ObjectType.Lever;
                 case "sir_whiskers": return ObjectType.SirWhiskers;
+                case "pit": return ObjectType.Pit;
                 default: throw new FormatException("Unknown object type '" + name + "'");
             }
         }
@@ -84,6 +88,7 @@ namespace Wick.Sim
                 case ObjectType.Gate: return "gate";
                 case ObjectType.Lever: return "lever";
                 case ObjectType.SirWhiskers: return "sir_whiskers";
+                case ObjectType.Pit: return "pit";
                 default: throw new ArgumentOutOfRangeException(nameof(type));
             }
         }
@@ -96,7 +101,7 @@ namespace Wick.Sim
 
         public static bool IsTrap(ObjectType type)
         {
-            return IsTimedTrap(type) || type == ObjectType.SnufferBell || type == ObjectType.IceTiles;
+            return IsTimedTrap(type) || type == ObjectType.SnufferBell || type == ObjectType.IceTiles || type == ObjectType.Pit;
         }
 
         public static bool IsGuardian(ObjectType type)

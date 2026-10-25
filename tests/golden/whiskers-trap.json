@@ -1,6 +1,6 @@
 {
   "_note": "Sir Whiskers naps on (7,1) and wakes on tick 12 as Wick comes within 3 tiles. Wick dithers between (3,1) and (4,1); the cat closes in, wiggles from tick 43 and pounces on tick 73, batting Wick 2 tiles west onto the Drip Pipe at (2,1) (arriving t82). He is invulnerable through tick 118, so the drip that starts on 115 only catches him on tick 119. He dashes out and escapes on tick 125 with 1 flicker.",
-  "simVersion": 4,
+  "simVersion": 5,
   "seed": 9120,
   "vault": {
     "schema": 1,
@@ -116,7 +116,7 @@
     "ticks": 126,
     "stars": 0,
     "loot": 0,
-    "hash": "369b60d4b945a69f"
+    "hash": "f5f86e289072f761"
   },
   "expectedEvents": {
     "GuardianAlerted": [

@@ -176,6 +176,18 @@ namespace Wick.Sim
             return level >= 5;
         }
 
+        /// <summary>Pits: ticks in the pit before the respawn: 24 (0.8 s), 6 more a level up to 42 at level 4; level 5 adds the loot drop instead.</summary>
+        public static int PitFallTicks(int level)
+        {
+            return SimTuning.PitFallTicks + Steps(level, 6, 0);
+        }
+
+        /// <summary>Pits level 5: a fall drops everything Wick carries back onto the piles it came from.</summary>
+        public static bool PitDropsLoot(int level)
+        {
+            return level >= 5;
+        }
+
         /// <summary>Levels 2 to 4 add `small` each; level 5 adds `big` on top.</summary>
         private static int Steps(int level, int small, int big)
         {

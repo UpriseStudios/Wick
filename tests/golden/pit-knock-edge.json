@@ -1,0 +1,68 @@
+{
+  "_note": "A level 5 bellows in the west wall (cycle 60, 51 at level 5) gusts along the lane from tick 10. Wick waits on (2,1), beside the pit on (3,1): the gust costs a flicker and its 1-tile knockback would push him into the pit, so it stops at the edge (knockback into pits is off) and he doesn't move. Invulnerable, he walks out through the rest of the gust on tick 34.",
+  "simVersion": 5,
+  "seed": 10104,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_pit_knock",
+    "version": 1,
+    "vaultLevel": 9,
+    "theme": "crypt",
+    "grid": {
+      "w": 8,
+      "h": 3
+    },
+    "_map": [
+      "########",
+      "#E.O...#",
+      "########"
+    ],
+    "tiles": "AQEBAQEBAQEBAAADAAAAAQEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "bellows",
+        "x": 0,
+        "y": 1,
+        "rot": 1,
+        "cycle": 60,
+        "offset": 41
+      }
+    ],
+    "defenceLevels": {
+      "bellows": 5
+    }
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 30,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 35,
+    "stars": 0,
+    "loot": 0,
+    "hash": "dcee4c3630a72510"
+  },
+  "expectedEvents": {
+    "FlickerLost": [
+      10
+    ],
+    "KnockedBack": [
+      10
+    ],
+    "PitFall": []
+  }
+}

@@ -1,6 +1,6 @@
 {
   "_note": "Drip Pipe at (4,10), cycle 30: drips on ticks 0-5 and 30-35. Dashes north: (4,10) is occupied on ticks 13-17, between drips. Waits at (4,9); the drip at tick 30 fires next to him (NearMiss 30). Dashes back south at 30, mistimed: occupied (4,10) on tick 32, hit. Home on tick 44 with 2 flickers.",
-  "simVersion": 4,
+  "simVersion": 5,
   "seed": 4101,
   "vault": {
     "schema": 1,
@@ -79,7 +79,7 @@
     "ticks": 45,
     "stars": 0,
     "loot": 0,
-    "hash": "aaa1204b8e5ff198"
+    "hash": "74a423afd7b83f9a"
   },
   "expectedEvents": {
     "TrapFired": [

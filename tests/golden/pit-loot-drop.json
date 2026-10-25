@@ -1,0 +1,88 @@
+{
+  "_note": "A level 5 pit on (3,1) behind the 100 pile on (2,1). Wick takes the pile on tick 2 (crossing into its tile), reaches (2,1) 10% slower on tick 5 and drops in on tick 11: the pile goes back to (2,1). A level 5 pit holds him 42 ticks: out on tick 53, exit shut until 293. He takes the pile again on tick 56 (at (2,1) on 59), waits, and walks out from tick 295, home on tick 300. 2 stars, 100 loot.",
+  "simVersion": 5,
+  "seed": 10103,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_pit_loot",
+    "version": 1,
+    "vaultLevel": 9,
+    "theme": "crypt",
+    "grid": {
+      "w": 8,
+      "h": 3
+    },
+    "_map": [
+      "########",
+      "#E.O...#",
+      "########"
+    ],
+    "tiles": "AQEBAQEBAQEBAAADAAAAAQEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "treasure",
+        "x": 2,
+        "y": 1,
+        "value": 100
+      }
+    ],
+    "defenceLevels": {
+      "pit": 5
+    }
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 54,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 295,
+      "type": "Dash",
+      "dir": "W"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 301,
+    "stars": 2,
+    "loot": 100,
+    "hash": "e60f244873b11732"
+  },
+  "expectedEvents": {
+    "PitFall": [
+      11
+    ],
+    "LootDropped": [
+      11
+    ],
+    "PitRespawn": [
+      53
+    ],
+    "ExitLocked": [
+      53
+    ],
+    "ExitUnlocked": [
+      293
+    ],
+    "TreasureTaken": [
+      2,
+      56
+    ]
+  }
+}

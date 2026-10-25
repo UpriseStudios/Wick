@@ -109,9 +109,9 @@ namespace Wick.Sim
         private static void ValidateObject(VaultDef vault, ObjectDef o)
         {
             string what = "Object " + o.Id + " (" + o.Type + ")";
-            if (o.Type == ObjectType.IceTiles)
+            if (o.Type == ObjectType.IceTiles || o.Type == ObjectType.Pit)
             {
-                throw new FormatException(what + ": ice is painted as tiles, not placed as an object");
+                throw new FormatException(what + ": ice and pits are painted as tiles, not placed as objects");
             }
 
             if (!vault.InBounds(o.Pos))

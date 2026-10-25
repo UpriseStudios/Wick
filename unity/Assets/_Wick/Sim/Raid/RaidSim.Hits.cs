@@ -20,6 +20,11 @@ namespace Wick.Sim
                 w.GustDimTicks--;
             }
 
+            if (w.Falling || w.Flickers <= 0)
+            {
+                return; // down a pit nothing reaches him; a fall this tick counts as the fall only
+            }
+
             int flickersBefore = w.Flickers;
 
             // Snuffer Bells: touching the plate starts the fall (the bell shakes: a warning); it lands
@@ -98,6 +103,7 @@ namespace Wick.Sim
                         // Level 5: it snatches a pile back. Piles in a vault are worth the same, so take the average.
                         w.CarriedTreasure -= w.CarriedTreasure / w.CarriedPiles;
                         w.CarriedPiles--;
+                        DropLastCarried();
                     }
 
                     if (o.Type == ObjectType.Bellows)
@@ -154,6 +160,19 @@ namespace Wick.Sim
             }
         }
 
+        /// <summary>The mimic keeps the snatched pile: the last one carried (by id) is gone for good.</summary>
+        private void DropLastCarried()
+        {
+            for (int i = _vault.ObjectCount - 1; i >= 0; i--)
+            {
+                if (State.Carried[i])
+                {
+                    State.Carried[i] = false;
+                    return;
+                }
+            }
+        }
+
         /// <summary>Flickers one hit costs: a Mimic Chest's bite takes two, everything else one.</summary>
         private static int HitCost(ObjectType type)
         {
@@ -163,7 +182,8 @@ namespace Wick.Sim
         /// <summary>
         /// Pushes Wick up to `tiles` tiles in `dir` from the tile he occupies. He stops on the last
         /// free tile before a wall, crate, the grid edge or an armed Snuffer Bell plate, so a
-        /// knockback can never set off an instant-snuff trap. The slide is a forced move at
+        /// knockback can never set off an instant-snuff trap. Pits stop it at the edge too, unless
+        /// SimTuning.KnockbackIntoPits, when it ends in the pit and he falls. The slide is a forced move at
         /// KnockSpeed: inputs during it queue up as usual, and it can't end the raid by escaping.
         /// </summary>
         private void StartKnockback(Dir dir, int tiles)
@@ -180,7 +200,17 @@ namespace Wick.Sim
                     break;
                 }
 
+                bool pit = _vault.TileAt(p) == TileType.Pit;
+                if (pit && !SimTuning.KnockbackIntoPits)
+                {
+                    break;
+                }
+
                 free++;
+                if (pit)
+                {
+                    break;
+                }
             }
 
             w.Tile = from;

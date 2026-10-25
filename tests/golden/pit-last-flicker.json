@@ -1,0 +1,80 @@
+{
+  "_note": "Three dives into the level 1 pit on (3,1), each once the invulnerability from the last respawn (45 ticks) has worn off: falls on ticks 9 and 89 cost a flicker each (respawns on 33 and 113); the third, on tick 169, takes the last and snuffs him in the pit.",
+  "simVersion": 5,
+  "seed": 10102,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_pit_snuff",
+    "version": 1,
+    "vaultLevel": 1,
+    "theme": "crypt",
+    "grid": {
+      "w": 8,
+      "h": 3
+    },
+    "_map": [
+      "########",
+      "#E.O...#",
+      "########"
+    ],
+    "tiles": "AQEBAQEBAQEBAAADAAAAAQEBAQEBAQEB",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": []
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 80,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 85,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 160,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 165,
+      "type": "Dash",
+      "dir": "E"
+    }
+  ],
+  "expected": {
+    "outcome": "Snuffed",
+    "ticks": 170,
+    "stars": 0,
+    "loot": 0,
+    "hash": "b003ce0c9c3ec1d1"
+  },
+  "expectedEvents": {
+    "PitFall": [
+      9,
+      89,
+      169
+    ],
+    "PitRespawn": [
+      33,
+      113
+    ],
+    "Snuffed": [
+      169
+    ]
+  }
+}

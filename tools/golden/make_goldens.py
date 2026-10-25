@@ -15,7 +15,7 @@ import json
 import sys
 from pathlib import Path
 
-SIM_VERSION = 4
+SIM_VERSION = 5
 REPO = Path(__file__).resolve().parents[2]
 GOLDEN_DIR = REPO / "tests" / "golden"
 
@@ -125,7 +125,7 @@ HAZARDS = [
     "#########",
     "#.~~~~~.#",
     "#.~...~.#",
-    "#.~.O.~.#",
+    "#.~O..~.#",
     "#.......#",
     "####D####",
     "#.......#",
@@ -193,8 +193,9 @@ GOLDENS = {
         {"FlickerLost": [], "TreasureTaken": []},
     ),
     "timeout-wander.json": raid(
-        "Run north through the door, across the pit and onto the ice (all walkable in M1), "
-        "then a tiptoe dash west and a decoy, and never come back. Times out at 1800 ticks.",
+        "Run north through the door, past the pit at (3,3) (moved off the run in M10.1, when pits "
+        "started to swallow Wick) and onto the ice, then a tiptoe dash west and a decoy, and never "
+        "come back. Times out at 1800 ticks.",
         99120,
         vault("v_golden_hazards", HAZARDS, [
             {"id": 7, "type": "treasure", "x": 4, "y": 2, "value": 250},
@@ -490,6 +491,91 @@ GOLDENS = {
         cmds((0, "Dash", "E"), (5, "Dash", "E"), (150, "Dash", "W"), (155, "Dash", "W")),
         "Escaped", 160, 1, 0,
         {"GuardianAlerted": [7, 150], "FlickerLost": []},
+    ),
+
+    # ---- M10.1 pits (docs/m10-1-pits.md) ----------------------------------------------------
+    "pit-fall-recover.json": raid(
+        "A level 1 pit on (3,1). Wick dashes east and drops in on tick 9 (3 -> 2 flickers); 24 ticks "
+        "later, on tick 33, he pops out at the entrance facing east, with the exit shut for 240 "
+        "ticks. He goes round by the lower row and takes the 300 pile at (5,1) on tick 61, waits, "
+        "and comes home 10% slower (6 ticks a tile) from tick 250: back on the entrance on tick 285, "
+        "after the lock lifted on 273. 2 stars (the lost flicker costs the third), 300 loot.",
+        10101,
+        vault("v_golden_pit_recover", [
+            "########",
+            "#E.O...#",
+            "#......#",
+            "########",
+        ], [{"id": 1, "type": "treasure", "x": 5, "y": 1, "value": 300}]),
+        cmds((0, "Dash", "E"), (5, "Dash", "E"),
+             (34, "Dash", "S"), (39, "Dash", "E"), (44, "Dash", "E"), (49, "Dash", "E"), (54, "Dash", "E"),
+             (59, "Dash", "N"),
+             (250, "Dash", "S"), (256, "Dash", "W"), (262, "Dash", "W"), (268, "Dash", "W"), (274, "Dash", "W"),
+             (280, "Dash", "N")),
+        "Escaped", 286, 2, 300,
+        {"PitFall": [9], "PitRespawn": [33], "ExitLocked": [33], "ExitUnlocked": [273], "TreasureTaken": [61],
+         "FlickerLost": []},
+    ),
+    "pit-last-flicker.json": raid(
+        "Three dives into the level 1 pit on (3,1), each once the invulnerability from the last "
+        "respawn (45 ticks) has worn off: falls on ticks 9 and 89 cost a flicker each (respawns on "
+        "33 and 113); the third, on tick 169, takes the last and snuffs him in the pit.",
+        10102,
+        vault("v_golden_pit_snuff", ["########", "#E.O...#", "########"], []),
+        cmds((0, "Dash", "E"), (5, "Dash", "E"), (80, "Dash", "E"), (85, "Dash", "E"),
+             (160, "Dash", "E"), (165, "Dash", "E")),
+        "Snuffed", 170, 0, 0,
+        {"PitFall": [9, 89, 169], "PitRespawn": [33, 113], "Snuffed": [169]},
+    ),
+    "pit-loot-drop.json": raid(
+        "A level 5 pit on (3,1) behind the 100 pile on (2,1). Wick takes the pile on tick 2 (crossing "
+        "into its tile), reaches (2,1) 10% slower on tick 5 and drops in on tick 11: the pile goes "
+        "back to (2,1). A level 5 pit holds him 42 ticks: out on tick 53, exit shut until 293. He "
+        "takes the pile again on tick 56 (at (2,1) on 59), waits, and walks out from tick 295, home "
+        "on tick 300. 2 stars, 100 loot.",
+        10103,
+        dict(vault("v_golden_pit_loot", ["########", "#E.O...#", "########"],
+                   [{"id": 1, "type": "treasure", "x": 2, "y": 1, "value": 100}], level=9),
+             defenceLevels={"pit": 5}),
+        cmds((0, "Dash", "E"), (5, "Dash", "E"), (54, "Dash", "E"), (295, "Dash", "W")),
+        "Escaped", 301, 2, 100,
+        {"PitFall": [11], "LootDropped": [11], "PitRespawn": [53], "ExitLocked": [53], "ExitUnlocked": [293],
+         "TreasureTaken": [2, 56]},
+    ),
+    "pit-knock-edge.json": raid(
+        "A level 5 bellows in the west wall (cycle 60, 51 at level 5) gusts along the lane from tick "
+        "10. Wick waits on (2,1), beside the pit on (3,1): the gust costs a flicker and its 1-tile "
+        "knockback would push him into the pit, so it stops at the edge (knockback into pits is off) "
+        "and he doesn't move. Invulnerable, he walks out through the rest of the gust on tick 34.",
+        10104,
+        dict(vault("v_golden_pit_knock", ["########", "#E.O...#", "########"],
+                   [{"id": 1, "type": "bellows", "x": 0, "y": 1, "rot": 1, "cycle": 60, "offset": 41}], level=9),
+             defenceLevels={"bellows": 5}),
+        cmds((0, "Dash", "E"), (30, "Dash", "W")),
+        "Escaped", 35, 0, 0,
+        {"FlickerLost": [10], "KnockedBack": [10], "PitFall": []},
+    ),
+    "pit-ice-slide.json": raid(
+        "Ice on (2,1) and (3,1), then a pit on (4,1). One dash east: onto the ice on tick 4, sliding "
+        "4 ticks a tile, into the pit on tick 12. Out at the entrance on tick 36 (exit shut until "
+        "276); he steps south and back from tick 280 and escapes on tick 289.",
+        10105,
+        vault("v_golden_pit_ice", ["########", "#E~~O..#", "#.######", "########"], [], level=3),
+        cmds((0, "Dash", "E"), (280, "Dash", "S"), (285, "Dash", "N")),
+        "Escaped", 290, 0, 0,
+        {"PitFall": [12], "PitRespawn": [36], "ExitUnlocked": [276]},
+    ),
+    "pit-exit-lock.json": raid(
+        "The exit lock stops a pit dive from saving time. Wick drops into the pit on (3,1) on tick 9 "
+        "and pops out at the entrance on 33. He steps out and straight back (on the entrance again on "
+        "tick 43): no escape, the exit is shut until tick 273. Out and back once it opens: he escapes "
+        "on tick 289.",
+        10106,
+        vault("v_golden_pit_lock", ["########", "#E.O...#", "########"], []),
+        cmds((0, "Dash", "E"), (5, "Dash", "E"), (34, "Dash", "E"), (39, "Dash", "W"),
+             (280, "Dash", "E"), (285, "Dash", "W")),
+        "Escaped", 290, 0, 0,
+        {"PitFall": [9], "PitRespawn": [33], "ExitLocked": [33], "ExitUnlocked": [273]},
     ),
 }
 

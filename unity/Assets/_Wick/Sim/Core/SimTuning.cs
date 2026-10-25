@@ -144,6 +144,17 @@ namespace Wick.Sim
         /// <summary>He notices a decoy from this far (with line of sight).</summary>
         public const int WhiskersDecoyRange = 6;
 
+        // ---- Pits (docs/m10-1-pits.md) ---------------------------------------------------
+
+        /// <summary>Ticks Wick spends in a level 1 pit before popping out at the entrance (0.8 s).</summary>
+        public const int PitFallTicks = 24;
+
+        /// <summary>After a pit respawn the exit stays shut this long (8 s), so diving in saves no time. 0 disables it.</summary>
+        public const int PitRespawnExitLockTicks = 240;
+
+        /// <summary>Whether knockback and fan pushes can shove Wick into a pit; if not, they stop at its edge. To be decided from the balance simulator.</summary>
+        public const bool KnockbackIntoPits = false;
+
         // ---- Treasure ------------------------------------------------------------------
 
         /// <summary>Each treasure pile carried slows Wick by this percentage...</summary>

@@ -1,6 +1,6 @@
 {
   "_note": "A gate in the doorway at (4,2) shuts off the hoard; its lever is on (1,3) in the entrance hall. Wick dashes north (t4) and runs west; he is on the lever from tick 29 (arriving t34), which opens the gate, and it stays open 240 ticks after he leaves. He dashes back east to (4,3) (t49) and north through the open gate (t54), takes the 400 pile at (4,1) on tick 57 and, 10% slower, comes home with queued dashes: (4,1) t60, (4,2) t66, (4,3) t72, out on tick 78 with every flicker. 3 stars, 400 loot.",
-  "simVersion": 4,
+  "simVersion": 5,
   "seed": 8118,
   "vault": {
     "schema": 1,
@@ -112,7 +112,7 @@
     "ticks": 79,
     "stars": 3,
     "loot": 400,
-    "hash": "dbaf70f3a94da561"
+    "hash": "6d9d0ccf1863cbe2"
   },
   "expectedEvents": {
     "FlickerLost": [],

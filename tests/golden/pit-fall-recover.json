@@ -1,0 +1,133 @@
+{
+  "_note": "A level 1 pit on (3,1). Wick dashes east and drops in on tick 9 (3 -> 2 flickers); 24 ticks later, on tick 33, he pops out at the entrance facing east, with the exit shut for 240 ticks. He goes round by the lower row and takes the 300 pile at (5,1) on tick 61, waits, and comes home 10% slower (6 ticks a tile) from tick 250: back on the entrance on tick 285, after the lock lifted on 273. 2 stars (the lost flicker costs the third), 300 loot.",
+  "simVersion": 5,
+  "seed": 10101,
+  "vault": {
+    "schema": 1,
+    "vaultId": "v_golden_pit_recover",
+    "version": 1,
+    "vaultLevel": 1,
+    "theme": "crypt",
+    "grid": {
+      "w": 8,
+      "h": 4
+    },
+    "_map": [
+      "########",
+      "#E.O...#",
+      "#......#",
+      "########"
+    ],
+    "tiles": "AQEBAQEBAQEBAAADAAAAAQEAAAAAAAABAQEBAQEBAQE=",
+    "entrance": [
+      1,
+      1
+    ],
+    "objects": [
+      {
+        "id": 1,
+        "type": "treasure",
+        "x": 5,
+        "y": 1,
+        "value": 300
+      }
+    ]
+  },
+  "commands": [
+    {
+      "tick": 0,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 5,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 34,
+      "type": "Dash",
+      "dir": "S"
+    },
+    {
+      "tick": 39,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 44,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 49,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 54,
+      "type": "Dash",
+      "dir": "E"
+    },
+    {
+      "tick": 59,
+      "type": "Dash",
+      "dir": "N"
+    },
+    {
+      "tick": 250,
+      "type": "Dash",
+      "dir": "S"
+    },
+    {
+      "tick": 256,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 262,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 268,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 274,
+      "type": "Dash",
+      "dir": "W"
+    },
+    {
+      "tick": 280,
+      "type": "Dash",
+      "dir": "N"
+    }
+  ],
+  "expected": {
+    "outcome": "Escaped",
+    "ticks": 286,
+    "stars": 2,
+    "loot": 300,
+    "hash": "74cae46742e45d3a"
+  },
+  "expectedEvents": {
+    "PitFall": [
+      9
+    ],
+    "PitRespawn": [
+      33
+    ],
+    "ExitLocked": [
+      33
+    ],
+    "ExitUnlocked": [
+      273
+    ],
+    "TreasureTaken": [
+      61
+    ],
+    "FlickerLost": []
+  }
+}

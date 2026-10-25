@@ -1,6 +1,6 @@
 {
   "_note": "Sir Whiskers naps on (3,1), two tiles from the entrance: Wick's moving flame wakes him on tick 0. Wick dashes to the east wall (6,1) and dithers between (5,1) and (6,1); the cat only creeps forward while Wick moves (70 a tick). Beside him at last, he wiggles for 30 ticks from tick 61 and pounces on tick 91: Wick, pinned against the wall, loses a flicker and the 2-tile knockback goes nowhere. While the cat licks his paw (60 ticks) Wick slips past him and walks out on tick 119 with 2 flickers.",
-  "simVersion": 4,
+  "simVersion": 5,
   "seed": 9119,
   "vault": {
     "schema": 1,
@@ -148,7 +148,7 @@
     "ticks": 120,
     "stars": 0,
     "loot": 0,
-    "hash": "d5046503fe5dd524"
+    "hash": "8a3aea6fafae5f50"
   },
   "expectedEvents": {
     "GuardianAlerted": [

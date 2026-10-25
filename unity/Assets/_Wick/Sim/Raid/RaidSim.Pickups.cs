@@ -6,7 +6,7 @@ namespace Wick.Sim
         private void ResolvePickups()
         {
             ref WickState w = ref State.Wick;
-            if (w.Flickers <= 0)
+            if (w.Flickers <= 0 || w.Falling)
             {
                 return;
             }
@@ -23,6 +23,7 @@ namespace Wick.Sim
                 if (o.Type == ObjectType.Treasure && o.Pos == at)
                 {
                     State.Spent[i] = true;
+                    State.Carried[i] = true;
                     w.CarriedTreasure += o.Value;
                     w.CarriedPiles++;
                     Emit(SimEventType.TreasureTaken, o.Id, o.Pos, o.Value);
