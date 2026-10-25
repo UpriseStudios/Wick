@@ -554,7 +554,8 @@ namespace Wick.Game
 
                 foreach (TileType t in Tiles)
                 {
-                    total += t == TileType.Ice ? VaultRules.Cost(ObjectType.IceTiles) : 0; // ice is priced per tile
+                    // Ice and pits are priced per tile.
+                    total += t == TileType.Ice ? VaultRules.Cost(ObjectType.IceTiles) : t == TileType.Pit ? VaultRules.Cost(ObjectType.Pit) : 0;
                 }
 
                 return total;
@@ -631,13 +632,47 @@ namespace Wick.Game
             return NewProblem(this, trial);
         }
 
+        /// <summary>
+        /// Why digging a pit on p would be refused, or null if it can go there: never in or beside a
+        /// doorway, within the budget, and never cutting off the pit-free way to a treasure pile.
+        /// </summary>
+        public string PitProblem(TilePos p)
+        {
+            if (!InBounds(p))
+            {
+                return "Off the vault";
+            }
+
+            if (TileAt(p) == TileType.Pit)
+            {
+                return null;
+            }
+
+            // Checked before painting: a pit over a door would leave no door to see.
+            if (VaultValidator.InOrBesideDoorway(ToVaultDef(), p))
+            {
+                return "Pits can't go in a doorway or on the entrance, or right in front of or behind one";
+            }
+
+            if (BuildPoints + VaultRules.Cost(ObjectType.Pit) > VaultRules.Budget(Level))
+            {
+                return "Not enough build points";
+            }
+
+            VaultDraft trial = Clone();
+            trial.PaintTile(p, TileType.Pit);
+            return NewProblem(this, trial);
+        }
+
         /// <summary>The first problem the change from before to after adds, or null.</summary>
         public static string NewProblem(VaultDraft before, VaultDraft after)
         {
             List<VaultIssue> had = VaultValidator.Validate(before.ToVaultDef());
             foreach (VaultIssue issue in VaultValidator.Validate(after.ToVaultDef()))
             {
-                if (!had.Exists(h => h.Code == issue.Code && h.ObjectId == issue.ObjectId))
+                // Doorway pits are told apart by tile (they have no object); a second one is new.
+                if (!had.Exists(h => h.Code == issue.Code && h.ObjectId == issue.ObjectId &&
+                    (issue.Code != VaultIssueCode.PitInDoorway || h.Tile == issue.Tile)))
                 {
                     return issue.Message;
                 }

@@ -22,7 +22,7 @@ namespace Wick.Game
         private static readonly (RoomTool tool, string label)[] RoomTools =
         {
             (RoomTool.Wall, "Wall"), (RoomTool.Floor, "Floor"), (RoomTool.Door, "Door"),
-            (RoomTool.Entrance, "Entrance"), (RoomTool.Hoard, "Hoard room"), (RoomTool.Ice, "Ice"),
+            (RoomTool.Entrance, "Entrance"), (RoomTool.Hoard, "Hoard room"), (RoomTool.Ice, "Ice"), (RoomTool.Pit, "Pit"),
         };
 
         private static readonly ObjectType[] ShopItems =
@@ -64,6 +64,7 @@ namespace Wick.Game
                 case ObjectType.NightOwl: return "Night Owl";
                 case ObjectType.WaxMoths: return "Wax Moths";
                 case ObjectType.IceTiles: return "Ice Tiles";
+                case ObjectType.Pit: return "Pit";
                 case ObjectType.SwingAxe: return "Swing Axe";
                 case ObjectType.MimicChest: return "Mimic Chest";
                 case ObjectType.SleepyTroll: return "Sleepy Troll";
@@ -306,6 +307,11 @@ namespace Wick.Game
             foreach (Button b in _roomButtons)
             {
                 b.EnableInClassList("selected", (RoomTool)b.userData == c.RoomTool);
+                if ((RoomTool)b.userData == RoomTool.Pit)
+                {
+                    // Pits are upgraded in Upgrades like a trap; every pit in the vault is at the owner's level.
+                    b.text = "Pit Lv " + d.DefenceLevels.Level(ObjectType.Pit);
+                }
             }
 
             foreach (VisualElement card in _cards)
@@ -637,6 +643,9 @@ namespace Wick.Game
             {
                 case RoomTool.Entrance: return "Tap a tile to move the entrance. Two fingers to pan.";
                 case RoomTool.Hoard: return "Drag from one corner of the hoard room to the other. Two fingers to pan.";
+                case RoomTool.Pit:
+                    return "Tap or drag to dig pits, " + VaultRules.Cost(ObjectType.Pit) + " pts a tile. Keep the green way in clear: " +
+                        "every treasure pile needs a route with no pits, and doorways stay pit-free.";
                 default: return "Tap or drag to paint. Two fingers to pan and zoom.";
             }
         }

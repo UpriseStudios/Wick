@@ -205,6 +205,53 @@ namespace Wick.Game.Tests
         }
 
         [Test]
+        public void Pits_StayOutOfDoorways()
+        {
+            // Three Halls: doors at (4,4) and (4,9), the entrance at (10,15).
+            VaultDraft d = Halls();
+            foreach (TilePos p in new[] { new TilePos(4, 9), new TilePos(4, 10), new TilePos(4, 8), new TilePos(10, 15), new TilePos(10, 14) })
+            {
+                StringAssert.Contains("doorway", d.PitProblem(p), p.ToString());
+            }
+
+            Assert.AreEqual(TileType.Door, d.TileAt(new TilePos(4, 9)), "nothing was painted");
+        }
+
+        [Test]
+        public void APitThatCutsOffTheTreasure_IsRefused()
+        {
+            // Row 14 is the only way in: a pit there cuts off the hoard.
+            VaultDraft d = Halls();
+            StringAssert.Contains("cuts", d.PitProblem(new TilePos(5, 14)));
+            Assert.IsNotNull(d.PitProblem(new TilePos(4, 2)), "not under the treasure pile");
+        }
+
+        [Test]
+        public void APitOffTheRoute_IsDug_AndCostsBuildPoints()
+        {
+            VaultDraft d = Halls();
+            int before = d.BuildPoints;
+            Assert.IsNull(d.PitProblem(new TilePos(8, 6)));
+            Assert.IsTrue(d.PaintTile(new TilePos(8, 6), TileType.Pit));
+            Assert.AreEqual(before + VaultRules.Cost(ObjectType.Pit), d.BuildPoints);
+            Assert.AreEqual(VaultRules.BuildPoints(d.ToVaultDef()), d.BuildPoints, "the draft counts as the rules do");
+            CollectionAssert.IsEmpty(Codes(d));
+            Assert.IsNull(d.PitProblem(new TilePos(8, 6)), "already a pit");
+        }
+
+        [Test]
+        public void APit_NeedsBuildPoints()
+        {
+            VaultDraft d = Halls();
+            for (int i = 0; i < 12; i++)
+            {
+                d.Place(ObjectType.DripPipe, new TilePos(1 + i % 10, 6 + i / 10));
+            }
+
+            Assert.AreEqual("Not enough build points", d.PitProblem(new TilePos(8, 7)));
+        }
+
+        [Test]
         public void PlacingTraps_SpendsBudget()
         {
             VaultDraft d = Halls();

@@ -25,6 +25,7 @@ namespace Wick.Game
         Entrance,
         Hoard,
         Ice,
+        Pit,
     }
 
     /// <summary>
@@ -82,6 +83,9 @@ namespace Wick.Game
 
         /// <summary>The hoard rectangle being dragged out on the Rooms tab.</summary>
         public TileRect? HoardPreview { get; private set; }
+
+        /// <summary>The last tile the Pit tool refused (drawn red until the next stroke), or null.</summary>
+        public TilePos? RefusedTile { get; private set; }
 
         public bool CanUndo => _undo.CanUndo;
         public bool CanRedo => _undo.CanRedo;
@@ -205,6 +209,7 @@ namespace Wick.Game
         public void SetRoomTool(RoomTool tool)
         {
             RoomTool = tool;
+            RefusedTile = null;
             Refresh();
         }
 
@@ -368,6 +373,7 @@ namespace Wick.Game
             EditingPatrol = false;
             EditingLinks = false;
             HoardPreview = null;
+            RefusedTile = null;
         }
 
         // ---- Shop drag ------------------------------------------------------------------------
@@ -619,6 +625,7 @@ namespace Wick.Game
                     }
                     else
                     {
+                        RefusedTile = null;
                         Edit(d => ApplyRoomTool(d, tile));
                     }
 
@@ -680,10 +687,15 @@ namespace Wick.Game
 
         private void StrokeOver(TilePos tile)
         {
+            TilePos? refused = RefusedTile;
             if (ApplyRoomTool(Draft, tile))
             {
                 _strokeChanged = true;
                 Refresh();
+            }
+            else if (RefusedTile != refused)
+            {
+                Refresh(); // show the newly refused tile in red
             }
         }
 
@@ -696,12 +708,32 @@ namespace Wick.Game
                 case RoomTool.Door: return d.PaintTile(tile, TileType.Door);
                 case RoomTool.Floor: return d.PaintTile(tile, TileType.Floor);
                 case RoomTool.Ice: return d.PaintTile(tile, TileType.Ice);
+                case RoomTool.Pit: return DigPit(d, tile);
                 default: return false;
             }
         }
 
+        /// <summary>The Pit tool refuses a tile that breaks a pit rule (shown red, with the reason) instead of painting it.</summary>
+        private bool DigPit(VaultDraft d, TilePos tile)
+        {
+            string problem = d.PitProblem(tile);
+            if (problem == null)
+            {
+                return d.PaintTile(tile, TileType.Pit);
+            }
+
+            if (RefusedTile != tile)
+            {
+                RefusedTile = tile;
+                _ui.Toast("Can't dig a pit there: " + problem, 3f);
+            }
+
+            return false;
+        }
+
         private void BeginStroke()
         {
+            RefusedTile = null;
             _panning = false;
             _strokeBefore = Draft.Clone();
             _strokeChanged = false;
@@ -790,6 +822,9 @@ namespace Wick.Game
                 Moving = Moving,
                 MovingOk = MoveProblem == null,
                 HoardPreview = HoardPreview,
+                Refused = RefusedTile,
+                // While pits are painted, the pit-free way in that every pit must leave open.
+                Route = Tab == EditorTab.Rooms && RoomTool == RoomTool.Pit ? VaultValidator.RoutePath(Draft.ToVaultDef()) : null,
             });
             _ui.UpdateEditor(this);
         }

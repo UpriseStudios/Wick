@@ -6,9 +6,10 @@ namespace Wick.Game
 {
     /// <summary>
     /// Draws a draft with the same prefabs as a raid (fully lit, no visibility mask), plus editor
-    /// markers: entrance, hoard frame, owl patrols and a placement ghost. Anything the validator
-    /// complains about is tinted red; the selection glows, and an item being moved lifts and shows
-    /// green or red for whether it can be dropped there.
+    /// markers: entrance, hoard frame, owl patrols, the pit-free route and a placement ghost. Anything
+    /// the validator complains about is tinted red (and a pit that cuts off treasure, or a tile the Pit
+    /// tool refused); the selection glows, and an item being moved lifts and shows green or red for
+    /// whether it can be dropped there.
     /// </summary>
     public sealed class EditorView : MonoBehaviour
     {
@@ -20,6 +21,12 @@ namespace Wick.Game
             public bool MovingOk;
             public TileRect? HoardPreview;
 
+            /// <summary>A tile the Pit tool just refused: drawn red.</summary>
+            public TilePos? Refused;
+
+            /// <summary>The pit-free walk from the entrance to the hoard, drawn as a green line; null for none.</summary>
+            public List<TilePos> Route;
+
             public static Marks None => new Marks { Selected = -1, Moving = -1 };
         }
 
@@ -27,6 +34,7 @@ namespace Wick.Game
 
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int EmissionId = Shader.PropertyToID("_EmissionColor");
+        private static readonly int LineColorId = Shader.PropertyToID("_Color");
 
         [SerializeField] private EditorAssets _assets;
 
@@ -77,10 +85,16 @@ namespace Wick.Game
                 {
                     badObjects.Add(issue.ObjectId);
                 }
-                else if (draft.InBounds(issue.Tile))
+
+                if ((issue.ObjectId == 0 || issue.Code == VaultIssueCode.PitBlocksRoute) && draft.InBounds(issue.Tile))
                 {
-                    badTiles.Add(issue.Tile);
+                    badTiles.Add(issue.Tile); // a cut-off pile's issue names the pit in the way
                 }
+            }
+
+            if (marks.Refused.HasValue)
+            {
+                badTiles.Add(marks.Refused.Value);
             }
 
             BuildTiles(draft, badTiles);
@@ -148,6 +162,11 @@ namespace Wick.Game
                 {
                     BuildPatrol(o, o.Id == marks.Selected);
                 }
+            }
+
+            if (marks.Route != null && marks.Route.Count > 1)
+            {
+                BuildRoute(marks.Route);
             }
         }
 
@@ -267,6 +286,30 @@ namespace Wick.Game
             line.positionCount = points.Count;
             line.SetPositions(points.ToArray());
             line.numCapVertices = 2;
+            _markers.Add(lineGo);
+        }
+
+        /// <summary>The safe route preview: the patrol line's material, tinted green.</summary>
+        private void BuildRoute(List<TilePos> route)
+        {
+            var points = new Vector3[route.Count];
+            for (int i = 0; i < route.Count; i++)
+            {
+                points[i] = SimPose.TileCenter(route[i]) + Vector3.up * 0.12f;
+            }
+
+            var lineGo = new GameObject("Safe route");
+            lineGo.transform.SetParent(_markerRoot, false);
+            var line = lineGo.AddComponent<LineRenderer>();
+            line.sharedMaterial = _assets.PatrolLine;
+            line.widthMultiplier = 0.1f;
+            line.positionCount = points.Length;
+            line.SetPositions(points);
+            line.numCapVertices = 2;
+            line.numCornerVertices = 2;
+            line.GetPropertyBlock(_block);
+            _block.SetColor(LineColorId, new Color(Ok.r, Ok.g, Ok.b, 0.9f));
+            line.SetPropertyBlock(_block);
             _markers.Add(lineGo);
         }
 
