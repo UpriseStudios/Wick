@@ -38,6 +38,11 @@ namespace Wick.Balance
         public static int Main(string[] args)
         {
             bool quick = args.Contains("--quick");
+            if (args.Contains("--economy-only"))
+            {
+                return EconomyOnly(EconomyConfig.Parse(File.ReadAllText(EconomyPath)));
+            }
+
             int vaults = Arg(args, "--vaults", quick ? 12 : 200);
             int seed = Arg(args, "--seed", 2026);
             string outPath = ArgS(args, "--out", quick ? null : "tools/balance/report.md");
@@ -89,6 +94,11 @@ namespace Wick.Balance
                 };
             }
 
+            if (!quick)
+            {
+                SaveIncome(Income);
+            }
+
             double[] free = EconomyModel.DaysToLevel(cfg, EconomyModel.Free, Income);
             double[] spender = EconomyModel.DaysToLevel(cfg, EconomyModel.Spender, Income);
 
@@ -114,6 +124,47 @@ namespace Wick.Balance
             }
 
             return quick && broken ? 1 : 0;
+        }
+
+        private const string IncomePath = "tools/balance/income.json";
+
+        /// <summary>Saves each level's average raid income, so --economy-only can retune prices without re-raiding.</summary>
+        private static void SaveIncome(Func<int, RaidIncome> income)
+        {
+            var w = new JsonWriter();
+            w.BeginArray();
+            for (int level = 1; level <= VaultRules.MaxVaultLevel; level++)
+            {
+                RaidIncome r = income(level);
+                w.BeginObject().Field("level", level).Field("gold", (long)Math.Round(r.Gold)).Field("starsX100", (long)Math.Round(r.Stars * 100))
+                    .EndObject();
+            }
+
+            w.EndArray();
+            File.WriteAllText(IncomePath, w.ToString());
+        }
+
+        /// <summary>--economy-only: the time-to-level table from the saved raid income and the current economy config.</summary>
+        private static int EconomyOnly(EconomyConfig cfg)
+        {
+            JsonNode saved = JsonReader.Parse(File.ReadAllText(IncomePath));
+            RaidIncome Income(int level)
+            {
+                JsonNode n = saved[level - 1];
+                return new RaidIncome { Gold = n.GetInt("gold"), Stars = n.GetInt("starsX100") / 100.0 };
+            }
+
+            double[] free = EconomyModel.DaysToLevel(cfg, EconomyModel.Free, Income);
+            double[] spender = EconomyModel.DaysToLevel(cfg, EconomyModel.Spender, Income);
+            Console.WriteLine("Level  free days (step)   spender days  speed-up");
+            for (int level = 2; level <= VaultRules.MaxVaultLevel; level++)
+            {
+                Console.WriteLine(level.ToString().PadLeft(5) + "  " + free[level].ToString("0.0").PadLeft(8) + " (" +
+                    (free[level] - free[level - 1]).ToString("0.0") + ")   " + spender[level].ToString("0.0").PadLeft(8) + "     " +
+                    (spender[level] > 0 ? (free[level] / spender[level]).ToString("0.00") + "x" : "-"));
+            }
+
+            return 0;
         }
 
         /// <summary>A raider at this Vault Level with the best Wick upgrades it allows (Lantern, decoys).</summary>

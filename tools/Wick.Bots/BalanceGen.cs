@@ -61,6 +61,8 @@ namespace Wick.Bots
                 }
             }
 
+            // Builders guard the way in: most defences go on or beside the shortest route to the hoard.
+            HashSet<TilePos> route = RouteTiles(layout);
             ObjectType[] kinds = Defences.Where(k => VaultRules.RequiredLevel(k) <= level).ToArray();
             int budget = VaultRules.Budget(level);
             int spent = 0;
@@ -80,7 +82,7 @@ namespace Wick.Bots
                 }
 
                 int before = objects.Count;
-                spent += Place(type, layout, objects, used, ref id, rng, level, budget - spent);
+                spent += Place(type, layout, objects, used, route, ref id, rng, level, budget - spent);
                 cat |= type == ObjectType.SirWhiskers && objects.Count > before;
             }
 
@@ -101,7 +103,7 @@ namespace Wick.Bots
 
         /// <summary>Places one defence (or an ice patch, or a gate and its lever); returns the build points spent.</summary>
         private static int Place(ObjectType type, LayoutGen.Layout layout, List<ObjectDef> objects, HashSet<TilePos> used,
-            ref int id, Random rng, int level, int left)
+            HashSet<TilePos> route, ref int id, Random rng, int level, int left)
         {
             switch (type)
             {
@@ -168,7 +170,16 @@ namespace Wick.Bots
                 }
             }
 
-            List<TilePos> floor = AllFloor(layout).Where(p => !used.Contains(p) && !NextToDoor(layout, p)).ToList();
+            // Instant-snuff bells and mimics stay clear of doorways (so a vault never forces one); the
+            // rest may guard them. Three times in four a defence goes on the route.
+            bool clearOfDoors = type == ObjectType.SnufferBell || type == ObjectType.MimicChest;
+            List<TilePos> floor = AllFloor(layout).Where(p => !used.Contains(p) && !(clearOfDoors && NextToDoor(layout, p))).ToList();
+            List<TilePos> onRoute = floor.Where(route.Contains).ToList();
+            if (onRoute.Count > 0 && rng.Next(4) > 0)
+            {
+                floor = onRoute;
+            }
+
             if (type == ObjectType.SleepyTroll)
             {
                 // Trolls block doorways: tiptoe past.
@@ -187,6 +198,51 @@ namespace Wick.Bots
             objects.Add(new ObjectDef(id++, type, at, rng.Next(4), c, c > 0 ? rng.Next(c) : 0, 0, patrol));
             used.Add(at);
             return VaultRules.Cost(type);
+        }
+
+        /// <summary>The shortest walk from the entrance to the hoard, and every tile beside it.</summary>
+        private static HashSet<TilePos> RouteTiles(LayoutGen.Layout layout)
+        {
+            var prev = new Dictionary<TilePos, TilePos> { [layout.Entrance] = layout.Entrance };
+            var queue = new Queue<TilePos>();
+            queue.Enqueue(layout.Entrance);
+            TilePos end = layout.Entrance;
+            while (queue.Count > 0)
+            {
+                TilePos p = queue.Dequeue();
+                if (layout.Hoard.Contains(p))
+                {
+                    end = p;
+                    break;
+                }
+
+                for (int d = 0; d < 4; d++)
+                {
+                    TilePos n = p.Step((Dir)d);
+                    if (layout.At(n) != TileType.Wall && !prev.ContainsKey(n))
+                    {
+                        prev[n] = p;
+                        queue.Enqueue(n);
+                    }
+                }
+            }
+
+            var route = new HashSet<TilePos>();
+            for (TilePos p = end; ; p = prev[p])
+            {
+                route.Add(p);
+                for (int d = 0; d < 4; d++)
+                {
+                    route.Add(p.Step((Dir)d));
+                }
+
+                if (p == layout.Entrance)
+                {
+                    break;
+                }
+            }
+
+            return route;
         }
 
         private static TilePos[] Patrol(LayoutGen.Layout layout, TilePos from, Random rng)

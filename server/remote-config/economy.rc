@@ -4,7 +4,7 @@
     "economy": {
       "version": 1,
       "loot": {
-        "capPerLevel": 200,
+        "capPerLevel": 150,
         "defenceBonusPerLevel": 10,
         "maxLossPercent": 20,
         "consolationPerLevel": 10,
@@ -37,57 +37,57 @@
       "vaultLevels": [
         {
           "level": 2,
-          "gold": 400,
-          "minutes": 2,
-          "stars": 5
+          "gold": 3000,
+          "minutes": 10,
+          "stars": 25
         },
         {
           "level": 3,
-          "gold": 1200,
-          "minutes": 15,
-          "stars": 15
+          "gold": 4500,
+          "minutes": 60,
+          "stars": 80
         },
         {
           "level": 4,
-          "gold": 3000,
-          "minutes": 60,
-          "stars": 35
+          "gold": 6500,
+          "minutes": 180,
+          "stars": 160
         },
         {
           "level": 5,
-          "gold": 6000,
-          "minutes": 180,
-          "stars": 65
+          "gold": 21000,
+          "minutes": 480,
+          "stars": 270
         },
         {
           "level": 6,
-          "gold": 10000,
-          "minutes": 360,
-          "stars": 105
+          "gold": 31000,
+          "minutes": 720,
+          "stars": 400
         },
         {
           "level": 7,
-          "gold": 16000,
-          "minutes": 600,
-          "stars": 155
+          "gold": 56000,
+          "minutes": 1080,
+          "stars": 600
         },
         {
           "level": 8,
-          "gold": 24000,
-          "minutes": 960,
-          "stars": 215
+          "gold": 100000,
+          "minutes": 1440,
+          "stars": 880
         },
         {
           "level": 9,
-          "gold": 35000,
-          "minutes": 1440,
-          "stars": 285
+          "gold": 78000,
+          "minutes": 2160,
+          "stars": 1100
         },
         {
           "level": 10,
-          "gold": 50000,
-          "minutes": 2160,
-          "stars": 365
+          "gold": 115000,
+          "minutes": 2880,
+          "stars": 1300
         }
       ],
       "defenceBuilds": {

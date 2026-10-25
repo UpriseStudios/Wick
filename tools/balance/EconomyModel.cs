@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Wick.Economy;
+using Wick.Sim;
 
 namespace Wick.Balance
 {
@@ -16,10 +17,11 @@ namespace Wick.Balance
     /// <summary>
     /// How long it takes to raise each Vault Level, for a daily free player and a spender, from the
     /// economy config and the bot's average raid income. Hour by hour: raids in three sessions a day,
-    /// gold and stars accrue, a free workshop starts the next Vault Level as soon as its gold and
-    /// star gate are met, and builds finish on time (free: plus the daily ad speed-ups) or at once
-    /// with gems (spender, while gems last). Defence and Wick upgrades are left out: they compete for
-    /// the same gold, so these are the fastest each player could level.
+    /// gold and stars accrue. On reaching a Vault Level the player first builds every defence it
+    /// unlocks (they must be built before they can be placed), then raises the next Vault Level once
+    /// its gold and star gate are met. Builds take workshop time: free players watch the daily ad
+    /// speed-ups, the spender finishes builds with gems while they last. Defence upgrades, Wick
+    /// upgrades and walls are optional spending, so they're left out.
     /// </summary>
     public static class EconomyModel
     {
@@ -37,6 +39,14 @@ namespace Wick.Balance
         /// <summary>Starter pack, Wick Club and the £19.99 gem pack each month: a committed spender.</summary>
         public static Player Spender => new Player { Name = "Spender", Club = true, StarterPack = true, GemsPerMonth = 2600 };
 
+        private sealed class Build
+        {
+            public long Gold;
+            public long EndsHour = -1;
+            public int Hours;
+            public bool VaultLevel;
+        }
+
         /// <summary>Days from the start to reaching each Vault Level (index = level; 1 is day 0). -1 if not within a year.</summary>
         public static double[] DaysToLevel(EconomyConfig cfg, Player p, Func<int, RaidIncome> income)
         {
@@ -50,11 +60,14 @@ namespace Wick.Balance
             double gold = 0;
             double stars = 0;
             double gems = p.StarterPack ? 500 : 0;
-            long buildEndsHour = -1;
             int adSpeedupsToday = 0;
+            var pending = new Queue<Build>(); // defence builds still to start
+            var running = new List<Build>();
             AdPlacement doubleLoot = cfg.Placement("raid_double_loot");
             AdPlacement speedup = cfg.Placement("upgrade_speedup");
             AdPlacement chest = cfg.Placement("shop_chest");
+
+            int Workshops() => 1 + (p.StarterPack ? 1 : 0) + (p.Club ? 1 : 0) + (!p.StarterPack && level >= 4 ? 1 : 0);
 
             for (long hour = 0; hour < 24 * 365 && level < 10; hour++)
             {
@@ -71,7 +84,6 @@ namespace Wick.Balance
                     }
                 }
 
-                // Three sessions a day (morning, lunch, evening).
                 if (hourOfDay == 8 || hourOfDay == 13 || hourOfDay == 20)
                 {
                     RaidIncome r = income(level);
@@ -81,43 +93,76 @@ namespace Wick.Balance
                     stars += raids * r.Stars;
                 }
 
-                // Builds: ad speed-ups for everyone (the Club gets them without watching), gems for the spender.
-                if (buildEndsHour >= 0)
+                // Running builds: ad speed-ups (the Club gets them without watching), gems for the spender.
+                foreach (Build b in running)
                 {
-                    if (speedup != null && adSpeedupsToday < speedup.Daily && hourOfDay >= 8)
+                    if (speedup != null && adSpeedupsToday < speedup.Daily && hourOfDay >= 8 && b.EndsHour > hour)
                     {
-                        buildEndsHour -= Math.Max(0, speedup.Minutes / 60);
+                        b.EndsHour -= Math.Max(0, speedup.Minutes / 60);
                         adSpeedupsToday++;
                     }
 
-                    long leftHours = buildEndsHour - hour;
-                    long cost = leftHours > 0 ? cfg.SpeedUp.GemsFor(leftHours * 3_600_000L) : 0;
-                    if (p.GemsPerMonth > 0 && leftHours > 0 && gems >= cost)
+                    long left = b.EndsHour - hour;
+                    long cost = left > 0 ? cfg.SpeedUp.GemsFor(left * 3_600_000L) : 0;
+                    if (p.GemsPerMonth > 0 && left > 0 && gems >= cost)
                     {
                         gems -= cost;
-                        buildEndsHour = hour;
-                    }
-
-                    if (hour >= buildEndsHour)
-                    {
-                        level++;
-                        reached[level] = hour / 24.0;
-                        buildEndsHour = -1;
+                        b.EndsHour = hour;
                     }
                 }
 
-                if (buildEndsHour < 0 && level < 10)
+                foreach (Build b in running.FindAll(b => hour >= b.EndsHour))
+                {
+                    running.Remove(b);
+                    if (b.VaultLevel)
+                    {
+                        level++;
+                        reached[level] = hour / 24.0;
+                        foreach (ObjectType t in UnlockedAt(level))
+                        {
+                            DefenceBuild build = cfg.BuildOf(t);
+                            if (build != null)
+                            {
+                                pending.Enqueue(new Build { Gold = build.Gold, Hours = Math.Max(1, (build.Minutes + 59) / 60) });
+                            }
+                        }
+                    }
+                }
+
+                // Start defence builds first (they're needed to defend), then the next Vault Level.
+                while (pending.Count > 0 && running.Count < Workshops() && gold >= pending.Peek().Gold)
+                {
+                    Build b = pending.Dequeue();
+                    gold -= b.Gold;
+                    b.EndsHour = hour + b.Hours;
+                    running.Add(b);
+                }
+
+                bool vaultLevelBuilding = running.Exists(b => b.VaultLevel);
+                if (pending.Count == 0 && !vaultLevelBuilding && running.Count < Workshops() && level < 10)
                 {
                     VaultLevelStep step = cfg.VaultLevelTo(level + 1);
                     if (step != null && gold >= step.Gold && stars >= step.Stars)
                     {
                         gold -= step.Gold;
-                        buildEndsHour = hour + Math.Max(1, (step.Minutes + 59) / 60);
+                        running.Add(new Build { VaultLevel = true, EndsHour = hour + Math.Max(1, (step.Minutes + 59) / 60) });
                     }
                 }
             }
 
             return reached;
+        }
+
+        private static IEnumerable<ObjectType> UnlockedAt(int level)
+        {
+            for (int i = 0; i < ObjectTypes.Count; i++)
+            {
+                var t = (ObjectType)i;
+                if (VaultRules.RequiredLevel(t) == level)
+                {
+                    yield return t;
+                }
+            }
         }
     }
 }

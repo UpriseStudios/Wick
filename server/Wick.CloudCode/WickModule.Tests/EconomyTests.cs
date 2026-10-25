@@ -37,27 +37,31 @@ namespace Wick.CloudCode.Tests
 
         // ---- Star gates (acceptance) -------------------------------------------------------
 
+        // The Vault Level steps these tests use, read from the economy so tuning never breaks them.
+        private static VaultLevelStep L2 => TestEconomy.Default.VaultLevelTo(2);
+        private static VaultLevelStep L3 => TestEconomy.Default.VaultLevelTo(3);
+
         /// <summary>No amount of gold or gems raises the Vault Level without the stars from raids.</summary>
         [Test]
         public async Task VaultLevel_NeedsRaidStars_WhateverThePlayerSpends()
         {
-            await Rich("p1", stars: 4);
+            await Rich("p1", stars: L2.Stars - 1);
 
             EconomyResult start = await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel);
             Assert.IsFalse(start.Ok);
-            StringAssert.Contains("Needs 5 stars", start.Reason);
+            StringAssert.Contains("Needs " + L2.Stars + " stars", start.Reason);
             Assert.IsFalse((await Economy.FinishUpgradeAsync("p1", UpgradeKinds.VaultLevel, true)).Ok, "gems can't finish what can't start");
             Assert.AreEqual(1, (await Economy.GetStateAsync("p1")).VaultLevel);
             Assert.AreEqual(1_000_000, _w.Get<Wallet>("p1", Keys.Wallet).Gold, "nothing spent on a refusal");
 
-            await _w.Set("p1", Keys.Stats, new RaidStats { Stars = 5 });
+            await _w.Set("p1", Keys.Stats, new RaidStats { Stars = L2.Stars });
             Assert.IsTrue((await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel)).Ok);
             Assert.IsTrue((await Economy.FinishUpgradeAsync("p1", UpgradeKinds.VaultLevel, true)).Ok);
             Assert.AreEqual(2, (await Economy.GetStateAsync("p1")).VaultLevel);
 
             EconomyResult next = await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel);
-            Assert.IsFalse(next.Ok, "level 3 needs 15 stars");
-            StringAssert.Contains("15 stars", next.Reason);
+            Assert.IsFalse(next.Ok, "level 3 needs more stars");
+            StringAssert.Contains(L3.Stars + " stars", next.Reason);
         }
 
         [Test]
@@ -71,33 +75,34 @@ namespace Wick.CloudCode.Tests
             }
 
             Assert.AreEqual(6, _w.Get<RaidStats>("p1", Keys.Stats).Stars);
-            await _w.Set("p1", Keys.Wallet, new Wallet { Gold = 10_000 });
-            Assert.IsTrue((await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel)).Ok);
+            await _w.Set("p1", Keys.Wallet, new Wallet { Gold = 1_000_000 });
+            EconomyResult start = await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel);
+            Assert.AreEqual(6 >= L2.Stars, start.Ok, "the 6 raid stars count toward the gate, nothing else does");
         }
 
         [Test]
         public async Task UpgradesRunOnServerTime()
         {
-            await Rich("p1", stars: 5);
-            await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel); // 2 minutes
+            await Rich("p1", stars: L2.Stars);
+            await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel);
             EconomyResult early = await Economy.FinishUpgradeAsync("p1", UpgradeKinds.VaultLevel, false);
             Assert.IsFalse(early.Ok);
-            StringAssert.Contains("2 minutes left", early.Reason);
+            StringAssert.Contains(L2.Minutes + " minutes left", early.Reason);
 
-            _w.Clock.Advance(2 * Rules.MinuteMs);
+            _w.Clock.Advance(L2.Minutes * Rules.MinuteMs);
             Assert.IsTrue((await Economy.FinishUpgradeAsync("p1", UpgradeKinds.VaultLevel, false)).Ok);
-            Assert.AreEqual(1_000_000 - 400, _w.Get<Wallet>("p1", Keys.Wallet).Gold);
+            Assert.AreEqual(1_000_000 - L2.Gold, _w.Get<Wallet>("p1", Keys.Wallet).Gold);
             Assert.AreEqual(1_000_000, _w.Get<Wallet>("p1", Keys.Wallet).Gems, "no gems when it finished on time");
         }
 
         [Test]
         public async Task AnUpgradeCompletesOnItsOwn_WhenItsTimeIsUp()
         {
-            await Rich("p1", stars: 5);
-            await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel); // 2 minutes
+            await Rich("p1", stars: L2.Stars);
+            await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel);
             Assert.AreEqual(1, (await Economy.GetStateAsync("p1")).VaultLevel);
 
-            _w.Clock.Advance(2 * Rules.MinuteMs);
+            _w.Clock.Advance(L2.Minutes * Rules.MinuteMs);
             EconomyState state = await Economy.GetStateAsync("p1");
             Assert.AreEqual(2, state.VaultLevel, "nobody pressed Finish");
             Assert.AreEqual(0, state.Running.Count, "the workshop is free again");
@@ -107,9 +112,9 @@ namespace Wick.CloudCode.Tests
         [Test]
         public async Task AFinishedUpgradeIsStoredByTheNextWrite_AndItsWorkshopReused()
         {
-            await Rich("p1", stars: 15);
+            await Rich("p1", stars: L3.Stars);
             await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel);
-            _w.Clock.Advance(2 * Rules.MinuteMs);
+            _w.Clock.Advance(L2.Minutes * Rules.MinuteMs);
 
             EconomyResult next = await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel); // Vault Level 3, same workshop
             Assert.IsTrue(next.Ok, next.Reason);
@@ -121,19 +126,19 @@ namespace Wick.CloudCode.Tests
         [Test]
         public async Task FinishingEarly_CostsGems_ByTimeLeft()
         {
-            await Rich("p1", stars: 15);
+            await Rich("p1", stars: L3.Stars);
             await _w.Set("p1", EconomyKeys.Upgrades, new Upgrades { Levels = new Progression { VaultLevel = 2 } });
-            await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel); // 15 minutes: 20 gems an hour, rounded up
+            await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel);
             await Economy.FinishUpgradeAsync("p1", UpgradeKinds.VaultLevel, true);
-            Assert.AreEqual(1_000_000 - 5, _w.Get<Wallet>("p1", Keys.Wallet).Gems);
+            long gems = TestEconomy.Default.SpeedUp.GemsFor(L3.Minutes * Rules.MinuteMs); // 20 gems an hour, rounded up
+            Assert.AreEqual(1_000_000 - gems, _w.Get<Wallet>("p1", Keys.Wallet).Gems);
         }
 
         [Test]
         public async Task OneUpgradePerWorkshop_AndTheStarterPackAddsOne()
         {
-            await Rich("p1", stars: 5);
+            await Rich("p1", stars: L3.Stars);
             await _w.Set("p1", EconomyKeys.Upgrades, new Upgrades { Levels = new Progression { VaultLevel = 2 } });
-            await _w.Set("p1", Keys.Stats, new RaidStats { Stars = 15 });
             Assert.IsTrue((await Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel)).Ok);
             EconomyResult second = await Economy.StartUpgradeAsync("p1", UpgradeKinds.Lantern);
             Assert.IsFalse(second.Ok);
@@ -146,8 +151,8 @@ namespace Wick.CloudCode.Tests
         [Test]
         public async Task TwoStartsAtOnce_SpendOnce()
         {
-            await _w.Set("p1", Keys.Wallet, new Wallet { Gold = 400 });
-            await _w.Set("p1", Keys.Stats, new RaidStats { Stars = 5 });
+            await _w.Set("p1", Keys.Wallet, new Wallet { Gold = L2.Gold });
+            await _w.Set("p1", Keys.Stats, new RaidStats { Stars = L2.Stars });
             EconomyResult[] r = await Task.WhenAll(
                 Task.Run(() => Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel)),
                 Task.Run(() => Economy.StartUpgradeAsync("p1", UpgradeKinds.VaultLevel)));
