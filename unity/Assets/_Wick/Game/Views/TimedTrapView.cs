@@ -63,8 +63,16 @@ namespace Wick.Game
 
             if (_warning != null)
             {
-                bool warning = Time.time < _warnUntil;
-                _warning.gameObject.SetActive(warning && Mathf.Repeat(Time.time * 8f, 1f) < 0.5f);
+                bool warning = Time.time < _warnUntil && Mathf.Repeat(Time.time * 8f, 1f) < 0.5f;
+                ReadableGlow glow = Glow(ReadableKind.TrapWarning);
+                if (glow != null)
+                {
+                    glow.Active = warning; // readable in the dark, during the warning only
+                }
+                else
+                {
+                    _warning.gameObject.SetActive(warning);
+                }
             }
         }
 

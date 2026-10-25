@@ -105,7 +105,7 @@ Shader "Wick/Flame"
 
                 half3 c = colour * edge * brightness;
                 // A fire on an unseen tile is as hidden as the tile; only a flat trace of it remains.
-                c *= lerp(_WickVisDark, 1, WickVisibility(input.positionWS, half3(0, 1, 0), _IgnoreMask));
+                c *= WickVisBrightness(input.positionWS, half3(0, 1, 0), _IgnoreMask);
                 return half4(c, 1);
             }
             ENDHLSL

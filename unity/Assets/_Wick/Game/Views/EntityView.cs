@@ -11,6 +11,9 @@ namespace Wick.Game
         public VisibilityMask Mask;
         public RaidTuning Tuning;
 
+        /// <summary>The vault theme's lighting (always set: the mask falls back to the defaults).</summary>
+        public LightingProfile Lighting => Mask.Profile;
+
         public RaidSnapshot Previous => Runner.Previous;
         public RaidSnapshot Current => Runner.Current;
         public float Alpha => Runner.Alpha;
@@ -25,6 +28,7 @@ namespace Wick.Game
     public abstract class EntityView : MonoBehaviour
     {
         private Renderer[] _renderers;
+        private ReadableGlow[] _glows;
         private bool _visible = true;
 
         protected ViewContext Ctx { get; private set; }
@@ -40,9 +44,54 @@ namespace Wick.Game
             Ctx = ctx;
             ObjectIndex = objectIndex;
             Def = ctx.Vault.GetObject(objectIndex);
-            _renderers = GetComponentsInChildren<Renderer>(true);
+            // Glows stay readable in the dark, so SetVisible leaves their renderers alone.
+            _glows = GetComponentsInChildren<ReadableGlow>(true);
+            var body = new System.Collections.Generic.List<Renderer>();
+            foreach (Renderer r in GetComponentsInChildren<Renderer>(true))
+            {
+                if (r.GetComponentInParent<ReadableGlow>(true) == null)
+                {
+                    body.Add(r);
+                }
+            }
+
+            _renderers = body.ToArray();
             transform.position = SimPose.TileCenter(Def.Pos);
             OnInit();
+            foreach (ReadableGlow g in _glows)
+            {
+                if (g.Kind != ReadableKind.GuardianEyes)
+                {
+                    g.SetColor(ReadableGlow.ColorOf(g.Kind, ctx.Lighting));
+                }
+            }
+        }
+
+        /// <summary>The tile whose light decides whether this view's glows count as lit.</summary>
+        protected virtual TilePos GlowTile => Def.Pos;
+
+        /// <summary>Shows or hides the always-readable parts; VaultView calls it after Sync.</summary>
+        public void SyncGlows()
+        {
+            bool lit = IsVisible(GlowTile);
+            foreach (ReadableGlow g in _glows)
+            {
+                g.Apply(lit, Ctx.Lighting);
+            }
+        }
+
+        /// <summary>This view's glow of a kind, or null.</summary>
+        protected ReadableGlow Glow(ReadableKind kind)
+        {
+            foreach (ReadableGlow g in _glows)
+            {
+                if (g.Kind == kind)
+                {
+                    return g;
+                }
+            }
+
+            return null;
         }
 
         protected virtual void OnInit()

@@ -50,6 +50,13 @@ namespace Wick.Game
         /// <summary>Fraction of the way from Previous to Current, for interpolation.</summary>
         public float Alpha { get; private set; } = 1f;
 
+        /// <summary>
+        /// Every tile Wick's light has reached since the raid began (row-major), for the mask's
+        /// Remembered state. Presentation only: built from the sim's lit set on every simulated tick
+        /// (a replay seek included), never fed back into the sim.
+        /// </summary>
+        public bool[] EverLit { get; private set; } = Array.Empty<bool>();
+
         /// <summary>A raid was loaded (live or replay); views rebuild.</summary>
         public event Action<RaidRunner> Loaded;
 
@@ -99,12 +106,14 @@ namespace Wick.Game
             }
 
             var sim = new RaidSim(Vault, Seed, _replayLog, Params);
+            bool[] everLit = (bool[])sim.State.Lit.Clone();
             while (!sim.IsOver && sim.State.Tick < tick)
             {
                 sim.Step();
+                AddLit(everLit, sim.State.Lit);
             }
 
-            Load(sim, Vault, Seed, RaidMode.Replay);
+            Load(sim, Vault, Seed, RaidMode.Replay, everLit);
             if (sim.IsOver)
             {
                 Mode = RaidMode.Ended;
@@ -117,6 +126,7 @@ namespace Wick.Game
             if (Mode == RaidMode.Scout)
             {
                 _accumulator.Reset();
+                EverLit = (bool[])Sim.State.Lit.Clone(); // the scout's view is temporary: only Wick's own light counts
                 Mode = RaidMode.Live;
             }
         }
@@ -177,6 +187,7 @@ namespace Wick.Game
             _stepTimer.Stop();
             LastStepMs = _stepTimer.Elapsed.TotalMilliseconds; // measured around the sim, never inside it
             Current.CopyFrom(Sim.State);
+            AddLit(EverLit, Sim.State.Lit);
 
             for (int i = 0; i < Sim.Events.Count; i++)
             {
@@ -192,9 +203,18 @@ namespace Wick.Game
             }
         }
 
-        private void Load(RaidSim sim, VaultDef vault, int seed, RaidMode mode)
+        private static void AddLit(bool[] everLit, bool[] lit)
+        {
+            for (int i = 0; i < everLit.Length; i++)
+            {
+                everLit[i] |= lit[i];
+            }
+        }
+
+        private void Load(RaidSim sim, VaultDef vault, int seed, RaidMode mode, bool[] everLit = null)
         {
             Sim = sim;
+            EverLit = everLit ?? (bool[])sim.State.Lit.Clone();
             Vault = vault;
             Seed = seed;
             Previous.CopyFrom(sim.State);

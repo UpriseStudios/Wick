@@ -28,7 +28,7 @@ Material:
     - _CoreSize: 0.45
     - _Flare: 0
     - _Flickers: 3
-    - _IgnoreMask: 0
+    - _IgnoreMask: 1
     - _Intensity: 1.6
     - _SwayAmount: 0.025
     - _SwaySpeed: 3

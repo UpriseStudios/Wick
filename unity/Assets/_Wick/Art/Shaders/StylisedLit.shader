@@ -5,8 +5,9 @@
 // blue-violet), and a warm Candle Flame rim separates shapes from the dark floor, strongest near
 // Wick's point light. Mask texture: R = emissive, G = rim strength, B = spare. No specular.
 //
-// Visibility is Wick.Sim's: tiles outside Wick's light show a flat dark fraction of their colour
-// (see WickVisibility.hlsl). This shader never computes visibility itself.
+// Visibility is Wick.Sim's: tiles outside Wick's light show as Remembered or Unseen, a graded-down
+// fraction of their colour, with the static warm pools on top (see WickVisibility.hlsl). This
+// shader never computes visibility itself.
 //
 // Variants: _ADDITIONAL_LIGHTS (Wick's point light), _CLUSTER_LIGHT_LOOP (Forward+), and the
 // local _NORMALMAP toggle, off by default.
@@ -153,8 +154,7 @@ Shader "Wick/StylisedLit"
                 half3 emission = _EmissionColor.rgb * mask.r;
 
                 half3 lit = albedo * (light + _WickLitBoost) + _RimColor.rgb * rim + emission;
-                half3 unlit = albedo * _WickVisDark;
-                return half4(lerp(unlit, lit, WickVisibility(input.positionWS, normalWS, _IgnoreMask)), 1);
+                return half4(WickShade(albedo, lit, input.positionWS, normalWS, _IgnoreMask), 1);
             }
             ENDHLSL
         }

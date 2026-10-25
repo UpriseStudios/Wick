@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b1a33fb50658724e9a272b2fcdd7de1, type: 3}
+  m_Name: lighting_treasury
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.LightingProfile
+  AmbientSky: {r: 0.22745098, g: 0.18431373, b: 0.41960785, a: 1}
+  AmbientEquator: {r: 0.16470589, g: 0.14509805, b: 0.3137255, a: 1}
+  AmbientGround: {r: 0.11764706, g: 0.105882354, b: 0.22745098, a: 1}
+  MainLightColor: {r: 0.35686275, g: 0.41960785, b: 0.6039216, a: 1}
+  MainLightIntensity: 0.15
+  MainLightAngles: {x: 75, y: 30, z: 0}
+  LitBoost: 0.06
+  Remembered: 1
+  RememberedBrightness: 0.35
+  RememberedDesaturation: 0.6
+  RememberedTint: {r: 0.78, g: 0.84, b: 1, a: 1}
+  UnseenBrightness: 0.12
+  UnseenDesaturation: 0.8
+  UnseenTint: {r: 0.72, g: 0.78, b: 1, a: 1}
+  EdgeSoftnessTiles: 0.5
+  FlameColor: {r: 1, g: 0.62352943, b: 0.10980392, a: 1}
+  FlameCoreColor: {r: 1, g: 0.8862745, b: 0.6039216, a: 1}
+  FlameIntensity: 2
+  FlameRangeExtraTiles: 0.5
+  FlameEaseSeconds: 0.25
+  FlickerAmount: 0.05
+  FlickerHz: 6
+  FranticAmount: 0.15
+  FlareBoost: 0.4
+  FlareSeconds: 0.4
+  SnuffSeconds: 0.3
+  TorchColor: {r: 1, g: 0.47843137, b: 0.18039216, a: 1}
+  TorchRadiusTiles: 1.5
+  TorchIntensity: 0.8
+  StaticInDark: 0.5
+  SconceSpacingTiles: 5
+  BlobColor: {r: 1, g: 0.5411765, b: 0.18039216, a: 1}
+  BlobRadiusTiles: 1.5
+  BlobOpacity: 0.6
+  BlobFadeSeconds: 0.5
+  ReadablePitEdges: 1
+  ReadableTrapWarnings: 1
+  ReadableGuardianEyes: 1
+  ReadableBraziers: 1
+  ReadableEntrance: 1
+  ReadableTreasure: 1
+  PitEdgeColor: {r: 0.12, g: 0.42, b: 0.52, a: 1}
+  WarningRed: {r: 0.8980392, g: 0.28235295, b: 0.3019608, a: 1}
+  WarningTeal: {r: 0.24313726, g: 0.7764706, b: 0.8784314, a: 1}
+  TreasureGold: {r: 0.9490196, g: 0.75686276, b: 0.30588236, a: 1}
+  EntranceColor: {r: 1, g: 0.92, b: 0.8, a: 1}
+  EntranceLootBoost: 1.8
+  FogColor: {r: 0.36, g: 0.3, b: 0.55, a: 1}
+  FogDensity: 0.25
+  ShaftColor: {r: 0.85, g: 0.9, b: 1, a: 1}
+  ShaftsPerRoom: 1
+  DustColor: {r: 1, g: 0.8, b: 0.55, a: 1}
+  DustAmount: 0.5
+  ColorGradeLut: {fileID: 0}
+  AccentColor: {r: 0.65, g: 0.1, b: 0.12, a: 1}

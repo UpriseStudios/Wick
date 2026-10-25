@@ -25,7 +25,20 @@ namespace Wick.Game
         public GameObject Ice;
         public GameObject EntranceArch;
 
-        [Header("Ambient (trilight)")]
+        [Header("Lighting (docs/m10-2-lighting.md)")]
+        [Tooltip("Every lighting value for this theme. Null: the Classic Treasury defaults.")]
+        public LightingProfile Lighting;
+
+        [Tooltip("A wall sconce, hung on a wall face (+Z towards the floor it lights).")]
+        public GameObject Sconce;
+
+        [Tooltip("One glowing strip along a pit's edge (+Z towards the floor beside it), always readable.")]
+        public GameObject PitEdge;
+
+        [Tooltip("The entrance's \"way out\" glow on the floor, always readable.")]
+        public GameObject EntranceGlow;
+
+        [Header("Ambient (trilight; superseded by Lighting when set)")]
         public Color AmbientSky = new Color(0.11f, 0.10f, 0.14f);
         public Color AmbientEquator = new Color(0.07f, 0.06f, 0.08f);
         public Color AmbientGround = new Color(0.03f, 0.03f, 0.04f);
@@ -79,6 +92,12 @@ namespace Wick.Game
 
         public void ApplyAmbient()
         {
+            if (Lighting != null)
+            {
+                Lighting.ApplyAmbient();
+                return;
+            }
+
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = AmbientSky;
             RenderSettings.ambientEquatorColor = AmbientEquator;
@@ -88,7 +107,7 @@ namespace Wick.Game
         /// <summary>Every prefab this theme uses, for checks.</summary>
         public IEnumerable<GameObject> Pieces()
         {
-            foreach (GameObject g in new[] { Floor, WallStraight, WallCorner, WallFill, Door, Pit, Ice, EntranceArch })
+            foreach (GameObject g in new[] { Floor, WallStraight, WallCorner, WallFill, Door, Pit, Ice, EntranceArch, Sconce, PitEdge, EntranceGlow })
             {
                 if (g != null)
                 {

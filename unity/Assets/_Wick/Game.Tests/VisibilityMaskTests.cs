@@ -84,13 +84,13 @@ namespace Wick.Game.Tests
             Assert.AreEqual(vault.Height, tex.height);
             Assert.AreEqual(FilterMode.Point, tex.filterMode);
 
-            NativeArray<byte> data = tex.GetPixelData<byte>(0);
+            NativeArray<byte> data = tex.GetPixelData<byte>(0); // R = lit, G = seen
             for (int y = 0; y < vault.Height; y++)
             {
                 for (int x = 0; x < vault.Width; x++)
                 {
                     int i = y * vault.Width + x;
-                    bool texel = data[i] != 0;
+                    bool texel = data[i * 2] != 0;
                     if (texel != expected[i] || mask.IsVisible(new TilePos(x, y)) != expected[i])
                     {
                         Assert.Fail(when + ": tile (" + x + "," + y + ") mask " + texel + ", sim " + expected[i]);
@@ -105,7 +105,7 @@ namespace Wick.Game.Tests
             _spawned.Add(go);
             RaidRunner runner = go.AddComponent<RaidRunner>();
             VisibilityMask mask = go.AddComponent<VisibilityMask>();
-            mask.Bind(runner, ScriptableObject.CreateInstance<RaidTuning>());
+            mask.Bind(runner, null);
             return (runner, mask);
         }
     }

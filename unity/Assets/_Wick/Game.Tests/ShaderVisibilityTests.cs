@@ -43,10 +43,13 @@ namespace Wick.Game.Tests
             _spawned.Add(rig);
             RaidRunner runner = rig.AddComponent<RaidRunner>();
             VisibilityMask mask = rig.AddComponent<VisibilityMask>();
-            var tuning = ScriptableObject.CreateInstance<RaidTuning>();
-            tuning.LitBoost = 0.3f; // a clear lit/dark gap: this checks the tile mapping, not the look
-            _spawned.Add(tuning);
-            mask.Bind(runner, tuning);
+            // A clear lit/dark gap and no Remembered state: this checks the tile mapping, not the look.
+            LightingProfile profile = LightingProfile.Default();
+            profile.LitBoost = 0.3f;
+            profile.Remembered = false;
+            profile.UnseenBrightness = 0.04f;
+            _spawned.Add(profile);
+            mask.Bind(runner, profile);
 
             VaultDef vault = raid.Vault;
             Camera camera = Floor(vault);
@@ -155,7 +158,8 @@ namespace Wick.Game.Tests
 
         private static void AssertPixelsMatch(RaidRunner runner, VaultDef vault, Texture2D image, string when)
         {
-            // Lit tiles get at least the lit boost (0.3 here); unlit ones a flat 0.04.
+            // Lit tiles get at least the lit boost (0.3 here); unseen ones 0.04 of their colour, tinted.
+            // Pixels are sampled at tile centres, which always show their own tile exactly.
             const float threshold = 0.12f;
             for (int y = 0; y < vault.Height; y++)
             {

@@ -59,8 +59,99 @@ namespace Wick.Editor
                 overlay.ShowGrid = false;
             }
 
+            CaptureLighting();
             CaptureEditor();
             Debug.Log("WickScreenshots: wrote " + Path.GetFullPath(OutputDir));
+        }
+
+        /// <summary>
+        /// M10.2a lighting shots (docs/m10-2-lighting.md), each a real moment from a golden replay seen
+        /// from the gameplay camera: the three tile states together (and with the sim's lit tiles
+        /// overlaid, which must match), then each flame mood. Output: Builds/Screenshots/lighting.
+        /// Batch: -executeMethod Wick.Editor.WickScreenshots.CaptureLightingOnly
+        /// </summary>
+        public static void CaptureLightingOnly()
+        {
+            CaptureLighting();
+            Debug.Log("WickScreenshots: wrote " + Path.GetFullPath(OutputDir + "/lighting"));
+        }
+
+        private static void CaptureLighting()
+        {
+            EditorSceneManager.OpenScene("Assets/_Wick/Scenes/Raid.unity", OpenSceneMode.Single);
+            var runner = Object.FindFirstObjectByType<RaidRunner>();
+            var vaultView = Object.FindFirstObjectByType<VaultView>();
+            var overlay = Object.FindFirstObjectByType<DevOverlay>();
+            var camera = Object.FindFirstObjectByType<Camera>();
+            camera.aspect = 540f / 960f;
+            var tuning = AssetDatabase.LoadAssetAtPath<RaidTuning>("Assets/_Wick/Data/RaidTuning.asset");
+            string dir = OutputDir + "/lighting";
+            Directory.CreateDirectory(dir);
+
+            // Edit mode runs no OnEnable, so route Wick's events (the flare) by hand.
+            runner.SimEventRaised += e => vaultView.Wick?.OnSimEvent(e);
+            bool treasureTaken = false;
+            runner.SimEventRaised += e => treasureTaken |= e.Type == SimEventType.TreasureTaken;
+
+            string golden = Path.GetFullPath(Path.Combine(Application.dataPath, "../../tests/golden"));
+            void Shot(string file, string name, System.Func<RaidRunner, bool> when, bool withOverlay = false)
+            {
+                RaidFile raid = RaidFile.Parse(File.ReadAllText(Path.Combine(golden, file)));
+                runner.LoadReplay(raid.Vault, raid.Seed, raid.Log);
+                vaultView.Build(runner);
+                treasureTaken = false;
+                bool found = false;
+                while (true)
+                {
+                    vaultView.SyncAll();
+                    if (when(runner))
+                    {
+                        found = true;
+                        break;
+                    }
+
+                    if (runner.Mode != RaidMode.Replay)
+                    {
+                        break;
+                    }
+
+                    treasureTaken = false;
+                    runner.Advance(TickAccumulator.TickSeconds);
+                }
+
+                if (!found)
+                {
+                    Debug.LogWarning("WickScreenshots: no moment for " + name + " in " + file);
+                    return;
+                }
+
+                for (int i = 0; i < 3; i++)
+                {
+                    vaultView.SyncAll(); // let the flame light settle on this frame's values
+                }
+
+                RaidCamera.Place(camera.transform, RaidCamera.FocusFor(vaultView.Wick.transform.position, tuning), tuning);
+                Render(camera, Path.Combine(dir, name + ".png")); // a throwaway first: batch mode's first frame can come out garbled
+                Render(camera, Path.Combine(dir, name + ".png"));
+                if (withOverlay)
+                {
+                    overlay.ShowLit = true;
+                    overlay.ShowGrid = true;
+                    overlay.Draw(camera);
+                    Render(camera, Path.Combine(dir, name + "-overlay.png"));
+                    overlay.ShowLit = false;
+                    overlay.ShowGrid = false;
+                }
+            }
+
+            WickState W(RaidRunner r) => r.Sim.State.Wick;
+            Shot("full-heist.json", "1-tile-states", r => r.Sim.State.Tick >= 200, withOverlay: true);
+            Shot("full-heist.json", "2-flame-calm", r => r.Sim.State.Tick >= 20 && W(r).Flickers == 3 && !W(r).Tiptoe);
+            Shot("full-heist.json", "3-flame-flare", r => treasureTaken);
+            Shot("pit-last-flicker.json", "4-flame-frantic", r => W(r).Flickers == 1 && !W(r).Falling && r.Sim.State.Tick > 10);
+            Shot("troll-tiptoe.json", "5-flame-tiptoe", r => W(r).Tiptoe && W(r).Flickers == 3 && r.Sim.State.Tick > 30);
+            Shot("pit-last-flicker.json", "6-flame-snuffed", r => W(r).Flickers == 0);
+            Shot("pit-fall-recover.json", "7-pit-edges", r => r.Sim.State.Tick >= 1);
         }
 
         /// <summary>The vault editor with each template, plus one draft with problems shown in red.</summary>

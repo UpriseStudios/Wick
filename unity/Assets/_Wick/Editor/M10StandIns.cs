@@ -56,6 +56,16 @@ namespace Wick.Editor
                 lid.SetParent(root, false);
                 lid.localPosition = new Vector3(0f, 0.42f, -0.22f);
                 Box(lid, "LidBoard", new Vector3(0f, 0.03f, 0.22f), new Vector3(0.62f, 0.06f, 0.46f), crate);
+
+                // Peeking eyes under the lid, readable in the dark while it winds up to bite.
+                var eyes = new GameObject("Eyes").transform;
+                eyes.SetParent(root, false);
+                foreach (float x in new[] { -0.1f, 0.1f })
+                {
+                    Prim(PrimitiveType.Sphere, eyes, "Eye", new Vector3(x, 0.44f, 0.2f), Vector3.one * 0.07f, Mat("GuardianEye"));
+                }
+
+                eyes.gameObject.AddComponent<ReadableGlow>().Kind = ReadableKind.GuardianEyes;
                 MimicView view = root.gameObject.AddComponent<MimicView>();
                 Set(view, "_body", body);
                 Set(view, "_lid", lid);
@@ -131,6 +141,16 @@ namespace Wick.Editor
                 Prim(PrimitiveType.Sphere, body, "Belly", new Vector3(0f, 0.4f, 0f), new Vector3(0.75f, 0.55f, 0.85f), gold);
                 Prim(PrimitiveType.Sphere, body, "Head", new Vector3(0f, 0.75f, 0.35f), Vector3.one * 0.42f, gold);
                 Box(body, "Tail", new Vector3(0f, 0.45f, -0.5f), new Vector3(0.1f, 0.1f, 0.45f), gold);
+
+                // His eyes, readable in the dark whenever he's awake.
+                var eyes = new GameObject("Eyes").transform;
+                eyes.SetParent(body, false);
+                foreach (float x in new[] { -0.09f, 0.09f })
+                {
+                    Prim(PrimitiveType.Sphere, eyes, "Eye", new Vector3(x, 0.8f, 0.55f), Vector3.one * 0.07f, Mat("GuardianEye"));
+                }
+
+                eyes.gameObject.AddComponent<ReadableGlow>().Kind = ReadableKind.GuardianEyes;
                 WhiskersView view = root.gameObject.AddComponent<WhiskersView>();
                 Set(view, "_body", body);
             });

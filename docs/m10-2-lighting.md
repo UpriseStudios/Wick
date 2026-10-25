@@ -16,6 +16,19 @@ Three prompts, each ending with screenshots for sign-off:
 
 **Order (25 October 2026):** M10.2 runs after M10.1b and before M10.1c (pit presentation), so the pit visuals are made against the locked lighting. "M10.1 must be merged" below means M10.1a and M10.1b. The pit edge glow is built here, in 10.2a item 4. Sim light radii today are 4 / 3 / 2 tiles (SimTuning.LightRadius*), not the table's 3.0 / 2.5 / 2.0: 10.2a builds against the current values, and any change chosen in the lab is a separate SimVersion bump.
 
+**Decisions (25 October 2026, M10.2a plan):**
+- The scout flyover's view is temporary: when the clock starts every tile is Unseen, and tiles become Remembered only once Wick's own light has reached them. (This replaces "except areas shown in the scout flyover" in the darkness table.)
+- Vaults are assembled at runtime from tiles, so there are no lightmaps. Static warm pools come from a per-tile static-light texture built when a vault loads, from wall sconces, players' torch decorations and the entrance.
+- Sconces join the tile kit now, placed automatically along walls as ambient lighting. Their pools show faintly through the dark (a profile value), lighting walls and floor only: traps, guardians and props are still revealed only by Wick's light.
+
+**M10.2a as built (25 October 2026):**
+- `LightingProfile` (Game/Rendering) holds every value in the tables below; Classic Treasury's is `Art/Themes/lighting_treasury.asset`, created once by ThemeBuilder and then tuned in place. Crypt uses the same values until M10.2b. The visibility and flame fields left `RaidTuning`.
+- Mask: one RG8 texel per tile, R = lit now, G = seen; Remembered is `RaidRunner.EverLit`, built on every simulated tick (a replay seek included). Tile centres always show their own state; floors blend across a half-tile band at edges, and wall faces read their own tile exactly.
+- Wick's light: range = sim radius + 0.5 tile, intensity 2.0, ±5% flicker at 6 Hz, ±15% faster at 1 flicker, +40% flare for 0.4 s (gold and braziers), 0.25 s ease on tiptoe and gusts, 0.3 s fade on a snuff.
+- Static pools fade with height (torchlight on the floor), so wall tops near a sconce stay dark.
+- Always-readable glows are `ReadableGlow` parts that views don't hide. Mimic Chest's peeking eyes show only while it winds up to bite, so the dark never gives its disguise away; Sir Whiskers' eyes show while he's awake; the owl's always.
+- Screenshots: `Wick > Capture Dev Screenshots` (or `-executeMethod Wick.Editor.WickScreenshots.CaptureLightingOnly`) writes the tile-state and flame-mood shots to `unity/Builds/Screenshots/lighting`.
+
 This supersedes the lighting parts of M3 item 4, M9 item 5 and Asset Production Stage 6. Those still apply for shaders, but the values and rules here win.
 
 ## The lighting stack

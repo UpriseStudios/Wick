@@ -456,6 +456,7 @@ GameObject:
   - component: {fileID: 1118912859521916203}
   - component: {fileID: 4280541738315175280}
   - component: {fileID: 2943417180580039841}
+  - component: {fileID: 1293281258962475152}
   m_Layer: 0
   m_Name: Warning
   m_TagString: Untagged
@@ -511,7 +512,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 614948eee4dfe064dbc7df596f54d737, type: 2}
+  - {fileID: 2100000, guid: cef3228a542752f45b05a3eef5899c4e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -535,6 +536,20 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1293281258962475152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8251137678335305884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fd45b2c921e34d49a83bbfa5cb6a4ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.ReadableGlow
+  Kind: 1
+  Strength: 1
 --- !u!1 &9190573147573147698
 GameObject:
   m_ObjectHideFlags: 0

@@ -149,7 +149,7 @@ namespace Wick.Game.Tests
             VisibilityMask mask = go.AddComponent<VisibilityMask>();
             VaultView view = go.AddComponent<VaultView>();
             var tuning = ScriptableObject.CreateInstance<RaidTuning>();
-            mask.Bind(runner, tuning);
+            mask.Bind(runner, null);
             view.Bind(runner, AssetDatabase.LoadAssetAtPath<ViewRegistry>("Assets/_Wick/Data/ViewRegistry.asset"), mask, tuning);
             go.SetActive(true);
             RaidResult result = default;

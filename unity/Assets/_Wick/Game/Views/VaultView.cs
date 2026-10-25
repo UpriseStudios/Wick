@@ -7,7 +7,9 @@ namespace Wick.Game
 {
     /// <summary>
     /// Builds the vault's tiles and entity views from the ViewRegistry when a raid loads,
-    /// syncs them every frame and routes sim events to the entity that raised them.
+    /// syncs them every frame and routes sim events to the entity that raised them. It also lights
+    /// the vault from the theme's LightingProfile (docs/m10-2-lighting.md): ambient, the dim main
+    /// light, sconces and the static warm-pool map, and the always-readable pit edges and entrance.
     /// </summary>
     public sealed class VaultView : MonoBehaviour
     {
@@ -16,7 +18,12 @@ namespace Wick.Game
         [SerializeField] private VisibilityMask _mask;
         [SerializeField] private RaidTuning _tuning;
 
+        [Tooltip("The scene's dim directional light; the profile sets its colour, strength and angle.")]
+        [SerializeField] private Light _mainLight;
+
         private readonly List<EntityView> _views = new List<EntityView>();
+        private readonly List<(ReadableGlow glow, TilePos tile)> _tileGlows = new List<(ReadableGlow, TilePos)>();
+        private ReadableGlow _entranceGlow;
         private readonly List<DecorView> _decor = new List<DecorView>();
         private EntityView[] _byObject = Array.Empty<EntityView>();
         private Transform _root;
@@ -88,7 +95,10 @@ namespace Wick.Game
             foreach (EntityView v in _views)
             {
                 v.Sync();
+                v.SyncGlows();
             }
+
+            SyncTileGlows();
 
             foreach (DecorView d in _decor)
             {
@@ -129,7 +139,18 @@ namespace Wick.Game
             var tiles = new GameObject("Tiles").transform;
             tiles.SetParent(_root, false);
             ThemeDefinition theme = _registry.Theme;
-            theme.ApplyAmbient();
+            _mask.SetProfile(theme.Lighting);
+            LightingProfile lighting = _mask.Profile;
+            lighting.ApplyAmbient();
+            if (_mainLight != null)
+            {
+                _mainLight.type = LightType.Directional;
+                _mainLight.shadows = LightShadows.None;
+                _mainLight.color = lighting.MainLightColor;
+                _mainLight.intensity = lighting.MainLightIntensity;
+                _mainLight.transform.rotation = Quaternion.Euler(lighting.MainLightAngles);
+            }
+
             Func<TilePos, TileType> tileAt = vault.TileAt;
             for (int y = 0; y < vault.Height; y++)
             {
@@ -140,6 +161,7 @@ namespace Wick.Game
                 }
             }
 
+            BuildLights(vault, theme, lighting, tiles);
             if (Application.isPlaying)
             {
                 StaticBatchingUtility.Combine(tiles.gameObject);
@@ -191,6 +213,92 @@ namespace Wick.Game
             Built?.Invoke(this);
         }
 
+        /// <summary>
+        /// Sconces along the walls and the static warm-pool map they, torch decorations and the
+        /// entrance cast; a glowing strip on every pit edge that meets non-pit ground; the entrance glow.
+        /// </summary>
+        private void BuildLights(VaultDef vault, ThemeDefinition theme, LightingProfile lighting, Transform tiles)
+        {
+            List<Sconce> sconces = StaticLights.PlaceSconces(vault, lighting.SconceSpacingTiles);
+            if (theme.Sconce != null)
+            {
+                foreach (Sconce s in sconces)
+                {
+                    Vector3 face = SimPose.TileCenter(s.Wall) + SimPose.DirVector(s.Facing) * 0.5f;
+                    Instantiate(theme.Sconce, face, SimPose.Facing(s.Facing), tiles);
+                }
+            }
+
+            _mask.SetStaticLight(StaticLights.Compute(vault, sconces, lighting.TorchRadiusTiles));
+
+            var glows = new GameObject("Glows").transform; // not batched: they switch on and off
+            glows.SetParent(_root, false);
+            if (theme.PitEdge != null)
+            {
+                for (int y = 0; y < vault.Height; y++)
+                {
+                    for (int x = 0; x < vault.Width; x++)
+                    {
+                        var p = new TilePos(x, y);
+                        if (vault.TileAt(p) != TileType.Pit)
+                        {
+                            continue;
+                        }
+
+                        for (int d = 0; d < 4; d++)
+                        {
+                            var dir = (Dir)d;
+                            TileType beside = vault.TileAt(p.Step(dir));
+                            if (beside != TileType.Pit && beside != TileType.Wall)
+                            {
+                                GameObject edge = Instantiate(theme.PitEdge, SimPose.TileCenter(p), SimPose.Facing(dir), glows);
+                                AddTileGlow(edge, ReadableKind.PitEdge, p, lighting.PitEdgeColor);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (theme.EntranceGlow != null)
+            {
+                GameObject entrance = Instantiate(theme.EntranceGlow, SimPose.TileCenter(vault.Entrance), Quaternion.identity, glows);
+                _entranceGlow = AddTileGlow(entrance, ReadableKind.Entrance, vault.Entrance, lighting.EntranceColor);
+            }
+        }
+
+        private ReadableGlow AddTileGlow(GameObject go, ReadableKind kind, TilePos tile, Color color)
+        {
+            ReadableGlow glow = go.GetComponent<ReadableGlow>();
+            if (glow == null) // not ??: a missing component is Unity's fake null
+            {
+                glow = go.AddComponent<ReadableGlow>();
+            }
+
+            glow.Kind = kind;
+            glow.SetColor(color);
+            _tileGlows.Add((glow, tile));
+            return glow;
+        }
+
+        /// <summary>Pit edges and the entrance: readable in the dark; the entrance pulses, brighter when Wick carries loot.</summary>
+        private void SyncTileGlows()
+        {
+            LightingProfile lighting = _mask.Profile;
+            foreach ((ReadableGlow glow, TilePos tile) in _tileGlows)
+            {
+                glow.Apply(_mask.IsVisible(tile), lighting);
+            }
+
+            if (_entranceGlow != null)
+            {
+                float pulse = 0.8f + 0.2f * Mathf.Sin(Time.time * 2.2f);
+                float loot = Context.Current.Wick.CarriedPiles > 0 ? lighting.EntranceLootBoost : 1f;
+                Color c = lighting.EntranceColor;
+                c.a = 0.55f;
+                _entranceGlow.SetColor(c, pulse * loot);
+            }
+        }
+
         private void Route(SimEvent e)
         {
             if (e.EntityId > 0)
@@ -215,6 +323,8 @@ namespace Wick.Game
         private void Clear()
         {
             _views.Clear();
+            _tileGlows.Clear();
+            _entranceGlow = null;
             _decor.Clear();
             _byObject = Array.Empty<EntityView>();
             Wick = null;

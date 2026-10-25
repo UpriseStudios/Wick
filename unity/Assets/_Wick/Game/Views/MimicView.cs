@@ -51,6 +51,14 @@ namespace Wick.Game
                 _body.localScale = new Vector3(_bodyScale.x, _bodyScale.y * breath, _bodyScale.z);
             }
 
+            // Its peeking eyes show (in the dark too) only while it winds up to bite, so they never give
+            // the disguise away early.
+            ReadableGlow eyes = Glow(ReadableKind.GuardianEyes);
+            if (eyes != null)
+            {
+                eyes.Active = Ctx.Current.Guardians[_guardian].ContactTicks > 0;
+            }
+
             if (_lid != null)
             {
                 GuardianState cur = Ctx.Current.Guardians[_guardian];

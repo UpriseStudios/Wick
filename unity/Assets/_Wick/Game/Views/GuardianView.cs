@@ -18,6 +18,9 @@ namespace Wick.Game
 
         private int _guardian = -1;
         private MaterialPropertyBlock _block;
+
+        // The owl's lantern eyes stay readable in the dark wherever the owl is.
+        protected override TilePos GlowTile => _guardian >= 0 ? Ctx.Current.Guardians[_guardian].Occupied : Def.Pos;
         private GuardianMode _shownMode = (GuardianMode)255;
 
         protected override void OnInit()

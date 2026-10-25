@@ -81,6 +81,9 @@ namespace Wick.Editor
             public Material Metal, Water, Gust, Spikes, Warning, Bell, Plate;
             public Material Owl, OwlEye, Moths, Gold, Brazier, BrazierFlame, Crate;
             public Material Overlay;
+
+            // Always readable in the dark (docs/m10-2-lighting.md): they ignore the visibility mask.
+            public Material GuardianEye, WarningGlow, GoldGlow, Blob;
         }
 
         private static Materials BuildMaterials()
@@ -101,9 +104,13 @@ namespace Wick.Editor
                 Moths = Lit("Moths", new Color(0.62f, 0.58f, 0.45f), new Color(0.12f, 0.11f, 0.06f)),
                 Gold = Lit("Gold", new Color(0.88f, 0.64f, 0.20f), new Color(0.28f, 0.19f, 0.04f)),
                 Brazier = Lit("Brazier", new Color(0.22f, 0.18f, 0.15f)),
-                BrazierFlame = FlameMaterial("BrazierFlame", ignoreMask: false),
+                BrazierFlame = FlameMaterial("BrazierFlame", ignoreMask: true), // a lit brazier is always readable
                 Crate = Lit("Crate", new Color(0.32f, 0.20f, 0.11f)),
                 Overlay = MaterialAsset("Overlay", Shader.Find("Wick/Overlay")),
+                GuardianEye = Lit("GuardianEye", new Color(0.95f, 0.85f, 0.55f), new Color(0.9f, 0.75f, 0.3f), ignoreMask: true),
+                WarningGlow = ThemeBuilder.GlowMat(MaterialsDir, "WarningGlow"),
+                GoldGlow = ThemeBuilder.GlowMat(MaterialsDir, "GoldGlow"),
+                Blob = ThemeBuilder.BlobMat(MaterialsDir, "BrazierBlob"),
             };
         }
 
@@ -262,7 +269,8 @@ namespace Wick.Editor
             registry.SpikeFloor = Save("SpikeFloor", root =>
             {
                 Box(root, "Plate", new Vector3(0f, 0.02f, 0f), new Vector3(0.9f, 0.04f, 0.9f), m.Metal);
-                GameObject warning = Box(root, "Warning", new Vector3(0f, 0.045f, 0f), new Vector3(0.92f, 0.01f, 0.92f), m.Warning);
+                GameObject warning = Box(root, "Warning", new Vector3(0f, 0.045f, 0f), new Vector3(0.92f, 0.01f, 0.92f), m.WarningGlow);
+                warning.AddComponent<ReadableGlow>().Kind = ReadableKind.TrapWarning;
                 var spikes = new GameObject("Spikes").transform;
                 spikes.SetParent(root, false);
                 for (int i = 0; i < 4; i++)
@@ -280,6 +288,8 @@ namespace Wick.Editor
             registry.SnufferBell = Save("SnufferBell", root =>
             {
                 Box(root, "Plate", new Vector3(0f, 0.03f, 0f), new Vector3(0.6f, 0.06f, 0.6f), m.Plate);
+                GameObject warning = Box(root, "Warning", new Vector3(0f, 0.065f, 0f), new Vector3(0.62f, 0.01f, 0.62f), m.WarningGlow);
+                warning.AddComponent<ReadableGlow>().Kind = ReadableKind.TrapWarning;
                 GameObject bell = Prim(PrimitiveType.Cylinder, root, "Bell", new Vector3(0f, 2.2f, 0f), new Vector3(0.7f, 0.35f, 0.7f), m.Bell);
                 BellView view = root.gameObject.AddComponent<BellView>();
                 Set(view, "_bell", bell.transform);
@@ -288,7 +298,8 @@ namespace Wick.Editor
             registry.NightOwl = Save("NightOwl", root =>
             {
                 Box(root, "Body", new Vector3(0f, 0.4f, 0f), new Vector3(0.5f, 0.8f, 0.4f), m.Owl);
-                GameObject eye = Prim(PrimitiveType.Sphere, root, "Eye", new Vector3(0f, 0.65f, 0.22f), Vector3.one * 0.2f, m.OwlEye);
+                GameObject eye = Prim(PrimitiveType.Sphere, root, "Eye", new Vector3(0f, 0.65f, 0.22f), Vector3.one * 0.2f, m.GuardianEye);
+                eye.AddComponent<ReadableGlow>().Kind = ReadableKind.GuardianEyes; // lantern eyes, readable in the dark
                 GuardianView view = root.gameObject.AddComponent<GuardianView>();
                 Set(view, "_modeIndicator", eye.GetComponent<Renderer>());
             });
@@ -312,16 +323,28 @@ namespace Wick.Editor
             {
                 GameObject pile = Box(root, "Pile", new Vector3(0f, 0.25f, 0f), new Vector3(0.35f, 0.25f, 0.35f), m.Gold);
                 pile.transform.localRotation = Quaternion.Euler(0f, 45f, 0f);
+                GameObject twinkle = Prim(PrimitiveType.Sphere, root, "Twinkle", new Vector3(0.08f, 0.62f, 0.05f), Vector3.one * 0.08f, m.GoldGlow);
+                twinkle.AddComponent<ReadableGlow>().Kind = ReadableKind.Treasure;
                 TreasureView view = root.gameObject.AddComponent<TreasureView>();
                 Set(view, "_pile", pile.transform);
+                Set(view, "_twinkle", twinkle.transform);
             });
 
             registry.Brazier = Save("Brazier", root =>
             {
                 Box(root, "Plaque", new Vector3(0f, 0.8f, 0.04f), new Vector3(0.4f, 0.4f, 0.08f), m.Brazier);
                 GameObject flame = Prim(PrimitiveType.Sphere, root, "Flame", new Vector3(0f, 1.05f, 0.14f), Vector3.one * 0.22f, m.BrazierFlame);
+                flame.AddComponent<ReadableGlow>().Kind = ReadableKind.Brazier;
+
+                // The light blob on the floor in front (the root sits on the wall face, +Z into the room).
+                var blob = new GameObject("Blob");
+                blob.transform.SetParent(root, false);
+                blob.transform.localPosition = new Vector3(0f, 0.02f, 0.6f);
+                ThemeBuilder.Quad(blob.transform, Vector3.zero, Vector3.one, m.Blob);
+                blob.AddComponent<ReadableGlow>().Kind = ReadableKind.Brazier;
                 BrazierView view = root.gameObject.AddComponent<BrazierView>();
                 Set(view, "_flame", flame.transform);
+                Set(view, "_blob", blob.transform);
             });
 
             registry.Crate = Save("Crate", root =>
@@ -413,24 +436,31 @@ namespace Wick.Editor
             var panel = AssetDatabase.LoadAssetAtPath<PanelSettings>(UiDir + "/RaidPanelSettings.asset");
             var overlayMaterial = AssetDatabase.LoadAssetAtPath<Material>(MaterialsDir + "/Overlay.mat");
 
-            // Dark vault: gradient ambient only, no directional light; Wick's flame is the light.
-            RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.11f, 0.10f, 0.14f);
-            RenderSettings.ambientEquatorColor = new Color(0.07f, 0.06f, 0.08f);
-            RenderSettings.ambientGroundColor = new Color(0.03f, 0.03f, 0.04f);
+            // Dark vault (docs/m10-2-lighting.md): gradient ambient and a very dim cool main light, both
+            // set from the theme's LightingProfile when a vault loads; Wick's flame is the light.
+            LightingProfile defaults = LightingProfile.Default();
+            defaults.ApplyAmbient();
+            Object.DestroyImmediate(defaults);
             RenderSettings.skybox = null;
             RenderSettings.fog = false;
+            var mainLightGo = new GameObject("Main Light");
+            Light mainLight = mainLightGo.AddComponent<Light>();
+            mainLight.type = LightType.Directional;
+            mainLight.shadows = LightShadows.None;
+            mainLight.color = new Color(0.357f, 0.42f, 0.604f);
+            mainLight.intensity = 0.15f;
+            mainLightGo.transform.rotation = Quaternion.Euler(75f, 30f, 0f);
 
             var raid = new GameObject("Raid");
             RaidRunner runner = raid.AddComponent<RaidRunner>();
             VisibilityMask mask = raid.AddComponent<VisibilityMask>();
             Set(mask, "_runner", runner);
-            Set(mask, "_tuning", raidTuning);
             VaultView vaultView = raid.AddComponent<VaultView>();
             Set(vaultView, "_runner", runner);
             Set(vaultView, "_registry", registry);
             Set(vaultView, "_mask", mask);
             Set(vaultView, "_tuning", raidTuning);
+            Set(vaultView, "_mainLight", mainLight);
             RaidInput input = raid.AddComponent<RaidInput>();
             Set(input, "_runner", runner);
             Set(input, "_tuning", inputTuning);

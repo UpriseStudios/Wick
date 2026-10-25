@@ -25,6 +25,10 @@ MonoBehaviour:
   Pit: {fileID: 9118177770379579636, guid: 61535b06b8b34b34494cb02bd2c0cff3, type: 3}
   Ice: {fileID: 662604246714435549, guid: df56634cc2a47a44d9c000f00f1814e9, type: 3}
   EntranceArch: {fileID: 6556796128905281262, guid: a404c8082e6a97b46b19cb5c3eea77f4, type: 3}
+  Lighting: {fileID: 11400000, guid: d09961a1bcc42b24585505d3fcf524d8, type: 2}
+  Sconce: {fileID: 1104455821969713641, guid: f08ec4d556ced114da0e0ae103bec209, type: 3}
+  PitEdge: {fileID: 244262407840619001, guid: 3fa9730fef559e64ea9e70584f78a191, type: 3}
+  EntranceGlow: {fileID: 346287402655235202, guid: 3608a28b885e0ae4f87d5b695f397b1c, type: 3}
   AmbientSky: {r: 0.06, g: 0.05, b: 0.07, a: 1}
   AmbientEquator: {r: 0.035, g: 0.03, b: 0.035, a: 1}
   AmbientGround: {r: 0.015, g: 0.012, b: 0.012, a: 1}

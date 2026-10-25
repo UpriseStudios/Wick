@@ -2,17 +2,13 @@ using UnityEngine;
 
 namespace Wick.Game
 {
-    /// <summary>Presentation tuning for the raid scene. Never affects the sim.</summary>
+    /// <summary>
+    /// Presentation tuning for the raid scene. Never affects the sim. Lighting (darkness levels,
+    /// Wick's flame) lives in the vault theme's LightingProfile.
+    /// </summary>
     [CreateAssetMenu(menuName = "Wick/Raid Tuning", fileName = "RaidTuning")]
     public sealed class RaidTuning : ScriptableObject
     {
-        [Header("Visibility")]
-        [Tooltip("Tiles outside Wick's light show as this fraction of their colour (0 = pitch black).")]
-        [Range(0f, 1f)] public float UnlitBrightness = 0.04f;
-
-        [Tooltip("Flat light added to lit tiles so they always read brighter than unlit ones.")]
-        [Range(0f, 1f)] public float LitBoost = 0.06f;
-
         [Header("Camera")]
         [Tooltip("Degrees below horizontal.")]
         public float CameraPitch = 55f;
@@ -30,15 +26,6 @@ namespace Wick.Game
 
         [Header("Raid flow")]
         public float ScoutSeconds = 5f;
-
-        [Header("Flame light")]
-        public Color FlameColor = new Color(1f, 0.62f, 0.3f);
-        public float FlameIntensity = 4f;
-
-        [Tooltip("World units of light range per tile of sim light radius.")]
-        public float FlameRangePerTile = 2f;
-
-        public float FlameSmoothTime = 0.12f;
 
         [Header("Reactions")]
         [Tooltip("Fear is 0 at this many tiles from the nearest danger, 1 when on it.")]

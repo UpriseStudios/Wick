@@ -151,6 +151,7 @@ GameObject:
   - component: {fileID: 6660367218322493692}
   - component: {fileID: 8877737278667263068}
   - component: {fileID: 7453472882366898490}
+  - component: {fileID: 1870777947821019838}
   m_Layer: 0
   m_Name: Eye
   m_TagString: Untagged
@@ -206,7 +207,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: abe466e22069e394e8f9fbe5e376f2eb, type: 2}
+  - {fileID: 2100000, guid: a8503d3f7c8b42a41b21afe597e96301, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -230,3 +231,17 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1870777947821019838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2008940167620929425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fd45b2c921e34d49a83bbfa5cb6a4ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Wick.Game::Wick.Game.ReadableGlow
+  Kind: 2
+  Strength: 1

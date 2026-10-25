@@ -16,6 +16,8 @@ namespace Wick.Game
         private int _guardian = -1;
         private Vector3 _home;
 
+        protected override TilePos GlowTile => _guardian >= 0 ? Ctx.Current.Guardians[_guardian].Occupied : Def.Pos;
+
         protected override void OnInit()
         {
             GuardianState[] all = Ctx.Runner.Sim.State.Guardians;
@@ -67,6 +69,13 @@ namespace Wick.Game
             }
 
             _body.localScale = scale;
+
+            // His eyes glow, readable in the dark, whenever he's awake.
+            ReadableGlow eyes = Glow(ReadableKind.GuardianEyes);
+            if (eyes != null)
+            {
+                eyes.Active = cur.Mode == GuardianMode.Chase || cur.Tile != Def.Pos || cur.Moving;
+            }
             if (wiggle != 0f)
             {
                 _body.rotation *= Quaternion.Euler(0f, wiggle, 0f);

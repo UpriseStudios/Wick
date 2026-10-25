@@ -161,6 +161,32 @@ namespace Wick.Editor
                 Box(t, new Vector3(0.46f, 0.7f, 0f), new Vector3(0.08f, 1.4f, 0.2f), door);
                 Box(t, new Vector3(0f, 1.42f, 0f), new Vector3(1f, 0.1f, 0.2f), door);
             });
+            // Lighting (docs/m10-2-lighting.md). Classic Treasury's profile is locked first; other themes
+            // use its values until their own profiles are made (M10.2b). Created once, then tuned in place.
+            theme.Lighting = spec.Id == ThemeCatalog.DefaultId
+                ? LoadOrCreate<LightingProfile>(ThemesDir + "/lighting_" + spec.Name + ".asset")
+                : null;
+            Material bracket = Mat(dir, "sconce_bracket", new Color(0.16f, 0.13f, 0.11f));
+            Material sconceFlame = FlameMat(dir, "sconce_flame");
+            theme.Sconce = Piece("sconce", t =>
+            {
+                // Hangs on the wall face it's placed on, lighting the floor towards +Z.
+                Box(t, new Vector3(0f, 0.95f, 0.04f), new Vector3(0.12f, 0.22f, 0.08f), bracket);
+                Box(t, new Vector3(0f, 1.05f, 0.12f), new Vector3(0.16f, 0.05f, 0.16f), bracket);
+                Sphere(t, new Vector3(0f, 1.16f, 0.12f), new Vector3(0.1f, 0.16f, 0.1f), sconceFlame);
+            });
+            Material pitGlow = GlowMat(dir, "pit_edge_glow");
+            theme.PitEdge = Save(dir + "/pit_edge.prefab", t =>
+            {
+                // A faint strip along the pit's +Z edge; VaultView turns one to face each open side.
+                Box(t, new Vector3(0f, 0.01f, 0.46f), new Vector3(1f, 0.03f, 0.08f), pitGlow);
+                t.gameObject.AddComponent<ReadableGlow>().Kind = ReadableKind.PitEdge;
+            });
+            theme.EntranceGlow = Save(dir + "/entrance_glow.prefab", t =>
+            {
+                Quad(t, new Vector3(0f, 0.02f, 0f), Vector3.one, BlobMat(dir, "entrance_blob"));
+                t.gameObject.AddComponent<ReadableGlow>().Kind = ReadableKind.Entrance;
+            });
             theme.StandIn = real == 0;
             EditorUtility.SetDirty(theme);
             return theme;
@@ -207,9 +233,66 @@ namespace Wick.Editor
             return mat;
         }
 
+        /// <summary>A flame that follows the visibility mask (a sconce isn't on the always-readable list).</summary>
+        private static Material FlameMat(string dir, string name)
+        {
+            Material mat = MatWith(dir, name, Shader.Find("Wick/Flame"));
+            mat.SetFloat("_IgnoreMask", 0f);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        /// <summary>An always-readable glow: near-black body, emission (set per renderer by ReadableGlow), ignores the mask.</summary>
+        public static Material GlowMat(string dir, string name)
+        {
+            Material mat = MatWith(dir, name, Shader.Find("Wick/StylisedLit"));
+            mat.SetColor("_BaseColor", new Color(0.02f, 0.02f, 0.02f));
+            mat.SetColor("_EmissionColor", Color.white);
+            mat.SetFloat("_IgnoreMask", 1f);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        /// <summary>A soft additive floor pool (Wick/LightBlob).</summary>
+        public static Material BlobMat(string dir, string name)
+        {
+            return MatWith(dir, name, Shader.Find("Wick/LightBlob"));
+        }
+
+        private static Material MatWith(string dir, string name, Shader shader)
+        {
+            string path = dir + "/" + name + ".mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+
+            mat.shader = shader;
+            return mat;
+        }
+
+        private static void Sphere(Transform parent, Vector3 position, Vector3 scale, Material material)
+        {
+            Prim(PrimitiveType.Sphere, parent, position, scale, material);
+        }
+
+        /// <summary>A quad lying flat on the floor (facing up).</summary>
+        public static void Quad(Transform parent, Vector3 position, Vector3 scale, Material material)
+        {
+            GameObject go = Prim(PrimitiveType.Quad, parent, position, scale, material);
+            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+        }
+
         private static void Box(Transform parent, Vector3 position, Vector3 scale, Material material)
         {
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            Prim(PrimitiveType.Cube, parent, position, scale, material);
+        }
+
+        private static GameObject Prim(PrimitiveType type, Transform parent, Vector3 position, Vector3 scale, Material material)
+        {
+            GameObject go = GameObject.CreatePrimitive(type);
             Object.DestroyImmediate(go.GetComponent<Collider>());
             go.transform.SetParent(parent, false);
             go.transform.localPosition = position;
@@ -218,6 +301,7 @@ namespace Wick.Editor
             r.sharedMaterial = material;
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
+            return go;
         }
 
         private static GameObject Save(string path, System.Action<Transform> build)
