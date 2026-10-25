@@ -84,6 +84,48 @@
       "stars": 365
     }
   ],
+  "defenceBuilds": {
+    "snuffer_bell": {
+      "gold": 2400,
+      "minutes": 120
+    },
+    "night_owl": {
+      "gold": 2400,
+      "minutes": 120
+    },
+    "wax_moths": {
+      "gold": 5400,
+      "minutes": 180
+    },
+    "ice_tiles": {
+      "gold": 5400,
+      "minutes": 180
+    },
+    "swing_axe": {
+      "gold": 9600,
+      "minutes": 240
+    },
+    "mimic_chest": {
+      "gold": 15000,
+      "minutes": 300
+    },
+    "sleepy_troll": {
+      "gold": 21600,
+      "minutes": 360
+    },
+    "fan": {
+      "gold": 29400,
+      "minutes": 420
+    },
+    "gate": {
+      "gold": 38400,
+      "minutes": 480
+    },
+    "sir_whiskers": {
+      "gold": 60000,
+      "minutes": 600
+    }
+  },
   "defenceUpgrades": [
     {
       "level": 2,

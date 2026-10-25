@@ -26,6 +26,9 @@ namespace Wick.Economy
         /// <summary>The extra decoy (Wick upgrade): each level adds a decoy per raid.</summary>
         public List<DecoyStep> Decoys { get; set; } = new List<DecoyStep>();
 
+        /// <summary>Building a defence for the first time (level 0 to 1), by type name; starter defences need none.</summary>
+        public Dictionary<string, DefenceBuild> DefenceBuilds { get; set; } = new Dictionary<string, DefenceBuild>();
+
         /// <summary>The cost of raising any defence to each level (2 to 5); the same for every defence.</summary>
         public List<DefenceStep> DefenceUpgrades { get; set; } = new List<DefenceStep>();
         public WorkshopConfig Workshops { get; set; } = new WorkshopConfig();
@@ -56,6 +59,12 @@ namespace Wick.Economy
         public LanternStep LanternTo(int level)
         {
             return Lantern.Find(s => s.Level == level);
+        }
+
+        /// <summary>The first build of a defence, or null when it needs none (a starter defence).</summary>
+        public DefenceBuild BuildOf(Sim.ObjectType type)
+        {
+            return DefenceBuilds != null && DefenceBuilds.TryGetValue(Sim.ObjectTypes.Name(type), out DefenceBuild b) ? b : null;
         }
 
         public DecoyStep DecoyTo(int level)
@@ -128,7 +137,8 @@ namespace Wick.Economy
                 return false;
             }
 
-            return Sim.ObjectTypes.IsUpgradable(type);
+            // Sir Whiskers has no levels yet, but he is still built once.
+            return Sim.ObjectTypes.IsUpgradable(type) || type == Sim.ObjectType.SirWhiskers;
         }
     }
 
@@ -206,9 +216,45 @@ namespace Wick.Economy
     /// <summary>The defence levels a player owns, as a vault built at some Vault Level gets them.</summary>
     public static class OwnedDefences
     {
+        /// <summary>Built from the start: no first build needed.</summary>
+        public static bool IsStarter(Sim.ObjectType type)
+        {
+            switch (type)
+            {
+                case Sim.ObjectType.DripPipe:
+                case Sim.ObjectType.Bellows:
+                case Sim.ObjectType.SpikeFloor:
+                case Sim.ObjectType.Treasure:
+                case Sim.ObjectType.Brazier:
+                case Sim.ObjectType.Crate:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// A defence's level: what's recorded, else 1 for a starter defence and 0 (not built yet) for
+        /// the rest. Levers come with their gates.
+        /// </summary>
         public static int Level(IDictionary<string, int> owned, Sim.ObjectType type)
         {
-            return owned != null && owned.TryGetValue(Sim.ObjectTypes.Name(type), out int level) && level > 0 ? level : 1;
+            if (type == Sim.ObjectType.Lever)
+            {
+                type = Sim.ObjectType.Gate;
+            }
+
+            if (owned != null && owned.TryGetValue(Sim.ObjectTypes.Name(type), out int level) && level > 0)
+            {
+                return level;
+            }
+
+            return IsStarter(type) ? 1 : 0;
+        }
+
+        public static bool IsBuilt(IDictionary<string, int> owned, Sim.ObjectType type)
+        {
+            return Level(owned, type) >= 1;
         }
 
         /// <summary>Owned levels capped for vaultLevel. Read in type order, never by iterating the dictionary.</summary>
@@ -228,6 +274,13 @@ namespace Wick.Economy
 
             return levels;
         }
+    }
+
+    /// <summary>Building a defence for the first time: gold and workshop time.</summary>
+    public sealed class DefenceBuild
+    {
+        public long Gold { get; set; }
+        public int Minutes { get; set; }
     }
 
     /// <summary>

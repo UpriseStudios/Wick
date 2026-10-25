@@ -82,6 +82,9 @@ namespace Wick.Game
         /// </summary>
         public DefenceLevels DefenceLevels = DefenceLevels.Base;
 
+        /// <summary>Whether the owner has built a defence (set by the editor from the economy state; null: all built).</summary>
+        [NonSerialized] public Func<ObjectType, bool> Built;
+
         /// <summary>The run that proves this vault can be escaped (may be stale after edits).</summary>
         public ClearCheck ClearCheck;
 
@@ -572,6 +575,11 @@ namespace Wick.Game
             if (level > Level)
             {
                 return "Unlocks at Vault Level " + level;
+            }
+
+            if (Built != null && !Built(type))
+            {
+                return "Build it in Upgrades first";
             }
 
             if (type == ObjectType.Brazier && Count(type) >= VaultRules.BrazierLimit(Level))

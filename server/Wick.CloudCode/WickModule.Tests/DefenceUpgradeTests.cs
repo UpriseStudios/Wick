@@ -176,5 +176,59 @@ namespace Wick.CloudCode.Tests
             Assert.AreEqual(2, state.Defences["drip_pipe"]);
             Assert.AreEqual(2, Live("p1").LevelOf(ObjectType.DripPipe));
         }
+
+        // ---- First builds (Clash of Clans style) ----------------------------------------------------
+
+        [Test]
+        public void StarterDefences_AreBuilt_AndTheRestStartAtZero()
+        {
+            var none = new Dictionary<string, int>();
+            Assert.AreEqual(1, OwnedDefences.Level(none, ObjectType.DripPipe));
+            Assert.AreEqual(1, OwnedDefences.Level(none, ObjectType.Crate));
+            Assert.AreEqual(0, OwnedDefences.Level(none, ObjectType.NightOwl));
+            Assert.AreEqual(0, OwnedDefences.Level(none, ObjectType.Lever), "levers come with gates");
+            Assert.AreEqual(1, OwnedDefences.Level(new Dictionary<string, int> { ["gate"] = 1 }, ObjectType.Lever));
+        }
+
+        [Test]
+        public async Task ANewDefence_IsBuiltForGoldAndTime_BeforeItCanBeUpgraded()
+        {
+            await Player("p1", 3);
+            string owl = UpgradeKinds.Defence(ObjectType.NightOwl);
+            Assert.IsTrue((await Economy.StartUpgradeAsync("p1", owl)).Ok);
+            long cost = TestEconomy.Default.BuildOf(ObjectType.NightOwl).Gold;
+            Assert.AreEqual(1_000_000 - cost, _w.Get<Wallet>("p1", Keys.Wallet).Gold);
+            RunningUpgrade running = _w.Get<Upgrades>("p1", EconomyKeys.Upgrades).Running[0];
+            Assert.AreEqual(1, running.ToLevel);
+            Assert.AreEqual(TestEconomy.Default.BuildOf(ObjectType.NightOwl).Minutes * Rules.MinuteMs, running.EndsMs - running.StartedMs);
+        }
+
+        [Test]
+        public async Task PublishingAnUnbuiltDefence_IsRefused()
+        {
+            ObjectDef owl = new ObjectDef(9, ObjectType.NightOwl, new TilePos(8, 6), 0, 0, 0, 0, new TilePos[0]);
+            await Player("p1", 3);
+            PublishResult refused = await Publish("p1", Halls(3, DefenceLevels.Base, owl));
+            Assert.IsFalse(refused.Ok);
+            StringAssert.Contains("isn't built yet", refused.Reason);
+
+            await Player("p1", 3, new Dictionary<string, int> { ["night_owl"] = 1 });
+            Assert.IsTrue((await Publish("p1", Halls(3, DefenceLevels.Base, owl))).Ok);
+        }
+
+        [Test]
+        public async Task SirWhiskers_IsBuiltOnce_ButHasNoUpgradesYet()
+        {
+            await Player("p1", 10);
+            string cat = UpgradeKinds.Defence(ObjectType.SirWhiskers);
+            EconomyResult start = await Economy.StartUpgradeAsync("p1", cat);
+            Assert.IsTrue(start.Ok, "start: " + start.Reason);
+            EconomyResult finish = await Economy.FinishUpgradeAsync("p1", cat, true);
+            Assert.IsTrue(finish.Ok, "finish: " + finish.Reason);
+            EconomyResult again = await Economy.StartUpgradeAsync("p1", cat);
+            Assert.IsFalse(again.Ok);
+            StringAssert.Contains("no upgrades yet", again.Reason);
+        }
+
     }
 }

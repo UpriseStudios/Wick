@@ -782,6 +782,7 @@ namespace Wick.Game
 
             // The draft is built and tested with the levels the server will stamp on it.
             Draft.DefenceLevels = OwnedDefences.For(EconomyClient.KnownDefences, Draft.Level);
+            Draft.Built = type => OwnedDefences.IsBuilt(EconomyClient.KnownDefences, type);
             Issues = VaultValidator.Validate(Draft.ToVaultDef());
             _view.Build(Drawn(), Issues, new EditorView.Marks
             {

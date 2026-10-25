@@ -40,6 +40,21 @@ namespace Wick.CloudCode
                 return fail;
             }
 
+            // Every defence in the vault must have been built (Clash of Clans style first builds).
+            for (int i = 0; i < passed.Vault.ObjectCount; i++)
+            {
+                ObjectType type = passed.Vault.GetObject(i).Type;
+                if (!OwnedDefences.IsBuilt(owned.Defences, type))
+                {
+                    return PublishResult.Fail(type + " isn't built yet: build it in Upgrades first");
+                }
+            }
+
+            if (VaultRules.IceTileCount(passed.Vault) > 0 && !OwnedDefences.IsBuilt(owned.Defences, ObjectType.IceTiles))
+            {
+                return PublishResult.Fail("Ice Tiles aren't built yet: build them in Upgrades first");
+            }
+
             // Trophies are earned from achievements: only ones the owner has can go on display.
             for (int i = 0; i < passed.Vault.DecorationCount; i++)
             {

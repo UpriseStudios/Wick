@@ -255,27 +255,49 @@ namespace Wick.CloudCode
                     }
 
                     int next = upgrades.Levels.DefenceLevel(defence) + 1;
-                    DefenceStep step = cfg.DefenceTo(next);
-                    if (step == null)
+                    if (next > 1 && !ObjectTypes.IsUpgradable(defence))
                     {
-                        return new Plan<EconomyResult>(EconomyResult.Fail("That defence is at the top level"));
+                        return new Plan<EconomyResult>(EconomyResult.Fail(defence + " has no upgrades yet"));
                     }
 
-                    // Capped by Vault Level, so at any Vault Level everyone's defences top out the same.
-                    if (next > DefenceLevels.Cap(upgrades.Levels.VaultLevel))
+                    if (next == 1)
                     {
-                        return new Plan<EconomyResult>(EconomyResult.Fail("Level " + next + " needs Vault Level " + (2 * next - 1)));
-                    }
+                        // Its first build, Clash of Clans style: gold and workshop time before it can be placed.
+                        DefenceBuild build = cfg.BuildOf(defence);
+                        long gold = build?.Gold ?? 0;
+                        if (wallet.Gold < gold)
+                        {
+                            return new Plan<EconomyResult>(EconomyResult.Fail("Needs " + gold + " gold to build"));
+                        }
 
-                    if (wallet.Gold < step.Gold || wallet.Wax < step.Wax)
+                        wallet.Gold -= gold;
+                        toLevel = 1;
+                        minutes = build?.Minutes ?? 0;
+                    }
+                    else
                     {
-                        return new Plan<EconomyResult>(EconomyResult.Fail("Needs " + step.Gold + " gold and " + step.Wax + " wax"));
-                    }
+                        DefenceStep step = cfg.DefenceTo(next);
+                        if (step == null)
+                        {
+                            return new Plan<EconomyResult>(EconomyResult.Fail("That defence is at the top level"));
+                        }
 
-                    wallet.Gold -= step.Gold;
-                    wallet.Wax -= step.Wax;
-                    toLevel = step.Level;
-                    minutes = step.Minutes;
+                        // Capped by Vault Level, so at any Vault Level everyone's defences top out the same.
+                        if (next > DefenceLevels.Cap(upgrades.Levels.VaultLevel))
+                        {
+                            return new Plan<EconomyResult>(EconomyResult.Fail("Level " + next + " needs Vault Level " + (2 * next - 1)));
+                        }
+
+                        if (wallet.Gold < step.Gold || wallet.Wax < step.Wax)
+                        {
+                            return new Plan<EconomyResult>(EconomyResult.Fail("Needs " + step.Gold + " gold and " + step.Wax + " wax"));
+                        }
+
+                        wallet.Gold -= step.Gold;
+                        wallet.Wax -= step.Wax;
+                        toLevel = step.Level;
+                        minutes = step.Minutes;
+                    }
                 }
                 else
                 {

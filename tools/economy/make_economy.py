@@ -44,6 +44,15 @@ DEFENCE_UPGRADES = [
     (5, 10_000, 300, 720),
 ]
 
+# Building a defence for the first time (Clash of Clans style): every trap and guardian beyond the
+# starter three (Drip Pipe, Bellows, Spike Floor) is built once in a workshop before it can be
+# placed: gold 600 x its unlock level squared, 1 hour per unlock level.
+DEFENCE_BUILDS = {
+    t: {"gold": 600 * lvl * lvl, "minutes": 60 * lvl}
+    for t, lvl in [("snuffer_bell", 2), ("night_owl", 2), ("wax_moths", 3), ("ice_tiles", 3), ("swing_axe", 4),
+                   ("mimic_chest", 5), ("sleepy_troll", 6), ("fan", 7), ("gate", 8), ("sir_whiskers", 10)]
+}
+
 # Lantern: a slightly bigger light radius per level (raid effect wired in M10). Each level needs a
 # Vault Level, so the most anyone can have at a given Vault Level is the same for everyone.
 LANTERN = [
@@ -102,6 +111,7 @@ ECONOMY = {
     # and raiders get 5 free skips an hour.
     "matchmaking": {"meanSnuffPercent": 85, "meanWindow": 20, "meanWeightPercent": 25, "freeSkipsPerHour": 5},
     "vaultLevels": [{"level": l, "gold": g, "minutes": m, "stars": s} for (l, g, m, s) in VAULT_LEVELS],
+    "defenceBuilds": DEFENCE_BUILDS,
     "defenceUpgrades": [{"level": l, "gold": g, "wax": x, "minutes": m} for (l, g, x, m) in DEFENCE_UPGRADES],
     "lantern": [{"level": l, "wax": w, "minutes": m, "minVaultLevel": v, "lightBonus": b} for (l, w, m, v, b) in LANTERN],
     "decoys": [{"level": l, "wax": w, "minutes": m, "minVaultLevel": v} for (l, w, m, v) in DECOYS],

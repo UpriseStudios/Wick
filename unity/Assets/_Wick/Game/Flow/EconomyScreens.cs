@@ -182,12 +182,29 @@ namespace Wick.Game
             for (int i = 0; i < ObjectTypes.Count; i++)
             {
                 var type = (ObjectType)i;
-                if (!ObjectTypes.IsUpgradable(type) || VaultRules.RequiredLevel(type) > _state.VaultLevel)
+                bool builds = ObjectTypes.IsUpgradable(type) || type == ObjectType.SirWhiskers;
+                if (!builds || VaultRules.RequiredLevel(type) > _state.VaultLevel)
                 {
                     continue;
                 }
 
                 int level = OwnedDefences.Level(_state.Defences, type);
+                if (level == 0)
+                {
+                    // Not built yet: its first build, before it can be placed.
+                    DefenceBuild b = cfg.BuildOf(type);
+                    long gold = b?.Gold ?? 0;
+                    rows.Add(UpgradeRow(UpgradeKinds.Defence(type), EditorUI.Name(type) + " (not built)",
+                        "Build: " + gold + " gold, " + Duration((b?.Minutes ?? 0) * 60_000L), _state.Gold >= gold, cfg));
+                    continue;
+                }
+
+                if (!ObjectTypes.IsUpgradable(type))
+                {
+                    rows.Add(new RaidUI.SheetRow { Text = EditorUI.Name(type) + "\nBuilt (upgrades come later)" });
+                    continue;
+                }
+
                 DefenceStep d = cfg.DefenceTo(level + 1);
                 string next = d == null ? null
                     : d.Level > cap ? "Level " + d.Level + " needs Vault Level " + (2 * d.Level - 1)
