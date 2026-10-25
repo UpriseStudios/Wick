@@ -7,8 +7,9 @@ namespace Wick.Bots
     /// <summary>
     /// Procedural vault layouts for any grid in the Vault Level table: rooms in horizontal bands,
     /// the entrance in the middle of the bottom wall, the hoard in the top band. Each band is one or
-    /// two rooms (a door in the wall between), and bands connect through one or two doors. Every
-    /// floor tile is reachable from the entrance. Deterministic for a given Random.
+    /// two rooms (a door in the wall between), and bands connect through one door at alternating
+    /// ends, so the way in winds back and forth (VaultRules.MinRouteTiles). Every floor tile is
+    /// reachable from the entrance. Deterministic for a given Random.
     /// </summary>
     public static class LayoutGen
     {
@@ -34,8 +35,9 @@ namespace Wick.Bots
             int width = VaultRules.GridWidth(level);
             int height = VaultRules.GridHeight(level);
 
-            // Rooms (guide) from the table: 2-3 at level 1, up to 6-8 at level 10, as 2-4 bands.
-            int bands = Math.Min(4, 2 + (level - 1) / 3);
+            // Five bands on the smallest grids (12 x 16), four on the rest: deep enough for rooms
+            // that hold defences, with a route a little over VaultRules.MinRouteTiles.
+            int bands = height <= 16 ? 5 : 4;
             var layout = new Layout { Width = width, Height = height, Tiles = new TileType[width * height] };
             for (int i = 0; i < layout.Tiles.Length; i++)
             {
@@ -82,23 +84,13 @@ namespace Wick.Bots
                 y = minY - 2;
             }
 
-            // Doors between bands: each room in the upper band gets one into the band below.
-            for (int b = 1; b < bands; b++)
+            // Doors between bands, one each, at alternating ends: the route crosses every band.
+            int side = rng.Next(2);
+            for (int b = 1; b < bands; b++, side = 1 - side)
             {
-                List<TileRect> below = bandRooms[b - 1];
-                foreach (TileRect upper in bandRooms[b])
-                {
-                    int wallY = upper.MaxY + 1;
-                    for (int tries = 0; tries < 30; tries++)
-                    {
-                        int x = rng.Next(upper.MinX, upper.MaxX + 1);
-                        if (below.Exists(r => x >= r.MinX && x <= r.MaxX))
-                        {
-                            layout.Set(new TilePos(x, wallY), TileType.Door);
-                            break;
-                        }
-                    }
-                }
+                int wallY = bandRooms[b][0].MaxY + 1;
+                int x = side == 0 ? 1 + rng.Next(2) : width - 2 - rng.Next(2);
+                layout.Set(new TilePos(x, wallY), TileType.Door);
             }
 
             layout.Entrance = new TilePos(width / 2, height - 1);

@@ -20,15 +20,17 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 VAULT_LEVELS = [
     # to level, gold, minutes, stars. Retuned 2026-10-25 from tools/balance (with defence first
     # builds as a second gold sink): about 70-80 days to Vault Level 10 for a daily free player.
+    # Levels 3-5, 9 and 10 eased the same day after winding routes (VaultRules.MinRouteTiles) cut
+    # raid income at Levels 8-9.
     (2, 3_000, 10, 25),
-    (3, 4_500, 60, 80),
-    (4, 6_500, 180, 160),
-    (5, 21_000, 480, 270),
+    (3, 3_500, 60, 80),
+    (4, 5_750, 180, 160),
+    (5, 19_000, 480, 270),
     (6, 31_000, 720, 400),
     (7, 56_000, 1_080, 600),
     (8, 100_000, 1_440, 880),
-    (9, 78_000, 2_160, 1_100),
-    (10, 115_000, 2_880, 1_300),
+    (9, 60_000, 2_160, 1_100),
+    (10, 75_000, 2_880, 1_300),
 ]
 
 # Raid length in seconds by the defender's Vault Level (1 to 10): 60 s, then 75 s at Level 8 and 90 s

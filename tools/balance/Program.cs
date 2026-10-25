@@ -33,6 +33,7 @@ namespace Wick.Balance
             public int Loot;
             public int Ticks;
             public double Paid;
+            public int Route;
         }
 
         public static int Main(string[] args)
@@ -71,6 +72,7 @@ namespace Wick.Balance
                         Stars = r.Stars,
                         Loot = r.Loot,
                         Ticks = r.Ticks,
+                        Route = VaultValidator.RouteTiles(vault),
                         Paid = r.Outcome == Outcome.Escaped
                             ? Math.Min(r.Loot, cfg.Loot.CapPerLevel * lvl)
                             : cfg.Loot.ConsolationPerLevel * lvl,
@@ -188,14 +190,14 @@ namespace Wick.Balance
             sb.AppendLine();
             sb.AppendLine("## Raids per Vault Level");
             sb.AppendLine();
-            sb.AppendLine("| Vault Level | Raid length | Escaped | Snuffed | Timed out | Avg stars | Avg loot (escapes) | Gold paid per raid | Fastest escape | Median escape | Slowest escape |");
-            sb.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
+            sb.AppendLine("| Vault Level | Raid length | Median route | Escaped | Snuffed | Timed out | Avg stars | Avg loot (escapes) | Gold paid per raid | Fastest escape | Median escape | Slowest escape |");
+            sb.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
             for (int level = 1; level <= VaultRules.MaxVaultLevel; level++)
             {
                 List<Raid> rs = perLevel[level];
                 if (rs.Count == 0)
                 {
-                    sb.AppendLine("| " + level + " | no vaults generated | | | | | | | | | |");
+                    sb.AppendLine("| " + level + " | no vaults generated | | | | | | | | | | |");
                     flags.Add("Vault Level " + level + ": no valid vaults generated");
                     continue;
                 }
@@ -205,7 +207,7 @@ namespace Wick.Balance
                 string Pct(Outcome o) => (rs.Count(r => r.Outcome == o) * 100.0 / rs.Count).ToString("0", CultureInfo.InvariantCulture) + "%";
                 string Sec(int ticks) => (ticks / (double)SimTuning.TicksPerSecond).ToString("0.0", CultureInfo.InvariantCulture) + " s";
                 int raidSeconds = cfg.Raid.TicksFor(level) / SimTuning.TicksPerSecond;
-                sb.AppendLine("| " + level + " | " + raidSeconds + " s | " + Pct(Outcome.Escaped) + " | " + Pct(Outcome.Snuffed) + " | " +
+                sb.AppendLine("| " + level + " | " + raidSeconds + " s | " + rs.OrderBy(r => r.Route).ElementAt(rs.Count / 2).Route + " tiles | " + Pct(Outcome.Escaped) + " | " + Pct(Outcome.Snuffed) + " | " +
                     Pct(Outcome.TimedOut) + " | " + rs.Average(r => r.Stars).ToString("0.00", CultureInfo.InvariantCulture) + " | " +
                     (esc.Count == 0 ? "-" : esc.Average(r => r.Loot).ToString("0", CultureInfo.InvariantCulture)) + " | " +
                     rs.Average(r => r.Paid).ToString("0", CultureInfo.InvariantCulture) + " | " +

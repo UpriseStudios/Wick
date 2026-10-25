@@ -144,7 +144,8 @@ namespace Wick.Bots
 
                 case ObjectType.Gate:
                 {
-                    // A gate in a door between bands, its lever in a room on the entrance side.
+                    // A gate in a door between bands, with a lever near it on each side: gates close
+                    // behind Wick, and the owner's clear-check has to get back out (levers are free).
                     List<TilePos> doors = Tiles(layout, TileType.Door).Where(d => !used.Contains(d) &&
                         layout.At(d.Step(Dir.N)) != TileType.Wall && layout.At(d.Step(Dir.S)) != TileType.Wall).ToList();
                     if (doors.Count == 0)
@@ -153,19 +154,25 @@ namespace Wick.Bots
                     }
 
                     TilePos door = doors[rng.Next(doors.Count)];
-                    List<TilePos> below = layout.Rooms.Where(r => r.MinY > door.Y).SelectMany(r => FloorIn(layout, r))
-                        .Where(p => !used.Contains(p)).ToList();
-                    if (below.Count == 0)
+                    List<TilePos> Near(Func<TileRect, bool> side) => layout.Rooms.Where(side).SelectMany(r => FloorIn(layout, r))
+                        .Where(p => !used.Contains(p) && Math.Abs(p.X - door.X) + Math.Abs(p.Y - door.Y) <= 6).ToList();
+                    List<TilePos> below = Near(r => r.MinY > door.Y);
+                    List<TilePos> above = Near(r => r.MaxY < door.Y);
+                    if (below.Count == 0 || above.Count == 0)
                     {
                         return 0;
                     }
 
                     int gate = id++;
                     objects.Add(new ObjectDef(gate, ObjectType.Gate, door, 0, 0, 0, 0, new TilePos[0]));
-                    TilePos lever = below[rng.Next(below.Count)];
-                    objects.Add(new ObjectDef(id++, ObjectType.Lever, lever, 0, 0, 0, 0, new TilePos[0], new[] { gate }));
                     used.Add(door);
-                    used.Add(lever);
+                    foreach (List<TilePos> side in new[] { below, above })
+                    {
+                        TilePos lever = side[rng.Next(side.Count)];
+                        objects.Add(new ObjectDef(id++, ObjectType.Lever, lever, 0, 0, 0, 0, new TilePos[0], new[] { gate }));
+                        used.Add(lever);
+                    }
+
                     return VaultRules.Cost(ObjectType.Gate);
                 }
             }

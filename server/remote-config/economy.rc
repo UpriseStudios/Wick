@@ -43,19 +43,19 @@
         },
         {
           "level": 3,
-          "gold": 4500,
+          "gold": 3500,
           "minutes": 60,
           "stars": 80
         },
         {
           "level": 4,
-          "gold": 6500,
+          "gold": 5750,
           "minutes": 180,
           "stars": 160
         },
         {
           "level": 5,
-          "gold": 21000,
+          "gold": 19000,
           "minutes": 480,
           "stars": 270
         },
@@ -79,13 +79,13 @@
         },
         {
           "level": 9,
-          "gold": 78000,
+          "gold": 60000,
           "minutes": 2160,
           "stars": 1100
         },
         {
           "level": 10,
-          "gold": 115000,
+          "gold": 75000,
           "minutes": 2880,
           "stars": 1300
         }
