@@ -28,6 +28,8 @@ Agreed with Jamie before M10.1a. Where they differ from the rest of this pack, t
 - **Analytics:** the `pit_fall` event and the `raid_end` fields are sent now; checking them in the dashboard waits for the analytics pass before test publishing.
 - **Edge cases added:** guardians (owl, moths, troll, Sir Whiskers) path around pits and owl patrols may not cross one; the solver, balance bot and seed generator avoid pits, and the balance generator places them; pits cost 5 build points a tile to start, tuned from the balance run.
 
+**Order (25 October 2026):** M10.2 lighting lock runs before M10.1c, so the pit visuals are made against the locked lighting. The pit edge glow is built in M10.2a with the other always-readable emissives; M10.1c does the rest of the pit presentation.
+
 ## M10.1b as built (25 October 2026)
 
 How the agreed rules were read in code (change any you disagree with):
