@@ -293,6 +293,181 @@ namespace Wick.Sim.Tests
             Assert.AreEqual(2, codes.FindAll(c => c == VaultIssueCode.ObjectOnWall).Count);
         }
 
+        // ---- Pits (docs/m10-1-pits.md) ------------------------------------------------------
+
+        [Test]
+        public void SeveralPitsOffTheRoute_AreValid()
+        {
+            VaultDef v = VaultJson.Parse(Json(Pits(6, 5, 6, 6, 7, 7, 7, 11), 1, Pile(1, 4, 1, 1)));
+            CollectionAssert.IsEmpty(VaultValidator.Validate(v));
+            Assert.AreEqual(36, VaultValidator.RouteTiles(v), "none of them is on the walk");
+            Assert.AreEqual(5 * 4, VaultRules.BuildPoints(v), "5 build points a pit");
+        }
+
+        [Test]
+        public void PitsMakeMazeWalls_LengtheningTheRoute()
+        {
+            // A pit row across the middle room, open only at x 7: the walk detours 4 tiles each way.
+            VaultDef v = VaultJson.Parse(Json(Pits(1, 6, 2, 6, 3, 6, 4, 6, 5, 6, 6, 6), 1, Pile(1, 4, 1, 1)));
+            Assert.AreEqual(44, VaultValidator.RouteTiles(v));
+            List<TilePos> path = VaultValidator.RoutePath(v);
+            Assert.AreEqual(new TilePos(10, 1), path[0], "from the entrance");
+            Assert.IsTrue(path.Contains(new TilePos(7, 6)), "through the gap in the pits");
+            CollectionAssert.IsEmpty(VaultValidator.Validate(v));
+        }
+
+        [Test]
+        public void APitLineAcrossTheOnlyCorridor_BlocksTheRoute()
+        {
+            // The east corridor is one tile wide: a pit at (10,5) cuts off the pile and the hoard.
+            List<VaultIssue> issues = VaultValidator.Validate(VaultJson.Parse(Json(Pits(10, 5), 1, Pile(1, 4, 1, 1))));
+            Assert.AreEqual(2, issues.Count, "issues: " + string.Join("; ", issues));
+            Assert.IsTrue(issues.TrueForAll(i => i.Code == VaultIssueCode.PitBlocksRoute));
+            VaultIssue pile = issues.Find(i => i.ObjectId == 1);
+            Assert.AreEqual(new TilePos(10, 5), pile.Tile, "names the pit in the way");
+            Assert.AreEqual(new TilePos(10, 5), issues.Find(i => i.ObjectId == 0).Tile, "and for the hoard room");
+            Assert.AreEqual(-1, VaultValidator.RouteTiles(VaultJson.Parse(Json(Pits(10, 5), 1, Pile(1, 4, 1, 1)))));
+        }
+
+        [Test]
+        public void APileRingedWithPits_IsCutOff_ButTheHoardIsNot()
+        {
+            // Pile (4,1) against the north wall, pits west, east and south of it.
+            List<VaultIssue> issues = VaultValidator.Validate(VaultJson.Parse(Json(Pits(3, 1, 5, 1, 4, 2), 1, Pile(1, 4, 1, 1))));
+            Assert.AreEqual(1, issues.Count, "issues: " + string.Join("; ", issues));
+            Assert.AreEqual(VaultIssueCode.PitBlocksRoute, issues[0].Code);
+            Assert.AreEqual(1, issues[0].ObjectId);
+            CollectionAssert.Contains(new[] { new TilePos(3, 1), new TilePos(4, 2) }, issues[0].Tile, "a ring pit on the way in");
+        }
+
+        [Test]
+        public void WallsStillReportUnreachable_NotPits()
+        {
+            // Sealed by wall with a pit elsewhere: the old codes, not PitBlocksRoute.
+            string[] sealedTop = Pits(6, 5);
+            sealedTop[3] = "##########.#";
+            List<VaultIssueCode> codes = Codes(VaultJson.Parse(Json(sealedTop, 1, Pile(1, 4, 1, 1))));
+            Assert.That(codes, Has.Member(VaultIssueCode.TreasureUnreachable));
+            Assert.That(codes, Has.Member(VaultIssueCode.HoardUnreachable));
+            Assert.That(codes, Has.No.Member(VaultIssueCode.PitBlocksRoute));
+        }
+
+        [Test]
+        public void PitsStayOutOfDoorways()
+        {
+            // A door at (3,2) between two rooms; the entrance (1,4).
+            string[] map = { "#######", "#.....#", "###D###", "#.....#", "#E....#", "#######" };
+
+            Assert.AreEqual(0, DoorwayPits(map, -1, -1), "no pits");
+            Assert.AreEqual(1, DoorwayPits(map, 3, 1), "behind the door");
+            Assert.AreEqual(1, DoorwayPits(map, 3, 3), "in front of the door");
+            Assert.AreEqual(1, DoorwayPits(map, 1, 3), "in front of the entrance");
+            Assert.AreEqual(1, DoorwayPits(map, 2, 4), "beside the entrance");
+            Assert.AreEqual(0, DoorwayPits(map, 5, 1), "elsewhere in the room");
+            Assert.AreEqual(0, DoorwayPits(map, 4, 4), "a tile clear of the entrance");
+
+            // On the entrance itself (moved onto a pit tile).
+            string[] onEntrance = (string[])map.Clone();
+            onEntrance[4] = "#E.O..#";
+            VaultDef v = VaultJson.Parse(TestVaults.Json(onEntrance).Replace("\"entrance\":[1,4]", "\"entrance\":[3,4]"));
+            VaultIssue issue = VaultValidator.Validate(v).Find(i => i.Code == VaultIssueCode.PitInDoorway);
+            Assert.AreEqual(new TilePos(3, 4), issue.Tile);
+
+            Assert.IsTrue(VaultValidator.InOrBesideDoorway(TestVaults.Parse(map), new TilePos(3, 2)), "the door tile");
+        }
+
+        [Test]
+        public void AGapInAWall_IsNotADoorway()
+        {
+            // (3,4) is just inside the middle room's gap at (3,3). It cuts the only way through, but
+            // that's the route rule; the gap itself isn't a doorway.
+            List<VaultIssueCode> codes = Codes(VaultJson.Parse(Json(Pits(3, 4), 1, Pile(1, 4, 1, 1))));
+            Assert.That(codes, Has.No.Member(VaultIssueCode.PitInDoorway));
+            Assert.That(codes, Has.Member(VaultIssueCode.PitBlocksRoute));
+            Assert.IsFalse(VaultValidator.InOrBesideDoorway(VaultJson.Parse(Json(Rooms, 1, Pile(1, 4, 1, 1))), new TilePos(3, 4)));
+        }
+
+        [Test]
+        public void ALeverDoorRoute_CountsOnlyIfItsLeverIsPitFree()
+        {
+            // Entrance (1,1); a gate in the door (4,1) to the treasure room; a pit row (1-3,3) walls off
+            // the alcove below. The lever in front of the pits opens the way; one behind them doesn't.
+            string[] map = { "##########", "#E..D....#", "#...#....#", "#OOO#....#", "#...#....#", "##########" };
+            string gate = Obj(1, "gate", 4, 1);
+            string pile = Pile(3, 7, 1, 1);
+
+            VaultDef open = VaultJson.Parse(TestVaults.Json(map, "[" + gate + "," + Lever(2, 2, 2, 1) + "," + pile + "]"));
+            Assert.That(Codes(open), Has.No.Member(VaultIssueCode.PitBlocksRoute).And.No.Member(VaultIssueCode.TreasureUnreachable));
+            Assert.IsTrue(VaultValidator.ReachableWithGates(open)[1 * 10 + 7]);
+
+            VaultDef across = VaultJson.Parse(TestVaults.Json(map, "[" + gate + "," + Lever(2, 2, 4, 1) + "," + pile + "]"));
+            VaultIssue cut = VaultValidator.Validate(across).Find(i => i.ObjectId == 3);
+            Assert.AreEqual(VaultIssueCode.PitBlocksRoute, cut.Code, "the lever is only reachable across a pit");
+            Assert.AreEqual(new TilePos(7, 1), cut.Tile, "no pit on the walk itself (that goes through the gate): the pile's tile");
+            Assert.IsFalse(VaultValidator.ReachableWithGates(across)[1 * 10 + 7]);
+        }
+
+        [Test]
+        public void NothingStandsOnAPit()
+        {
+            AssertOnly(VaultJson.Parse(Json(Pits(6, 5), 1, Pile(1, 4, 1, 1), Obj(2, "spike_floor", 6, 5, ",\"cycle\":60"))),
+                VaultIssueCode.ObjectOnPit, 2);
+        }
+
+        [Test]
+        public void OwlPatrols_MayNotCrossOrStopOnAPit()
+        {
+            // A patrol point on a pit is blocked.
+            AssertOnly(VaultJson.Parse(Json(Pits(2, 5), 2, Padded(2, Pile(1, 4, 1, 2), Obj(2, "night_owl", 5, 5, ",\"patrol\":[[5,5],[2,5]]")))),
+                VaultIssueCode.PatrolBlocked, 2);
+
+            // A pit row across the middle room: the owl at (5,7) can't walk to (5,5) though the floor is open.
+            string[] split = Pits(1, 6, 2, 6, 3, 6, 4, 6, 5, 6, 6, 6, 7, 6);
+            List<VaultIssue> issues = VaultValidator.Validate(VaultJson.Parse(Json(split, 2,
+                Padded(2, Pile(1, 4, 1, 2), Obj(2, "night_owl", 5, 7, ",\"patrol\":[[5,7],[5,5]]")))));
+            Assert.IsTrue(issues.Exists(i => i.Code == VaultIssueCode.PatrolUnreachable && i.ObjectId == 2));
+        }
+
+        /// <summary>The base map with pits on the given (x, y) pairs.</summary>
+        private static string[] Pits(params int[] xy)
+        {
+            string[] map = (string[])Rooms.Clone();
+            for (int i = 0; i < xy.Length; i += 2)
+            {
+                char[] row = map[xy[i + 1]].ToCharArray();
+                row[xy[i]] = 'O';
+                map[xy[i + 1]] = new string(row);
+            }
+
+            return map;
+        }
+
+        private static string[] Padded(int level, params string[] objects)
+        {
+            var all = new List<string>(objects);
+            all.AddRange(Padding(level));
+            return all.ToArray();
+        }
+
+        /// <summary>PitInDoorway issues for map with one pit at (x, y), or none for x &lt; 0.</summary>
+        private static int DoorwayPits(string[] map, int x, int y)
+        {
+            string[] m = (string[])map.Clone();
+            if (x >= 0)
+            {
+                char[] row = m[y].ToCharArray();
+                row[x] = 'O';
+                m[y] = new string(row);
+            }
+
+            return VaultValidator.Validate(TestVaults.Parse(m)).FindAll(i => i.Code == VaultIssueCode.PitInDoorway).Count;
+        }
+
+        private static string Lever(int id, int x, int y, int gate)
+        {
+            return Obj(id, "lever", x, y, ",\"links\":[" + gate + "]");
+        }
+
         // ---- Helpers ----------------------------------------------------------------------
 
         /// <summary>The base vault at a level (its one pile worth the right amount) plus extra objects.</summary>

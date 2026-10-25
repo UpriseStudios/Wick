@@ -39,6 +39,9 @@ namespace Wick.Sim
         TooManyDecorations,
         TrophyOutsideHoard,
         RouteTooShort,
+        PitInDoorway,
+        PitBlocksRoute,
+        ObjectOnPit,
     }
 
     /// <summary>One problem with a vault. ObjectId is 0 when the issue is not about an object.</summary>
@@ -113,6 +116,7 @@ namespace Wick.Sim
             }
 
             CheckObjects(vault, level, issues);
+            CheckPits(vault, issues);
             CheckGates(vault, issues);
             int cats = 0;
             for (int i = 0; i < vault.ObjectCount; i++)
@@ -131,7 +135,7 @@ namespace Wick.Sim
             {
                 issues.Add(new VaultIssue(VaultIssueCode.RouteTooShort, 0, vault.Entrance,
                     "The walk from the entrance to the hoard is " + route + " tiles; a " + vault.Width + " x " + vault.Height +
-                    " vault needs at least " + minRoute + ". Add walls to make it wind"));
+                    " vault needs at least " + minRoute + ". Add walls or pits to make it wind"));
             }
 
             int points = VaultRules.BuildPoints(vault);
@@ -200,6 +204,10 @@ namespace Wick.Sim
                 {
                     issues.Add(Issue(VaultIssueCode.ObjectOnWall, o, o.Type + " cannot be on a wall"));
                 }
+                else if (vault.TileAt(o.Pos) == TileType.Pit)
+                {
+                    issues.Add(Issue(VaultIssueCode.ObjectOnPit, o, o.Type + " cannot stand on a pit"));
+                }
 
                 if ((o.Type == ObjectType.Crate || o.Type == ObjectType.SnufferBell) && o.Pos == vault.Entrance)
                 {
@@ -239,6 +247,50 @@ namespace Wick.Sim
                 issues.Add(new VaultIssue(VaultIssueCode.TooManyBraziers, 0, new TilePos(-1, -1),
                     "Vault Level " + level + " allows " + VaultRules.BrazierLimit(level) + " brazier(s)"));
             }
+        }
+
+        /// <summary>
+        /// Pits stay out of doorways: never on the entrance, and never beside it or a door tile (in
+        /// front of or behind it; a door's other sides are wall). Plain gaps in walls aren't doorways.
+        /// </summary>
+        private static void CheckPits(VaultDef vault, List<VaultIssue> issues)
+        {
+            for (int y = 0; y < vault.Height; y++)
+            {
+                for (int x = 0; x < vault.Width; x++)
+                {
+                    var p = new TilePos(x, y);
+                    if (vault.TileAt(p) == TileType.Pit && InOrBesideDoorway(vault, p))
+                    {
+                        issues.Add(new VaultIssue(VaultIssueCode.PitInDoorway, 0, p,
+                            "Pits can't go in a doorway or on the entrance, or right in front of or behind one"));
+                    }
+                }
+            }
+        }
+
+        /// <summary>Whether p is a doorway (a door tile or the entrance) or next to one: where pits may not go.</summary>
+        public static bool InOrBesideDoorway(VaultDef vault, TilePos p)
+        {
+            if (IsDoorway(vault, p))
+            {
+                return true;
+            }
+
+            for (int d = 0; d < 4; d++)
+            {
+                if (IsDoorway(vault, p.Step((Dir)d)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsDoorway(VaultDef vault, TilePos p)
+        {
+            return p == vault.Entrance || vault.TileAt(p) == TileType.Door;
         }
 
         /// <summary>
@@ -287,15 +339,20 @@ namespace Wick.Sim
         }
 
         /// <summary>
-        /// Tiles Wick can reach from the entrance, opening gates as he goes: closed gates block,
-        /// until a lever that opens them is itself reachable. Row-major.
+        /// Tiles Wick can reach from the entrance without crossing a pit, opening gates as he goes:
+        /// closed gates block, until a lever that opens them is itself reachable. Row-major.
         /// </summary>
         public static bool[] ReachableWithGates(VaultDef vault)
+        {
+            return ReachableWithGates(vault, true);
+        }
+
+        private static bool[] ReachableWithGates(VaultDef vault, bool pitsBlock)
         {
             var opened = new bool[vault.ObjectCount];
             while (true)
             {
-                bool[] seen = Reachable(vault, vault.Entrance, opened);
+                bool[] seen = Reachable(vault, vault.Entrance, opened, pitsBlock);
                 bool changed = false;
                 for (int i = 0; i < vault.ObjectCount; i++)
                 {
@@ -458,21 +515,29 @@ namespace Wick.Sim
                 return; // already reported; nothing is reachable
             }
 
+            // Every pile needs a way there (and so back) with no pit on it. One reachable only across a
+            // pit is the pit's fault (PitBlocksRoute, naming the first pit in the way), not the layout's.
             bool[] fromEntrance = ReachableWithGates(vault);
+            bool[] acrossPits = null;
             for (int i = 0; i < vault.ObjectCount; i++)
             {
                 ObjectDef o = vault.GetObject(i);
                 if (o.Type == ObjectType.Treasure && !IsSet(vault, fromEntrance, o.Pos))
                 {
-                    issues.Add(Issue(VaultIssueCode.TreasureUnreachable, o, "Wick cannot reach this treasure"));
+                    acrossPits = acrossPits ?? ReachableWithGates(vault, false);
+                    issues.Add(IsSet(vault, acrossPits, o.Pos)
+                        ? new VaultIssue(VaultIssueCode.PitBlocksRoute, o.Id, FirstPitOnWay(vault, o.Pos),
+                            "A pit cuts this treasure off: leave a way to it with no pits")
+                        : Issue(VaultIssueCode.TreasureUnreachable, o, "Wick cannot reach this treasure"));
                 }
 
                 if (o.Type == ObjectType.NightOwl && o.Patrol.Length > 0)
                 {
+                    // Owls walk round pits, so a patrol may not cross one.
                     bool[] fromOwl = vault.IsWalkable(o.Pos) ? Reachable(vault, o.Pos) : null;
                     foreach (TilePos p in o.Patrol)
                     {
-                        if (!vault.IsWalkable(p))
+                        if (!vault.IsWalkable(p) || vault.TileAt(p) == TileType.Pit)
                         {
                             issues.Add(new VaultIssue(VaultIssueCode.PatrolBlocked, o.Id, p, "Patrol point " + p + " is blocked"));
                         }
@@ -485,77 +550,149 @@ namespace Wick.Sim
                 }
             }
 
-            if (vault.HasHoard)
+            if (vault.HasHoard && !Touches(vault, fromEntrance, vault.Hoard))
             {
-                bool reachable = false;
-                for (int y = vault.Hoard.MinY; y <= vault.Hoard.MaxY && !reachable; y++)
+                acrossPits = acrossPits ?? ReachableWithGates(vault, false);
+                var corner = new TilePos(vault.Hoard.MinX, vault.Hoard.MinY);
+                issues.Add(Touches(vault, acrossPits, vault.Hoard)
+                    ? new VaultIssue(VaultIssueCode.PitBlocksRoute, 0, FirstPitOnWay(vault, corner, true),
+                        "A pit cuts off the hoard room: leave a way to it with no pits")
+                    : new VaultIssue(VaultIssueCode.HoardUnreachable, 0, corner, "Wick cannot reach the hoard room"));
+            }
+        }
+
+        private static bool Touches(VaultDef vault, bool[] map, TileRect r)
+        {
+            for (int y = r.MinY; y <= r.MaxY; y++)
+            {
+                for (int x = r.MinX; x <= r.MaxX; x++)
                 {
-                    for (int x = vault.Hoard.MinX; x <= vault.Hoard.MaxX && !reachable; x++)
+                    if (IsSet(vault, map, new TilePos(x, y)))
                     {
-                        reachable = IsSet(vault, fromEntrance, new TilePos(x, y));
+                        return true;
                     }
                 }
+            }
 
-                if (!reachable)
+            return false;
+        }
+
+        /// <summary>
+        /// The first pit on the shortest walk from the entrance to target (or into the hoard room),
+        /// crossing pits and gates: the pit that cuts it off. Target if there is none on the walk.
+        /// </summary>
+        private static TilePos FirstPitOnWay(VaultDef vault, TilePos target, bool intoHoard = false)
+        {
+            int[] prev = Search(vault, vault.IsWalkable, p => intoHoard ? vault.Hoard.Contains(p) : p == target, out int end);
+            TilePos pit = target;
+            for (int at = end; prev != null; at = prev[at])
+            {
+                // Walking back to the entrance: the last pit seen is the first on the way.
+                if (vault.TileAtIndex(at) == TileType.Pit)
                 {
-                    issues.Add(new VaultIssue(VaultIssueCode.HoardUnreachable, 0,
-                        new TilePos(vault.Hoard.MinX, vault.Hoard.MinY), "Wick cannot reach the hoard room"));
+                    pit = new TilePos(at % vault.Width, at / vault.Width);
+                }
+
+                if (prev[at] == at)
+                {
+                    break;
+                }
+            }
+
+            return pit;
+        }
+
+        /// <summary>
+        /// The shortest walk, in tiles, from the entrance to the nearest hoard tile, or -1 with no hoard
+        /// or none reachable. Only walls and pits count (pits make fine maze walls), so the winding has to
+        /// come from the layout: crates (cheap in build points) and gates (which open) don't make it longer.
+        /// </summary>
+        public static int RouteTiles(VaultDef vault)
+        {
+            List<TilePos> path = RoutePath(vault);
+            return path == null ? -1 : path.Count - 1;
+        }
+
+        /// <summary>The walk RouteTiles measures, entrance first, or null. The editor draws it while pits are painted.</summary>
+        public static List<TilePos> RoutePath(VaultDef vault)
+        {
+            if (!vault.HasHoard)
+            {
+                return null;
+            }
+
+            int[] prev = Search(vault, p => vault.TileAt(p) != TileType.Wall && vault.TileAt(p) != TileType.Pit,
+                vault.Hoard.Contains, out int end);
+            if (prev == null)
+            {
+                return null;
+            }
+
+            var path = new List<TilePos>();
+            for (int at = end; ; at = prev[at])
+            {
+                path.Add(new TilePos(at % vault.Width, at / vault.Width));
+                if (prev[at] == at)
+                {
+                    path.Reverse();
+                    return path;
                 }
             }
         }
 
         /// <summary>
-        /// The shortest walk, in tiles, from the entrance to the nearest hoard tile, or -1 with no hoard
-        /// or none reachable. Only walls count, so the winding has to come from the layout: crates (cheap
-        /// in build points) and gates (which open) don't make the route longer.
+        /// Breadth-first from the entrance over passable tiles until a goal tile: prev[i] is the tile
+        /// (row-major) one step nearer the entrance, and the entrance's own. Null if no goal is reached.
         /// </summary>
-        public static int RouteTiles(VaultDef vault)
+        private static int[] Search(VaultDef vault, System.Func<TilePos, bool> passable, System.Func<TilePos, bool> goal, out int end)
         {
-            if (!vault.HasHoard || !vault.InBounds(vault.Entrance))
+            end = -1;
+            if (!vault.InBounds(vault.Entrance))
             {
-                return -1;
+                return null;
             }
 
-            var dist = new int[vault.Width * vault.Height];
-            for (int i = 0; i < dist.Length; i++)
+            var prev = new int[vault.Width * vault.Height];
+            for (int i = 0; i < prev.Length; i++)
             {
-                dist[i] = -1;
+                prev[i] = -1;
             }
 
+            int start = vault.Entrance.Y * vault.Width + vault.Entrance.X;
+            prev[start] = start;
             var queue = new Queue<TilePos>();
-            dist[vault.Entrance.Y * vault.Width + vault.Entrance.X] = 0;
             queue.Enqueue(vault.Entrance);
             while (queue.Count > 0)
             {
                 TilePos p = queue.Dequeue();
-                int here = dist[p.Y * vault.Width + p.X];
-                if (vault.Hoard.Contains(p))
+                if (goal(p))
                 {
-                    return here;
+                    end = p.Y * vault.Width + p.X;
+                    return prev;
                 }
 
                 for (int d = 0; d < 4; d++)
                 {
                     TilePos n = p.Step((Dir)d);
-                    if (vault.TileAt(n) != TileType.Wall && dist[n.Y * vault.Width + n.X] < 0)
+                    if (vault.InBounds(n) && passable(n) && prev[n.Y * vault.Width + n.X] < 0)
                     {
-                        dist[n.Y * vault.Width + n.X] = here + 1;
+                        prev[n.Y * vault.Width + n.X] = p.Y * vault.Width + p.X;
                         queue.Enqueue(n);
                     }
                 }
             }
 
-            return -1;
+            return null;
         }
 
-        /// <summary>Tiles reachable on foot from start (walls and crates block). Row-major.</summary>
+        /// <summary>Tiles reachable on foot from start without crossing a pit (walls, crates and pits block). Row-major.</summary>
         public static bool[] Reachable(VaultDef vault, TilePos start)
         {
-            return Reachable(vault, start, null);
+            return Reachable(vault, start, null, true);
         }
 
-        /// <summary>As Reachable, with closed gates blocking unless `opened` marks them (by object index).</summary>
-        private static bool[] Reachable(VaultDef vault, TilePos start, bool[] opened)
+        /// <summary>As Reachable, with closed gates blocking unless `opened` marks them (by object index), and pits unless told not to.</summary>
+        private static bool[] Reachable(VaultDef vault, TilePos start, bool[] opened, bool pitsBlock)
         {
             bool[] closedGate = null;
             if (opened != null)
@@ -581,7 +718,8 @@ namespace Wick.Sim
                 for (int d = 0; d < 4; d++)
                 {
                     TilePos n = p.Step((Dir)d);
-                    if (vault.IsWalkable(n) && !seen[n.Y * vault.Width + n.X] && (closedGate == null || !closedGate[n.Y * vault.Width + n.X]))
+                    if (vault.IsWalkable(n) && !(pitsBlock && vault.TileAt(n) == TileType.Pit) && !seen[n.Y * vault.Width + n.X] &&
+                        (closedGate == null || !closedGate[n.Y * vault.Width + n.X]))
                     {
                         seen[n.Y * vault.Width + n.X] = true;
                         queue.Enqueue(n);
