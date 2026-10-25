@@ -21,6 +21,9 @@ jobs:
       - name: Replay golden raids with replay-cli
         run: dotnet run --project tools/replay-cli -- tests/golden/*.json
 
+      - name: Balance simulator, small sample (fails if a Vault Level yields no vaults or no escapes)
+        run: dotnet run -c Release --project tools/balance -- --quick
+
       - name: Test Cloud Code module logic (Cloud Save faked)
         run: dotnet test server/Wick.CloudCode/WickModule.Tests
 
