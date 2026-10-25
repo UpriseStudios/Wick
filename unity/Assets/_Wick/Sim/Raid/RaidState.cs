@@ -139,5 +139,24 @@ namespace Wick.Sim
 
         /// <summary>Running hash after each fold (every 30 ticks and at the end).</summary>
         public readonly List<ulong> Checkpoints = new List<ulong>(SimTuning.RaidTicks / SimTuning.HashIntervalTicks + 1);
+
+        /// <summary>A deep copy (RaidSim.Clone).</summary>
+        public RaidState Clone()
+        {
+            var c = new RaidState
+            {
+                Tick = Tick,
+                Wick = Wick,
+                Outcome = Outcome,
+                Rng = Rng,
+                Hash = Hash,
+                Spent = (bool[])Spent.Clone(),
+                Guardians = (GuardianState[])Guardians.Clone(),
+                GateOpen = (int[])GateOpen.Clone(),
+                Lit = (bool[])Lit.Clone(),
+            };
+            c.Checkpoints.AddRange(Checkpoints);
+            return c;
+        }
     }
 }

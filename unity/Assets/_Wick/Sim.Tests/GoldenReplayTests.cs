@@ -211,5 +211,33 @@ namespace Wick.Sim.Tests
 
             throw new DirectoryNotFoundException("Could not find tests/golden above " + starts[0]);
         }
+
+        /// <summary>A clone taken mid-raid finishes exactly like the original, and stepping it changes nothing in the original.</summary>
+        [TestCaseSource(nameof(GoldenFiles))]
+        public void ACloneMidRaid_FinishesIdentically(string file)
+        {
+            RaidFile raid = RaidFile.Parse(System.IO.File.ReadAllText(System.IO.Path.Combine(GoldenDirectory(), file)));
+            var sim = new RaidSim(raid.Vault, raid.Seed, raid.Log, raid.Params);
+            for (int i = 0; i < 40 && !sim.IsOver; i++)
+            {
+                sim.Step();
+            }
+
+            RaidSim copy = sim.Clone();
+            while (!copy.IsOver)
+            {
+                copy.Step();
+            }
+
+            Assert.LessOrEqual(sim.State.Tick, 40, "the original didn't move");
+            while (!sim.IsOver)
+            {
+                sim.Step();
+            }
+
+            Assert.AreEqual(sim.GetResult().FinalHash, copy.GetResult().FinalHash);
+            Assert.AreEqual(raid.ExpectedHash, copy.GetResult().HashHex);
+        }
+
     }
 }

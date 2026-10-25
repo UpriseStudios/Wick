@@ -68,6 +68,30 @@ namespace Wick.Sim
 
         public RaidState State { get; }
 
+        /// <summary>
+        /// An independent copy at this exact tick: stepping either never affects the other, and both
+        /// give the same results for the same commands. For bots and tools that try several moves
+        /// from one moment (tools/balance); the game itself never branches a raid.
+        /// </summary>
+        public RaidSim Clone()
+        {
+            return new RaidSim(this);
+        }
+
+        private RaidSim(RaidSim from)
+        {
+            _vault = from._vault;
+            Params = from.Params;
+            _commands = new List<Command>(from._commands);
+            _nextCommand = from._nextCommand;
+            _arrivedThisTick = from._arrivedThisTick;
+            _trapActive = (bool[])from._trapActive.Clone();
+            _guardianOfObject = from._guardianOfObject; // fixed after construction
+            _bfsDist = new int[from._bfsDist.Length];
+            _bfsQueue = new int[from._bfsQueue.Length];
+            State = from.State.Clone();
+        }
+
         public RaidParams Params { get; }
 
         public bool IsOver => State.Outcome != Outcome.Running;
