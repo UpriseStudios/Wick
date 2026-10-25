@@ -1,6 +1,8 @@
 # M10 plan: Full content
 
-Status: agreed 24 October 2026, then merged with the M10 milestone prompt the same day. Where the
+Status: agreed 24 October 2026, then merged with the M10 milestone prompt the same day. Built and
+deployed to development on 25 October 2026 (development vaults and replays wiped and reseeded);
+awaiting the device check. Where the
 prompt and the decisions in this plan disagree, the decisions win (see "Prompt conflicts").
 
 Design inputs: [m10-design-notes.md](m10-design-notes.md) (Vault Level table, build costs, upgrade
@@ -164,6 +166,11 @@ A .NET tool in `tools/balance`:
 
 Run the balance simulator on the full rule set and tune build points, costs and defence levels
 from the results. **The raid timer is decided here, with you, from the report.** Decided 2026-10-25: 60 s up to Vault Level 7, 75 s at 8, 90 s at 9 and 10.
+
+Tuning decided 25 October 2026: denser vaults (budgets 120 to 540 and a 60% minimum from Vault
+Level 2), raids of 75 s at Level 8 and 90 s at 9 and 10, a lower loot cap (150 per level), dearer
+and slower Vault Levels, defence first builds and gold for walls. A daily free player now reaches
+Level 10 in about 71 days; see tools/balance/report.md.
 
 ### B4. Mean vault protection
 
