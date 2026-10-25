@@ -163,7 +163,7 @@ A .NET tool in `tools/balance`:
 ### B3. Fairness test and tuning
 
 Run the balance simulator on the full rule set and tune build points, costs and defence levels
-from the results. **The raid timer is decided here, with you, from the report.**
+from the results. **The raid timer is decided here, with you, from the report.** Decided 2026-10-25: 60 s up to Vault Level 7, 75 s at 8, 90 s at 9 and 10.
 
 ### B4. Mean vault protection
 
@@ -200,7 +200,7 @@ B3.
 | Drip Pipe | Cycle as built (default 45 ticks, 1.5 s) | -2 ticks | -3 ticks | Puddle: the hit tile slows Wick to tiptoe speed for 0.5 s |
 | Bellows | Cycle as built (default 75 ticks), gust reaches 6 tiles | -2 ticks | -3 ticks | 1-tile knockback |
 | Spike Floor | Cycle as built (default 60 ticks), 15-tick rumble | -2 ticks | -3 ticks | Rumble shortens to 10 ticks (the floor) |
-| Snuffer Bell | Drops once when Wick steps on its plate, then is spent | Open question (see below) | Open question | Plate grows to 2 tiles |
+| Snuffer Bell | Lands 8 ticks after Wick touches its plate (instant snuff if he's still on it), then is spent | Lands 1 tick sooner | 4 ticks: catches a dash | Plate grows to 2 tiles |
 | Night Owl | Chase speed 100, 90-degree sight cone | +5 chase speed | +10 | Wider sight cone (about 112 degrees) |
 | Wax Moths | Speed 40, drain every 60 ticks | +3 speed | +5 | Drain every 45 ticks |
 | Ice Tiles | Wick slides until he hits something | +10% slide speed | +15% | Sliding dims the flame like a gust |
@@ -220,9 +220,9 @@ Changes found while building (24 October 2026):
   suggestion).
 - **Drip Pipe:** at level 5 the default cycle is 36 ticks, so a 1-second puddle plus the drip
   would cover the whole cycle. The puddle lasts 0.5 s, leaving a dry gap.
-- **Snuffer Bell levels 2 to 4:** open. A bell drop is always an instant snuff, which ends the
-  raid, so re-arming can never matter. Level 5's two-tile plate is built; levels 2 to 4 need a
-  different improvement.
+- **Snuffer Bell** (decided 2026-10-25): re-arming could never matter (a drop always snuffs), so
+  the bell now lands a moment after the plate is touched (it shakes meanwhile): 8 ticks at level 1,
+  one fewer a level, 4 at level 5. A dash across a level 1 plate gets away; a run doesn't.
 
 ## Rules for the new defences, as built
 

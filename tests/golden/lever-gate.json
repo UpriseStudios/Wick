@@ -112,7 +112,7 @@
     "ticks": 79,
     "stars": 3,
     "loot": 400,
-    "hash": "1ac56ddc4cfb0bfe"
+    "hash": "dbaf70f3a94da561"
   },
   "expectedEvents": {
     "FlickerLost": [],

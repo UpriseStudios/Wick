@@ -30,9 +30,9 @@ VAULT_LEVELS = [
     (10, 50_000, 2_160, 365),
 ]
 
-# Raid length in seconds by the defender's Vault Level (1 to 10). 60 s everywhere until the M10
-# fairness test decides whether bigger vaults get longer (docs/m10-plan.md, B3).
-RAID_SECONDS = [60] * 10
+# Raid length in seconds by the defender's Vault Level (1 to 10): 60 s, then 75 s at Level 8 and 90 s
+# at Levels 9 and 10, where the balance report showed a quarter of raids running out of time.
+RAID_SECONDS = [60, 60, 60, 60, 60, 60, 60, 75, 90, 90]  # decided 2026-10-25 from the balance report
 
 # Defence upgrades: the same cost for every trap and guardian (docs/m10-design-notes.md). The
 # level is also capped at half the Vault Level, rounded up (DefenceLevels.Cap in the sim).

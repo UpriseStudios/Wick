@@ -72,6 +72,9 @@ namespace Wick.Sim
         /// <summary>How many tiles a fan's wind reaches.</summary>
         public const int FanRange = 3;
 
+        /// <summary>A Snuffer Bell lands this many ticks after Wick touches its plate (level 1).</summary>
+        public const int BellDropTicks = 8;
+
         /// <summary>Spike Floor is raised (damaging) while phase is below this.</summary>
         public const int SpikeRaisedTicks = 20;
 

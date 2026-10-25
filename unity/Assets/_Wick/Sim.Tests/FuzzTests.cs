@@ -84,7 +84,7 @@ namespace Wick.Sim.Tests
         [Test]
         public void Corpus_CombinedHash_IsStable()
         {
-            const string expected = "300f83788371b46b";
+            const string expected = "917e5e5f0ae1c40b";
 
             var rng = new Pcg32(2026, 77);
             var combined = new Fnv1a64();

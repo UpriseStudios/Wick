@@ -22,16 +22,31 @@ namespace Wick.Sim
 
             int flickersBefore = w.Flickers;
 
-            // Snuffer Bells: instant snuff, ignoring invulnerability. Each drops once. A knockback
-            // never ends on a plate (see StartKnockback), so being knocked can't set one off.
+            // Snuffer Bells: touching the plate starts the fall (the bell shakes: a warning); it lands
+            // BellDropTicks later and snuffs Wick, ignoring invulnerability, if he is still on the
+            // plate. Each drops once. A knockback never ends on a plate (see StartKnockback).
             for (int i = 0; i < _vault.ObjectCount; i++)
             {
                 ObjectDef o = _vault.GetObject(i);
-                if (o.Type == ObjectType.SnufferBell && !State.Spent[i] && BellPlateCovers(o, at))
+                if (o.Type != ObjectType.SnufferBell || State.Spent[i])
+                {
+                    continue;
+                }
+
+                if (State.BellFall[i] == 0 && BellPlateCovers(o, at))
+                {
+                    State.BellFall[i] = State.Tick + DefenceStats.BellDropTicks(_vault.LevelOf(o.Type)) + 1;
+                    Emit(SimEventType.TrapWarning, o.Id, o.Pos, 0);
+                }
+
+                if (State.BellFall[i] > 0 && State.Tick + 1 >= State.BellFall[i])
                 {
                     State.Spent[i] = true;
-                    w.Flickers = 0;
                     Emit(SimEventType.TrapFired, o.Id, o.Pos, 0);
+                    if (BellPlateCovers(o, at))
+                    {
+                        w.Flickers = 0;
+                    }
                 }
             }
 

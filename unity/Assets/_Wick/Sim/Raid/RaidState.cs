@@ -131,6 +131,9 @@ namespace Wick.Sim
         /// </summary>
         public int[] GateOpen;
 
+        /// <summary>Per vault object: a falling Snuffer Bell's landing tick plus one (0 = not falling).</summary>
+        public int[] BellFall;
+
         /// <summary>
         /// Tiles lit by Wick's flame this tick, row-major (y * vault width + x). Derived from
         /// Wick's state and the vault, so it is not hashed separately. Read it with RaidSim.IsLit.
@@ -153,6 +156,7 @@ namespace Wick.Sim
                 Spent = (bool[])Spent.Clone(),
                 Guardians = (GuardianState[])Guardians.Clone(),
                 GateOpen = (int[])GateOpen.Clone(),
+                BellFall = (int[])BellFall.Clone(),
                 Lit = (bool[])Lit.Clone(),
             };
             c.Checkpoints.AddRange(Checkpoints);

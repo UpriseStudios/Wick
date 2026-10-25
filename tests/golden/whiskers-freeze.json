@@ -58,7 +58,7 @@
     "ticks": 160,
     "stars": 1,
     "loot": 0,
-    "hash": "c391d76b57fceddf"
+    "hash": "8c5d7416eb424bcd"
   },
   "expectedEvents": {
     "GuardianAlerted": [

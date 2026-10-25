@@ -67,6 +67,16 @@ namespace Wick.Sim
             }
         }
 
+        /// <summary>
+        /// Snuffer Bell: ticks from Wick touching the plate to the bell landing: 8, one fewer a level,
+        /// 4 at level 5. At 8 a dash across survives and a run doesn't; at 4 even a dash is caught.
+        /// </summary>
+        public static int BellDropTicks(int level)
+        {
+            int clamped = level < 1 ? 1 : level > 5 ? 5 : level;
+            return SimTuning.BellDropTicks - (clamped - 1);
+        }
+
         /// <summary>Snuffer Bell level 5: the plate also covers the tile in front of it (its facing).</summary>
         public static bool BellWidePlate(int level)
         {

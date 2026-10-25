@@ -269,15 +269,16 @@ GOLDENS = {
     "spikes-bell.json": raid(
         "Spike Floor at (4,10), cycle 60: raised ticks 0-19 and 60-79, warning rumble at 45. Steps "
         "onto it at tick 42 (occupied), hears the warning at 45, is hit when it rises at 60. Moves "
-        "on north and steps on the Snuffer Bell plate at (4,8): occupied on tick 72, instant snuff.",
+        "on north and steps on the Snuffer Bell plate at (4,8): occupied on tick 72, the bell shakes "
+        "and lands 8 ticks later (level 1); he is still standing on the plate: snuffed on tick 80.",
         4103,
         vault("v_golden_spikes", OPEN, [
             {"id": 1, "type": "spike_floor", "x": 4, "y": 10, "cycle": 60},
             {"id": 2, "type": "snuffer_bell", "x": 4, "y": 8},
         ], level=3),
         cmds((20, "Dash", "N"), (40, "Dash", "N"), (61, "Dash", "N"), (70, "Dash", "N")),
-        "Snuffed", 73, 0, 0,
-        {"TrapWarning": [45], "TrapFired": [0, 60, 72], "FlickerLost": [60], "Snuffed": [72]},
+        "Snuffed", 81, 0, 0,
+        {"TrapWarning": [45, 72], "TrapFired": [0, 60, 80], "FlickerLost": [60], "Snuffed": [80]},
     ),
     "owl-moths-decoy.json": raid(
         "Night Owl guarding (4,7) facing south; Wax Moths at (1,8). One dash north puts the owl "

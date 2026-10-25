@@ -164,17 +164,32 @@ namespace Wick.Sim.Tests
         // ---- Snuffer Bell -----------------------------------------------------------
 
         [Test]
-        public void Bell_SnuffsInstantly_EvenWhenInvulnerable()
+        public void Bell_LandsAfterItsDrop_AndSnuffsEvenWhenInvulnerable()
         {
             RaidSim sim = Sim(Obj(1, "drip_pipe", 1, 1, cycle: 200), Obj(2, "snuffer_bell", 2, 1),
                 Command.Dash(1, Dir.E));
-            // Dash from tick 1: progress 200, 400, 600, so (2,1) is occupied on tick 3.
+            // Dash from tick 1: progress 200, 400, 600, so (2,1) is occupied on tick 3: the bell starts to
+            // fall and lands 8 ticks later, on tick 11. Wick stopped on the plate (arriving tick 5).
             Steps(sim, 3);
             Assert.AreEqual(2, sim.State.Wick.Flickers, "drip hit at tick 0");
             Steps(sim, 1);
-            Assert.AreEqual(0, sim.State.Wick.Flickers, "bell on tick 3");
+            Assert.AreEqual(12, sim.State.BellFall[1], "falling from tick 3, lands on tick 11");
+            Steps(sim, 7);
+            Assert.AreEqual(2, sim.State.Wick.Flickers, "still falling on tick 10");
+            Steps(sim, 1);
+            Assert.AreEqual(0, sim.State.Wick.Flickers, "landed on tick 11, through invulnerability");
             Assert.AreEqual(Outcome.Snuffed, sim.State.Outcome);
             Assert.IsTrue(sim.State.Spent[1]);
+        }
+
+        [Test]
+        public void Bell_ADashAcrossTheLevel1Plate_GetsAway()
+        {
+            // Two dashes: over the plate at (2,1) (on it ticks 2-6) and on to (3,1). It lands on tick 10.
+            RaidSim sim = Sim(Obj(1, "snuffer_bell", 2, 1), Command.Dash(0, Dir.E), Command.Dash(5, Dir.E));
+            Steps(sim, 20);
+            Assert.AreEqual(3, sim.State.Wick.Flickers);
+            Assert.IsTrue(sim.State.Spent[0], "it dropped behind him");
         }
 
         // ---- End and events ---------------------------------------------------------

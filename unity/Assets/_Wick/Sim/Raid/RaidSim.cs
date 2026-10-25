@@ -59,6 +59,7 @@ namespace Wick.Sim
             State.Wick.LightBonus = raidParams.LightBonus;
             State.Spent = new bool[vault.ObjectCount];
             State.GateOpen = new int[vault.ObjectCount];
+            State.BellFall = new int[vault.ObjectCount];
             State.Guardians = CreateGuardians(vault);
             State.Lit = new bool[vault.Width * vault.Height];
             _trapActive = new bool[vault.ObjectCount];

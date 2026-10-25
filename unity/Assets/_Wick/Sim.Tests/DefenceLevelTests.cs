@@ -218,13 +218,32 @@ namespace Wick.Sim.Tests
         // ---- Snuffer Bell level 5: wide plate ------------------------------------------
 
         [Test]
+        public void BellLevels_ShortenTheDrop()
+        {
+            CollectionAssert.AreEqual(new[] { 8, 7, 6, 5, 4 }, new[]
+            {
+                DefenceStats.BellDropTicks(1), DefenceStats.BellDropTicks(2), DefenceStats.BellDropTicks(3),
+                DefenceStats.BellDropTicks(4), DefenceStats.BellDropTicks(5),
+            });
+
+            // A dash straight over a single plate (on it ticks 2-6) survives level 4 and dies at level 5.
+            ObjectSpec plate = Obj(1, "snuffer_bell", 2, 1);
+            RaidSim four = Sim(At(4, ObjectType.SnufferBell, Corridor, plate), Command.Dash(0, Dir.E), Command.Dash(5, Dir.E));
+            Steps(four, 20);
+            Assert.AreEqual(3, four.State.Wick.Flickers);
+            RaidSim five = Sim(At(5, ObjectType.SnufferBell, Corridor, plate), Command.Dash(0, Dir.E), Command.Dash(5, Dir.E));
+            Steps(five, 20);
+            Assert.AreEqual(Outcome.Snuffed, five.State.Outcome);
+        }
+
+        [Test]
         public void BellLevel5_ThePlateCoversTheTileInFront()
         {
             // The bell on (3,1) faces west, so its level 5 plate also covers (2,1).
             ObjectSpec bell = Obj(1, "snuffer_bell", 3, 1, rot: 3);
             RaidSim five = Sim(At(5, ObjectType.SnufferBell, Corridor, bell), Command.Dash(0, Dir.E));
-            Steps(five, 5);
-            Assert.AreEqual(Outcome.Snuffed, five.State.Outcome);
+            Steps(five, 10);
+            Assert.AreEqual(Outcome.Snuffed, five.State.Outcome, "on the wide plate from tick 2; lands 4 ticks later");
 
             RaidSim four = Sim(At(4, ObjectType.SnufferBell, Corridor, bell), Command.Dash(0, Dir.E));
             Steps(four, 5);
