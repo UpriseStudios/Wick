@@ -136,7 +136,7 @@ Lighting must never change gameplay between tiers: the lit-tile set, the radius 
 All four are built as settings, so the prompts can run before you decide and you choose in the lighting lab.
 
 - [ ] **Remembered tiles.** Should tiles Wick has already lit stay faintly visible (my recommendation: yes, at about 35%), or go fully dark again when he moves on? Remembering makes vaults feel less frustrating and helps players learn routes; full darkness is tenser.
-- [ ] **How dark is unseen?** Recommended 12% brightness, so wall shapes read but traps don't. Lower is moodier but risks looking broken on dim screens.
+- [ ] **How dark is unseen?** Direction from Jamie (25 October 2026): unlit areas get faint light, never pitch black (today's raids use 4%, `RaidTuning.UnlitBrightness`). The exact level is picked in the lab. Recommended 12% brightness, so wall shapes read but traps don't. Lower is moodier but risks looking broken on dim screens.
 - [ ] **Light radius values.** Proposed 3.0 / 2.5 / 2.0 tiles for 3 / 2 / 1 flickers, halved when tiptoeing. These affect guardian sight too, so confirm after playtesting in the lab.
 - [ ] **Treasure twinkle in the dark.** Recommended on, so the goal is always findable. Off makes the hoard a true discovery, but new players may wander.
 
