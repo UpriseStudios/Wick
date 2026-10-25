@@ -2,7 +2,7 @@
 
 Status: agreed 24 October 2026, then merged with the M10 milestone prompt the same day. Built and
 deployed to development on 25 October 2026 (development vaults and replays wiped and reseeded);
-awaiting the device check. Where the
+accepted on device the same day. Next: M10.1 pits (docs/m10-1-pits.md). Where the
 prompt and the decisions in this plan disagree, the decisions win (see "Prompt conflicts").
 
 Design inputs: [m10-design-notes.md](m10-design-notes.md) (Vault Level table, build costs, upgrade
