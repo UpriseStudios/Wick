@@ -89,6 +89,30 @@ A raid is a 60-second sneak through another player's vault, viewed from a Clash-
 
 Loot paid out = share of treasure stolen, capped by the defender's vault level. Failing still pays a small consolation amount so a bad run never feels wasted.
 
+## Tutorial and onboarding
+
+A new player should raid, build and share a vault inside their first 8 minutes, learning by doing rather than reading. Wick teaches by miming (pointing, beckoning, a finger to his lips for stealth), with a ghost finger showing the gesture and at most one short line of text on screen.
+
+| Step | Teaches | Done when |
+| --- | --- | --- |
+| Vault 1: "First steps" | Swipe to dash, hold to run | Wick reaches the treasure |
+| Vault 2: "Shh!" | Tap to toggle stealth, sneak past a sleeping guardian | He passes it without waking it |
+| Vault 3: "Look over there" | The decoy button | A guardian chases the decoy |
+| Vault 4: "Keep the flame alive" | Flickers, taking a hit, relighting at a brazier | Wick relights to 3 flickers |
+| Vault 5: "Get out!" | Grab loot and escape before the timer runs out | Escape with at least 1 star |
+| First build | Place 3 traps, run the clear-check, publish | The vault goes live |
+| First real raid | A seeded easy vault that's guaranteed beatable | Loot paid, results shown |
+| Share prompt | "Dare a friend to crack your vault" | Shared, or skipped |
+
+**Rules**
+
+- Vaults 1 and 2 are required; skip is offered from vault 3 onwards.
+- Each step pays a small reward, ending with a starter chest after the first real raid.
+- Every trap and guardian gets a one-time **intro card** the first time a player meets it: a 3-second looping clip of its tell and how to beat it.
+- Contextual hints return if a player fails the same vault 3 times (for example, "Try stealth" with a pulse on the stealth icon).
+- The tutorial can be replayed from Settings.
+- Every step sends an analytics event, so drop-off is visible per step.
+
 ## Vault building
 
 You can only publish a vault you have beaten yourself. That one rule keeps every vault fair and gives the server a proof run to check against.
