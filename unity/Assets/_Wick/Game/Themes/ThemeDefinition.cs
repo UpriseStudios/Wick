@@ -38,6 +38,18 @@ namespace Wick.Game
         [Tooltip("The entrance's \"way out\" glow on the floor, always readable.")]
         public GameObject EntranceGlow;
 
+        [Tooltip("A low fog patch (Wick/Atmosphere, fog), lying on the floor.")]
+        public GameObject FogCard;
+
+        [Tooltip("A light shaft from a high grate (Wick/Atmosphere, shaft), hung on a wall face, +Z into the room.")]
+        public GameObject ShaftCard;
+
+        [Tooltip("Dust motes (a ParticleSystem); colour, amount and drift come from the LightingProfile.")]
+        public GameObject Dust;
+
+        [Tooltip("A soft contact shadow quad (Wick/ShadowBlob) for props spawned by the vault view.")]
+        public GameObject ContactShadow;
+
         [Header("Ambient (trilight; superseded by Lighting when set)")]
         public Color AmbientSky = new Color(0.11f, 0.10f, 0.14f);
         public Color AmbientEquator = new Color(0.07f, 0.06f, 0.08f);
@@ -107,7 +119,7 @@ namespace Wick.Game
         /// <summary>Every prefab this theme uses, for checks.</summary>
         public IEnumerable<GameObject> Pieces()
         {
-            foreach (GameObject g in new[] { Floor, WallStraight, WallCorner, WallFill, Door, Pit, Ice, EntranceArch, Sconce, PitEdge, EntranceGlow })
+            foreach (GameObject g in new[] { Floor, WallStraight, WallCorner, WallFill, Door, Pit, Ice, EntranceArch, Sconce, PitEdge, EntranceGlow, FogCard, ShaftCard, Dust, ContactShadow })
             {
                 if (g != null)
                 {

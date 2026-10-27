@@ -9,7 +9,9 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Unity.Addressables",
-        "Unity.ResourceManager"
+        "Unity.ResourceManager",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"

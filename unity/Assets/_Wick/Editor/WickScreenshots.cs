@@ -84,8 +84,11 @@ namespace Wick.Editor
             var overlay = Object.FindFirstObjectByType<DevOverlay>();
             var camera = Object.FindFirstObjectByType<Camera>();
             camera.aspect = 540f / 960f;
+            var mask = Object.FindAnyObjectByType<VisibilityMask>();
+            var grade = Object.FindAnyObjectByType<Grade>(); // edit mode: it never enables itself, so apply it by hand
             var tuning = AssetDatabase.LoadAssetAtPath<RaidTuning>("Assets/_Wick/Data/RaidTuning.asset");
             string dir = OutputDir + "/lighting";
+            QualityTier ownTier = LightingQuality.Tier;
             Directory.CreateDirectory(dir);
 
             // Edit mode runs no OnEnable, so route Wick's events (the flare) by hand.
@@ -99,6 +102,7 @@ namespace Wick.Editor
                 RaidFile raid = RaidFile.Parse(File.ReadAllText(Path.Combine(golden, file)));
                 runner.LoadReplay(raid.Vault, raid.Seed, raid.Log);
                 vaultView.Build(runner);
+                grade?.ApplyProfile(mask.Profile);
                 treasureTaken = false;
                 bool found = false;
                 while (true)
@@ -152,6 +156,107 @@ namespace Wick.Editor
             Shot("troll-tiptoe.json", "5-flame-tiptoe", r => W(r).Tiptoe && W(r).Flickers == 3 && r.Sim.State.Tick > 30);
             Shot("pit-last-flicker.json", "6-flame-snuffed", r => W(r).Flickers == 0);
             Shot("pit-fall-recover.json", "7-pit-edges", r => r.Sim.State.Tick >= 1);
+
+            // M10.2b: the same moment at each quality tier (the lit tiles must match), then the other screens.
+            foreach (QualityTier tier in new[] { QualityTier.High, QualityTier.Medium, QualityTier.Low })
+            {
+                LightingQuality.Tier = tier;
+                Shot("full-heist.json", "8-tier-" + tier.ToString().ToLowerInvariant(), r => r.Sim.State.Tick >= 200, withOverlay: true);
+            }
+
+            LightingQuality.Tier = ownTier;
+            Shot("full-heist.json", "9-results-victory", r => r.Mode == RaidMode.Ended);
+            grade?.ShowResult(true, instant: true);
+            Render(camera, Path.Combine(dir, "9-results-victory.png"));
+            grade?.ShowResult(false, instant: true);
+            Render(camera, Path.Combine(dir, "9-results-defeat.png"));
+            grade?.ClearResult();
+
+            // Scout: the outer rooms' layout at Remembered brightness, defences hidden.
+            VaultDef scoutVault = VaultJson.Parse(Resources.Load<TextAsset>("DevVaults/2-owl-gallery").text);
+            runner.LoadLive(scoutVault, 1);
+            vaultView.Build(runner);
+            grade?.ApplyProfile(mask.Profile);
+            vaultView.SyncAll();
+            RaidCamera.Place(camera.transform, SimPose.TileCenter(new TilePos(scoutVault.Width / 2, scoutVault.Height / 2)), tuning, 0.55f);
+            Render(camera, Path.Combine(dir, "10-scout.png"));
+            Render(camera, Path.Combine(dir, "10-scout.png"));
+
+            // Home: the same vault fully lit, no mask.
+            mask.FullyLit = true;
+            vaultView.SyncAll();
+            Render(camera, Path.Combine(dir, "11-home.png"));
+            mask.FullyLit = false;
+
+            CaptureEditorPreview(dir);
+
+            SideBySide(dir, "sheet-tiers", "8-tier-high", "8-tier-medium", "8-tier-low");
+            SideBySide(dir, "sheet-tiers-overlay", "8-tier-high-overlay", "8-tier-medium-overlay", "8-tier-low-overlay");
+            SideBySide(dir, "sheet-screens", "10-scout", "11-home", "9-results-victory", "9-results-defeat");
+            SideBySide(dir, "sheet-editor", "12-editor", "12-editor-preview-darkness", "1-tile-states");
+        }
+
+        /// <summary>Puts shots next to each other in one PNG, left to right, for comparing.</summary>
+        private static void SideBySide(string dir, string name, params string[] shots)
+        {
+            var images = new Texture2D[shots.Length];
+            int width = 0, height = 0;
+            for (int i = 0; i < shots.Length; i++)
+            {
+                images[i] = new Texture2D(2, 2);
+                images[i].LoadImage(File.ReadAllBytes(Path.Combine(dir, shots[i] + ".png")));
+                width += images[i].width;
+                height = Mathf.Max(height, images[i].height);
+            }
+
+            var sheet = new Texture2D(width, height, TextureFormat.RGB24, false);
+            int x = 0;
+            foreach (Texture2D image in images)
+            {
+                sheet.SetPixels(x, 0, image.width, image.height, image.GetPixels());
+                x += image.width;
+                Object.DestroyImmediate(image);
+            }
+
+            sheet.Apply();
+            File.WriteAllBytes(Path.Combine(dir, name + ".png"), sheet.EncodeToPNG());
+            Object.DestroyImmediate(sheet);
+        }
+
+        /// <summary>The vault editor normally, then with "Preview darkness" (what a raider sees at the start).</summary>
+        private static void CaptureEditorPreview(string dir)
+        {
+            EditorSceneManager.OpenScene("Assets/_Wick/Scenes/Editor.unity", OpenSceneMode.Single);
+            var view = Object.FindAnyObjectByType<EditorView>();
+            var editorCamera = Object.FindAnyObjectByType<EditorCamera>();
+            var camera = editorCamera.GetComponent<Camera>();
+            camera.aspect = 540f / 960f;
+            var assets = AssetDatabase.LoadAssetAtPath<EditorAssets>("Assets/_Wick/Data/EditorAssets.asset");
+            LightingProfile lighting = assets.Registry.Theme.Lighting;
+            VaultDraft draft = VaultDraft.FromVault(VaultJson.Parse(Resources.Load<TextAsset>("VaultTemplates/1-three-halls").text), "preview");
+            draft.Place(ObjectType.NightOwl, new TilePos(5, 6));
+            draft.Place(ObjectType.SpikeFloor, new TilePos(3, 7));
+            VaultDef vault = draft.ToVaultDef();
+            editorCamera.Frame(draft.Width, draft.Height);
+
+            Shader.SetGlobalVector("_WickVisGrid", Vector4.zero);
+            Shader.SetGlobalFloat("_WickLitBoost", assets.Tuning.LitBoost);
+            view.Build(draft, VaultValidator.Validate(vault), EditorView.Marks.None);
+            Render(camera, Path.Combine(dir, "12-editor.png"));
+
+            var lit = new bool[vault.Width * vault.Height];
+            var wick = new WickState { Tile = vault.Entrance, Flickers = SimTuning.StartFlickers, Facing = Dir.N };
+            Lighting.Compute(vault, in wick, lit);
+            var maskGo = new GameObject("Preview mask (capture)");
+            VisibilityMask mask = maskGo.AddComponent<VisibilityMask>();
+            mask.SetProfile(lighting);
+            mask.ShowStill(vault, lit, lit);
+            mask.SetStaticLight(StaticLights.Compute(vault, StaticLights.PlaceSconces(vault, lighting.SconceSpacingTiles), lighting.TorchRadiusTiles));
+            lighting.ApplyAmbient();
+            view.Build(draft, VaultValidator.Validate(vault), new EditorView.Marks { Selected = -1, Moving = -1, PreviewLit = lit, Lighting = lighting });
+            Render(camera, Path.Combine(dir, "12-editor-preview-darkness.png"));
+            Render(camera, Path.Combine(dir, "12-editor-preview-darkness.png"));
+            Object.DestroyImmediate(maskGo);
         }
 
         /// <summary>The vault editor with each template, plus one draft with problems shown in red.</summary>

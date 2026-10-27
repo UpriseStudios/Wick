@@ -46,6 +46,7 @@ namespace Wick.Editor
             // Anything that imports assets runs before the references the scene keeps are loaded:
             // an import can replace freshly created objects and leave stale references behind.
             BuildPanelSettings();
+            LightingBuilder.BuildLuts();
             UiKitBuilder.Build(); // before the screens load their styles
             Materials m = BuildMaterials();
             VfxLibrary vfx = VfxBuilder.Build();
@@ -234,6 +235,7 @@ namespace Wick.Editor
                 light.shadows = LightShadows.None;
                 light.range = 5f;
 
+                LightingBuilder.AddContactShadow(root, 0.7f);
                 ReactionDriver reactions = root.gameObject.AddComponent<ReactionDriver>();
                 WickView view = root.gameObject.AddComponent<WickView>();
                 Set(view, "_body", body);
@@ -245,6 +247,7 @@ namespace Wick.Editor
             registry.Decoy = Save("Decoy", root =>
             {
                 Prim(PrimitiveType.Sphere, root, "Drip", new Vector3(0f, 0.15f, 0f), new Vector3(0.3f, 0.2f, 0.3f), m.Decoy);
+                LightingBuilder.AddContactShadow(root, 0.4f);
                 root.gameObject.AddComponent<DecoyView>();
             });
 
@@ -298,6 +301,7 @@ namespace Wick.Editor
             registry.NightOwl = Save("NightOwl", root =>
             {
                 Box(root, "Body", new Vector3(0f, 0.4f, 0f), new Vector3(0.5f, 0.8f, 0.4f), m.Owl);
+                LightingBuilder.AddContactShadow(root, 0.75f);
                 GameObject eye = Prim(PrimitiveType.Sphere, root, "Eye", new Vector3(0f, 0.65f, 0.22f), Vector3.one * 0.2f, m.GuardianEye);
                 eye.AddComponent<ReadableGlow>().Kind = ReadableKind.GuardianEyes; // lantern eyes, readable in the dark
                 GuardianView view = root.gameObject.AddComponent<GuardianView>();
@@ -323,6 +327,7 @@ namespace Wick.Editor
             {
                 GameObject pile = Box(root, "Pile", new Vector3(0f, 0.25f, 0f), new Vector3(0.35f, 0.25f, 0.35f), m.Gold);
                 pile.transform.localRotation = Quaternion.Euler(0f, 45f, 0f);
+                LightingBuilder.AddContactShadow(root, 0.6f);
                 GameObject twinkle = Prim(PrimitiveType.Sphere, root, "Twinkle", new Vector3(0.08f, 0.62f, 0.05f), Vector3.one * 0.08f, m.GoldGlow);
                 twinkle.AddComponent<ReadableGlow>().Kind = ReadableKind.Treasure;
                 TreasureView view = root.gameObject.AddComponent<TreasureView>();
@@ -350,6 +355,7 @@ namespace Wick.Editor
             registry.Crate = Save("Crate", root =>
             {
                 Box(root, "Box", new Vector3(0f, 0.425f, 0f), Vector3.one * 0.85f, m.Crate);
+                LightingBuilder.AddContactShadow(root, 1.05f);
                 root.gameObject.AddComponent<CrateView>();
             });
 

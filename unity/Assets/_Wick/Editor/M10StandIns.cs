@@ -50,6 +50,7 @@ namespace Wick.Editor
                 var body = new GameObject("Body").transform;
                 body.SetParent(root, false);
                 Box(body, "Chest", new Vector3(0f, 0.2f, 0f), new Vector3(0.6f, 0.4f, 0.45f), crate);
+                LightingBuilder.AddContactShadow(root, 0.8f);
                 Box(body, "Gold", new Vector3(0f, 0.42f, 0f), new Vector3(0.5f, 0.12f, 0.38f), gold);
                 Box(body, "Tongue", new Vector3(0f, 0.38f, 0.1f), new Vector3(0.18f, 0.04f, 0.25f), warning);
                 var lid = new GameObject("Lid").transform;
@@ -78,6 +79,7 @@ namespace Wick.Editor
                 var body = new GameObject("Body").transform;
                 body.SetParent(root, false);
                 Box(body, "Torso", new Vector3(0f, 0.55f, 0f), new Vector3(0.9f, 1.1f, 0.7f), owl);
+                LightingBuilder.AddContactShadow(root, 1.05f);
                 Box(body, "Nightcap", new Vector3(0f, 1.25f, 0f), new Vector3(0.35f, 0.3f, 0.35f), warning);
                 GameObject bubble = Prim(PrimitiveType.Sphere, root, "SnoreBubble", new Vector3(0.45f, 1.2f, 0.2f), Vector3.one * 0.22f, eye);
                 TrollView view = root.gameObject.AddComponent<TrollView>();
@@ -90,6 +92,7 @@ namespace Wick.Editor
             registry.Fan = Save("Fan", root =>
             {
                 Prim(PrimitiveType.Cylinder, root, "Base", new Vector3(0f, 0.1f, 0f), new Vector3(0.6f, 0.1f, 0.6f), stone);
+                LightingBuilder.AddContactShadow(root, 0.8f);
                 var head = new GameObject("Head").transform;
                 head.SetParent(root, false);
                 head.localPosition = new Vector3(0f, 0.55f, 0f);
@@ -123,6 +126,7 @@ namespace Wick.Editor
             registry.Lever = Save("Lever", root =>
             {
                 Box(root, "Base", new Vector3(0f, 0.05f, 0f), new Vector3(0.4f, 0.1f, 0.3f), stone);
+                LightingBuilder.AddContactShadow(root, 0.5f);
                 var handle = new GameObject("Handle").transform;
                 handle.SetParent(root, false);
                 handle.localPosition = new Vector3(0f, 0.1f, 0f);
@@ -139,6 +143,7 @@ namespace Wick.Editor
                 var body = new GameObject("Body").transform;
                 body.SetParent(root, false);
                 Prim(PrimitiveType.Sphere, body, "Belly", new Vector3(0f, 0.4f, 0f), new Vector3(0.75f, 0.55f, 0.85f), gold);
+                LightingBuilder.AddContactShadow(body, 0.95f); // moves with him off the cushion
                 Prim(PrimitiveType.Sphere, body, "Head", new Vector3(0f, 0.75f, 0.35f), Vector3.one * 0.42f, gold);
                 Box(body, "Tail", new Vector3(0f, 0.45f, -0.5f), new Vector3(0.1f, 0.1f, 0.45f), gold);
 

@@ -61,9 +61,22 @@ MonoBehaviour:
   EntranceLootBoost: 1.8
   FogColor: {r: 0.36, g: 0.3, b: 0.55, a: 1}
   FogDensity: 0.25
+  FogCardsPerRoom: 2
   ShaftColor: {r: 0.85, g: 0.9, b: 1, a: 1}
+  ShaftStrength: 0.35
   ShaftsPerRoom: 1
+  Dust: 0
   DustColor: {r: 1, g: 0.8, b: 0.55, a: 1}
   DustAmount: 0.5
-  ColorGradeLut: {fileID: 0}
+  ColorGradeLut: {fileID: 2800000, guid: 8c6c84b41bd32ac4caf90db8e9f79a06, type: 3}
+  LutContribution: 1
+  BloomIntensity: 0.55
+  BloomThreshold: 1
+  VignetteIntensity: 0.34
+  PostExposure: 0.1
   AccentColor: {r: 0.65, g: 0.1, b: 0.12, a: 1}
+  VictoryLut: {fileID: 2800000, guid: f0cdfec05fd4f8b4791594f10c956716, type: 3}
+  DefeatLut: {fileID: 2800000, guid: 75005a8914645814d8e95025ae50b21d, type: 3}
+  ResultsGradeSeconds: 0.6
+  ClipExposureLift: 0.14
+  LowEmissiveBoost: 0.6

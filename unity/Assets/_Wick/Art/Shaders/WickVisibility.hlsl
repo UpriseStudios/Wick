@@ -21,6 +21,7 @@ half4 _WickUnseenTint;
 half _WickLitBoost;         // extra flat light on lit tiles so they always read brighter than unlit ones
 half4 _WickStaticColor;     // warm pool colour times intensity
 half _WickStaticDark;       // share of a pool that shows on tiles Wick hasn't lit
+half _WickEmissiveExtra;    // Low quality: emissives brightened by this much in place of bloom
 
 half2 WickTexel(int2 tile)
 {
@@ -57,6 +58,12 @@ half2 WickVisSample(float3 positionWS, float3 normalWS, half ignoreMask)
     half2 a = lerp(WickTexel(i0), WickTexel(i0 + int2(1, 0)), w.x);
     half2 b = lerp(WickTexel(i0 + int2(0, 1)), WickTexel(i0 + int2(1, 1)), w.x);
     return lerp(a, b, w.y);
+}
+
+// Emission as drawn: brighter on Low quality, which has no bloom.
+half3 WickEmissive(half3 emission)
+{
+    return emission * (1 + _WickEmissiveExtra);
 }
 
 // The static warm-pool strength here (0 with no map). Pools are torchlight on the floor: they fade

@@ -234,6 +234,8 @@
             <ui:Toggle name="dev-stealth-button" label="Stealth button (fallback)" />
             <ui:Label text="Replay a golden raid" class="section" />
             <ui:ScrollView name="dev-goldens" class="golden-list" />
+            <ui:Button name="dev-bench" text="Lighting benchmark (20 s)" class="wide-button" />
+            <ui:Label name="dev-bench-result" class="mono" />
             <ui:Button name="dev-vaults" text="Back home" class="wide-button" />
         </ui:VisualElement>
     </ui:VisualElement>

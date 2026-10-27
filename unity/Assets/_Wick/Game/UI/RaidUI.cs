@@ -66,6 +66,9 @@ namespace Wick.Game
         public event Action ShareMyVaultPressed;
         public event Action SheetBackPressed;
         public event Action DoubleLootPressed;
+
+        /// <summary>Dev menu: replay a golden at each lighting tier and report frame times.</summary>
+        public event Action LightingBenchPressed;
         public event Action<string> HomeScreenPressed;
 
         /// <summary>The title screen was tapped.</summary>
@@ -128,6 +131,7 @@ namespace Wick.Game
             _root.Q<Button>("retry-button").clicked += () => RetryPressed?.Invoke();
             _root.Q<Button>("menu-button").clicked += () => MenuPressed?.Invoke();
             _root.Q<Button>("dev-vaults").clicked += () => MenuPressed?.Invoke();
+            _root.Q<Button>("dev-bench").clicked += () => LightingBenchPressed?.Invoke();
             _devToggle.clicked += () => Show(_devMenu, !Visible(_devMenu));
             _root.Q<Button>("defence-back").clicked += () => DefenceBackPressed?.Invoke();
             _root.Q<Button>("replay-pause").clicked += () => ReplayPausePressed?.Invoke();
@@ -770,6 +774,12 @@ namespace Wick.Game
             EnsureReady();
             _banner.text = text ?? "";
             Show(_banner, !string.IsNullOrEmpty(text));
+        }
+
+        /// <summary>The lighting benchmark's progress and report, in the dev menu.</summary>
+        public void ShowBenchResult(string text)
+        {
+            _root.Q<Label>("dev-bench-result").text = text;
         }
 
         public void ShowResults(RaidResult result, string liveHash, string replayHash, bool? match)

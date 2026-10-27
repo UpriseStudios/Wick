@@ -303,7 +303,7 @@ Determinism is tested on every commit, because a single mismatch between phone a
 
 | Budget | Target |
 | --- | --- |
-| Frame rate | 60 fps on a mid-range 2021 Android phone; 30 fps floor on low-end |
+| Frame rate | 60 fps on a mid-range 2021 Android phone, and the aim on the low-end test phone at its auto quality tier (M10.2b); 30 fps hard floor on low-end |
 | Sim step | Under 0.2 ms per tick on device |
 | Server re-sim | Under 50 ms for a full 60-second raid |
 | Draw calls in a raid | Under 150 |

@@ -24,6 +24,14 @@ namespace Wick.Game
             /// <summary>A tile the Pit tool just refused: drawn red.</summary>
             public TilePos? Refused;
 
+            /// <summary>
+            /// "Preview darkness": the tiles a raider's light reaches when the clock starts (row-major),
+            /// with the profile; anything else is hidden except what stays readable in the dark. Null: off.
+            /// </summary>
+            public bool[] PreviewLit;
+
+            public LightingProfile Lighting;
+
             /// <summary>The pit-free walk from the entrance to the hoard, drawn as a green line; null for none.</summary>
             public List<TilePos> Route;
 
@@ -111,6 +119,10 @@ namespace Wick.Game
                 GameObject go = Instantiate(prefab, _objectRoot);
                 Pose(go.transform, draft, o.Type, o.Pos, o.Rot);
                 HideRaidOnlyParts(go);
+                if (marks.PreviewLit != null)
+                {
+                    PreviewDark(go, o.Type, Lit(draft, marks.PreviewLit, o.Pos));
+                }
                 if (o.Id == marks.Moving)
                 {
                     go.transform.position += Vector3.up * 0.3f;
@@ -132,6 +144,11 @@ namespace Wick.Game
                     continue;
                 }
 
+                if (marks.PreviewLit != null && !Lit(draft, marks.PreviewLit, d.Pos))
+                {
+                    go.SetActive(false); // decorations are only revealed by Wick's light
+                }
+
                 if (d.Id == marks.Moving)
                 {
                     go.transform.position += Vector3.up * 0.3f;
@@ -146,6 +163,27 @@ namespace Wick.Game
             }
 
             Clear(_markers);
+            VaultDef vault = draft.ToVaultDef();
+            ThemeDefinition theme = _assets.Registry.Theme;
+            LightingProfile lighting = marks.Lighting != null ? marks.Lighting : theme.Lighting;
+            if (lighting != null)
+            {
+                // The kit's sconces, and in the darkness preview the pit edges and entrance glow as a raider sees them.
+                var lights = new GameObject("Lights").transform;
+                lights.SetParent(_markerRoot, false);
+                _markers.Add(lights.gameObject);
+                VaultLights.SpawnSconces(vault, theme, lighting, lights);
+                if (marks.PreviewLit != null)
+                {
+                    var glows = new List<(ReadableGlow glow, TilePos tile)>();
+                    VaultLights.SpawnTileGlows(vault, theme, lighting, lights, glows);
+                    foreach ((ReadableGlow glow, TilePos tile) in glows)
+                    {
+                        glow.Apply(Lit(draft, marks.PreviewLit, tile), lighting);
+                    }
+                }
+            }
+
             Marker(_assets.EntranceMarker, SimPose.TileCenter(draft.Entrance), Quaternion.identity);
             if (marks.HoardPreview.HasValue)
             {
@@ -336,6 +374,33 @@ namespace Wick.Game
                         break;
                     }
                 }
+            }
+        }
+
+        private static bool Lit(VaultDraft draft, bool[] lit, TilePos p)
+        {
+            return draft.InBounds(p) && lit[p.Y * draft.Width + p.X];
+        }
+
+        /// <summary>
+        /// The darkness preview for one object: out of Wick's light its body is hidden, leaving only
+        /// what a raider sees at the start: treasure twinkles, lit braziers and the owl's lantern eyes
+        /// (a mimic's and Sir Whiskers' eyes stay shut until they stir; warnings wait for a trap to fire).
+        /// </summary>
+        private static void PreviewDark(GameObject go, ObjectType type, bool lit)
+        {
+            foreach (Renderer r in go.GetComponentsInChildren<Renderer>(true))
+            {
+                ReadableGlow glow = r.GetComponentInParent<ReadableGlow>(true);
+                if (glow == null)
+                {
+                    r.enabled = lit;
+                    continue;
+                }
+
+                bool showsAtStart = glow.Kind == ReadableKind.Treasure || glow.Kind == ReadableKind.Brazier ||
+                    (glow.Kind == ReadableKind.GuardianEyes && type == ObjectType.NightOwl);
+                r.enabled = showsAtStart;
             }
         }
 

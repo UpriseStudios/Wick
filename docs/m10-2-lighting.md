@@ -21,6 +21,23 @@ Three prompts, each ending with screenshots for sign-off:
 - Vaults are assembled at runtime from tiles, so there are no lightmaps. Static warm pools come from a per-tile static-light texture built when a vault loads, from wall sconces, players' torch decorations and the entrance.
 - Sconces join the tile kit now, placed automatically along walls as ambient lighting. Their pools show faintly through the dark (a profile value), lighting walls and floor only: traps, guardians and props are still revealed only by Wick's light.
 
+**Decisions (27 October 2026, M10.2b plan):**
+- The scout flyover shows the outer rooms' layout only, at Remembered brightness: traps, guardians and props stay hidden until Wick's light reaches them (presentation only; the sim is unchanged).
+- Frame rate: aim for 60 fps on the low-end Android at its auto tier as well as mid-range; 30 fps stays the hard floor (tech-design.md updated to match).
+- No low-end phone yet: the per-tier device benchmark is built ready to run; the measured sign-off waits for the phone.
+- There are no hand-placed vault markers: atmosphere (fog, shafts, dust) is placed from the layout, like the sconces, one room at a time (rooms are floor areas split at doors).
+
+**M10.2b as built (27 October 2026):**
+- Profiles: Classic Treasury (`Art/Themes/lighting_treasury.asset`), Crypt and a Sunken Ship placeholder (`Art/Lighting/`); Sunken Ship has no tile kit yet. Profiles are created once and tuned in place; rebuilds only fill in missing LUTs.
+- LUTs: `Wick > Art > Build Lighting` bakes warm interior, cool vault depth, mixed lighting, dramatic contrast, victory, defeat and neutral strips (`Art/Lighting/Luts`, maths in `LutGrades`). Results blend in victory or defeat over the theme's grade.
+- Atmosphere is placed from the layout (`Atmosphere`): fog in pits then far corners, shafts from a grate in each room's back wall (with a little dust), warm motes in Wick's light. Fog and shafts are dimmed by the mask like the room.
+- Contact shadows (`Wick/ShadowBlob`) under Wick, guardians, traps and floor props; they hide with their owner.
+- Quality tiers (`LightingQuality`): a 2-second benchmark at Home on first launch picks the tier; Settings > Lighting quality changes it (it replaced "Glow on flames"). Low: per-tile mask edge, no bloom (emissives brightened), no fog, shafts or dust.
+- Screens: Home has no mask; the scout shows the outer rooms' layout at Remembered brightness, defences hidden; the editor's "Dark" button previews the start of a raid; clips lift exposure by `ClipExposureLift`.
+- Device benchmark: dev menu > Lighting benchmark replays full-heist at each tier and a baseline (Low, no post, no atmosphere) and reports frame times and each tier's lighting+post cost. Whole-frame times (frame timing stats are off in Player Settings).
+- Screenshots: `CaptureLightingOnly` adds the tiers side by side (`sheet-tiers`, with the sim's lit tiles overlaid in `sheet-tiers-overlay`), the screens (`sheet-screens`) and the editor preview (`sheet-editor`).
+- Still open: the 60 fps check and the per-tier frame times on the low-end Android (no phone yet).
+
 **M10.2a as built (25 October 2026):**
 - `LightingProfile` (Game/Rendering) holds every value in the tables below; Classic Treasury's is `Art/Themes/lighting_treasury.asset`, created once by ThemeBuilder and then tuned in place. Crypt uses the same values until M10.2b. The visibility and flame fields left `RaidTuning`.
 - Mask: one RG8 texel per tile, R = lit now, G = seen; Remembered is `RaidRunner.EverLit`, built on every simulated tick (a replay seek included). Tile centres always show their own state; floors blend across a half-tile band at edges, and wall faces read their own tile exactly.

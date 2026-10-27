@@ -84,6 +84,16 @@ namespace Wick.Game
         /// <summary>The hoard rectangle being dragged out on the Rooms tab.</summary>
         public TileRect? HoardPreview { get; private set; }
 
+        /// <summary>
+        /// "Preview darkness" (docs/m10-2-lighting.md): the vault as a raider sees it when the clock
+        /// starts, lit only by Wick's first pool at the entrance, the sconces and what stays readable.
+        /// </summary>
+        public bool PreviewDarkness { get; private set; }
+
+        private VisibilityMask _previewMask;
+        private Color[] _editorAmbient;
+        private (Light light, Color color, float intensity)[] _editorLights;
+
         /// <summary>The last tile the Pit tool refused (drawn red until the next stroke), or null.</summary>
         public TilePos? RefusedTile { get; private set; }
 
@@ -204,6 +214,75 @@ namespace Wick.Game
             Tab = tab;
             ClearSelection();
             Refresh();
+        }
+
+        public void TogglePreviewDarkness()
+        {
+            PreviewDarkness = !PreviewDarkness;
+            if (!PreviewDarkness)
+            {
+                EndPreview();
+            }
+
+            Refresh();
+        }
+
+        /// <summary>The tiles Wick's light reaches as the clock starts: full flame, at the entrance (the sim's own lighting).</summary>
+        private static bool[] StartLight(VaultDef vault)
+        {
+            var lit = new bool[vault.Width * vault.Height];
+            var wick = new WickState { Tile = vault.Entrance, Flickers = SimTuning.StartFlickers, Facing = Dir.N };
+            Lighting.Compute(vault, in wick, lit);
+            return lit;
+        }
+
+        private void ShowPreview(VaultDef vault, bool[] lit, LightingProfile lighting)
+        {
+            if (_previewMask == null)
+            {
+                _previewMask = gameObject.AddComponent<VisibilityMask>();
+                _editorAmbient = new[] { RenderSettings.ambientSkyColor, RenderSettings.ambientEquatorColor, RenderSettings.ambientGroundColor };
+                var lights = new List<(Light, Color, float)>();
+                foreach (Light l in FindObjectsByType<Light>(FindObjectsInactive.Exclude))
+                {
+                    if (l.type == LightType.Directional)
+                    {
+                        lights.Add((l, l.color, l.intensity));
+                    }
+                }
+
+                _editorLights = lights.ToArray();
+            }
+
+            _previewMask.SetProfile(lighting);
+            _previewMask.ShowStill(vault, lit, lit);
+            _previewMask.SetStaticLight(StaticLights.Compute(vault, StaticLights.PlaceSconces(vault, lighting.SconceSpacingTiles), lighting.TorchRadiusTiles));
+            lighting.ApplyAmbient();
+            foreach (var (l, _, _) in _editorLights)
+            {
+                l.color = lighting.MainLightColor;
+                l.intensity = lighting.MainLightIntensity;
+            }
+        }
+
+        private void EndPreview()
+        {
+            if (_previewMask == null)
+            {
+                return;
+            }
+
+            _previewMask.ShowStill(null, null, null);
+            RenderSettings.ambientSkyColor = _editorAmbient[0];
+            RenderSettings.ambientEquatorColor = _editorAmbient[1];
+            RenderSettings.ambientGroundColor = _editorAmbient[2];
+            foreach ((Light l, Color color, float intensity) in _editorLights)
+            {
+                l.color = color;
+                l.intensity = intensity;
+            }
+
+            ApplyLook();
         }
 
         public void SetRoomTool(RoomTool tool)
@@ -815,9 +894,20 @@ namespace Wick.Game
             // The draft is built and tested with the levels the server will stamp on it.
             Draft.DefenceLevels = OwnedDefences.For(EconomyClient.KnownDefences, Draft.Level);
             Draft.Built = type => OwnedDefences.IsBuilt(EconomyClient.KnownDefences, type);
-            Issues = VaultValidator.Validate(Draft.ToVaultDef());
+            VaultDef vault = Draft.ToVaultDef();
+            Issues = VaultValidator.Validate(vault);
+            LightingProfile lighting = _assets.Registry.Theme.Lighting;
+            bool[] previewLit = null;
+            if (PreviewDarkness && lighting != null && !_testing)
+            {
+                previewLit = StartLight(vault);
+                ShowPreview(vault, previewLit, lighting);
+            }
+
             _view.Build(Drawn(), Issues, new EditorView.Marks
             {
+                PreviewLit = previewLit,
+                Lighting = lighting,
                 Selected = Selected,
                 Moving = Moving,
                 MovingOk = MoveProblem == null,
@@ -853,6 +943,11 @@ namespace Wick.Game
             if (Draft == null || _testing)
             {
                 return;
+            }
+
+            if (PreviewDarkness)
+            {
+                TogglePreviewDarkness(); // the raid scene lights itself
             }
 
             ClearSelection();

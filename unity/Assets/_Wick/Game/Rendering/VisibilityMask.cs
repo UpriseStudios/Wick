@@ -6,8 +6,10 @@ namespace Wick.Game
     /// <summary>
     /// Copies Wick.Sim's visibility into a one-texel-per-tile texture for Wick/StylisedLit and
     /// Wick/Flame (Art/Shaders/WickVisibility.hlsl), and is the single place views ask "is this
-    /// tile visible?". During the scout it shows Lighting.ComputeScout; while the clock runs, the
-    /// sim's lit set (RaidState.Lit). It never computes visibility itself.
+    /// tile visible?". While the clock runs it shows the sim's lit set (RaidState.Lit). During the
+    /// scout it shows Lighting.ComputeScout's outer rooms as Remembered (layout only: no tile is lit,
+    /// so traps and guardians stay hidden). At Home (FullyLit) there is no mask. The vault editor's
+    /// darkness preview hands it a still picture (ShowStill). It never computes visibility itself.
     ///
     /// Three tile states (docs/m10-2-lighting.md): R = lit now (255 or 0), G = seen, meaning lit now
     /// or, with the profile's Remembered on, lit earlier this raid (RaidRunner.EverLit). Lit tiles
@@ -35,13 +37,31 @@ namespace Wick.Game
         private Texture2D _static;
         private byte[] _pixels;
         private bool[] _scout;
+        private bool[] _none;
         private VaultDef _vault;
         private bool _wroteScout;
         private int _wroteTick = -1;
         private bool _hasStatic;
+        private bool _still;
+        private bool _fullyLit;
         private LightingProfile _fallback;
 
         public Texture2D Texture => _texture;
+
+        /// <summary>No mask at all (Home: the vault fully lit and cosy). Every tile counts as visible.</summary>
+        public bool FullyLit
+        {
+            get => _fullyLit;
+            set
+            {
+                if (_fullyLit != value)
+                {
+                    _fullyLit = value;
+                    _wroteTick = -1;
+                    SetGrid();
+                }
+            }
+        }
 
         /// <summary>The profile in use (the theme's, or the Classic Treasury defaults).</summary>
         public LightingProfile Profile => _profile != null ? _profile : _fallback ??= LightingProfile.Default();
@@ -68,6 +88,11 @@ namespace Wick.Game
                 return false;
             }
 
+            if (_fullyLit)
+            {
+                return true;
+            }
+
             return _pixels[(p.Y * _vault.Width + p.X) * 2] != 0;
         }
 
@@ -79,7 +104,7 @@ namespace Wick.Game
                 return false;
             }
 
-            return _pixels[(p.Y * _vault.Width + p.X) * 2 + 1] != 0;
+            return _fullyLit || _pixels[(p.Y * _vault.Width + p.X) * 2 + 1] != 0;
         }
 
         /// <summary>
@@ -123,14 +148,30 @@ namespace Wick.Game
             Refresh();
         }
 
+        private void OnEnable()
+        {
+            LightingQuality.Changed += OnQualityChanged;
+        }
+
         private void OnDisable()
         {
+            LightingQuality.Changed -= OnQualityChanged;
             Shader.SetGlobalVector(GridId, Vector4.zero);
+        }
+
+        private void OnQualityChanged(QualityTier tier)
+        {
+            ApplyProfile();
         }
 
         /// <summary>Rewrites the texture if the sim state or mode changed since the last write.</summary>
         public void Refresh()
         {
+            if (_still)
+            {
+                return; // a still picture (the editor's darkness preview) stays until replaced
+            }
+
             if (_runner == null || _runner.Sim == null)
             {
                 Shader.SetGlobalVector(GridId, Vector4.zero);
@@ -153,7 +194,7 @@ namespace Wick.Game
             if (scout)
             {
                 Lighting.ComputeScout(_vault, _scout);
-                Write(_scout, _scout);
+                Write(_none, _scout);
             }
             else
             {
@@ -178,6 +219,7 @@ namespace Wick.Game
             };
             _pixels = new byte[vault.Width * vault.Height * 2];
             _scout = new bool[vault.Width * vault.Height];
+            _none = new bool[vault.Width * vault.Height];
             _wroteTick = -1;
 
             Shader.SetGlobalTexture(MaskId, _texture);
@@ -199,17 +241,43 @@ namespace Wick.Game
             ApplyProfile();
         }
 
+        /// <summary>
+        /// Shows a fixed picture of vault, not following any raid: the vault editor's "Preview
+        /// darkness" (what a raider sees when the clock starts). Null puts the mask away.
+        /// </summary>
+        public void ShowStill(VaultDef vault, bool[] lit, bool[] seen)
+        {
+            if (vault == null)
+            {
+                _still = false;
+                _vault = null;
+                Shader.SetGlobalVector(GridId, Vector4.zero);
+                return;
+            }
+
+            _still = true;
+            if (_vault != vault)
+            {
+                Allocate(vault);
+            }
+
+            Write(lit, seen);
+        }
+
         private void SetGrid()
         {
+            // z = 0 switches the mask off (Home); the static pools (w) still glow.
             Shader.SetGlobalVector(GridId, _vault == null
                 ? Vector4.zero
-                : new Vector4(_vault.Width, _vault.Height, 1f, _hasStatic ? 1f : 0f));
+                : new Vector4(_vault.Width, _vault.Height, _fullyLit ? 0f : 1f, _hasStatic ? 1f : 0f));
         }
 
         private void ApplyProfile()
         {
             LightingProfile p = Profile;
-            Shader.SetGlobalFloat(EdgeId, p.EdgeSoftnessTiles * 0.5f);
+            QualityTier tier = LightingQuality.Tier;
+            Shader.SetGlobalFloat(EdgeId, LightingQuality.SoftMaskEdge(tier) ? p.EdgeSoftnessTiles * 0.5f : 0f); // Low: per tile
+            LightingQuality.ApplyEmissive(tier, p);
             Shader.SetGlobalVector(RememberedId, new Vector4(p.RememberedBrightness, p.RememberedDesaturation, 0f, 0f));
             Shader.SetGlobalColor(RememberedTintId, p.RememberedTint);
             Shader.SetGlobalVector(UnseenId, new Vector4(p.UnseenBrightness, p.UnseenDesaturation, 0f, 0f));

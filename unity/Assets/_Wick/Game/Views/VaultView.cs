@@ -21,9 +21,14 @@ namespace Wick.Game
         [Tooltip("The scene's dim directional light; the profile sets its colour, strength and angle.")]
         [SerializeField] private Light _mainLight;
 
+        /// <summary>Lights the next vault with this profile instead of the theme's (the lighting lab, tests).</summary>
+        public LightingProfile LightingOverride { get; set; }
+
         private readonly List<EntityView> _views = new List<EntityView>();
         private readonly List<(ReadableGlow glow, TilePos tile)> _tileGlows = new List<(ReadableGlow, TilePos)>();
         private ReadableGlow _entranceGlow;
+        private Transform _atmosphere;
+        private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
         private readonly List<DecorView> _decor = new List<DecorView>();
         private EntityView[] _byObject = Array.Empty<EntityView>();
         private Transform _root;
@@ -57,12 +62,22 @@ namespace Wick.Game
         {
             _runner.Loaded += Build;
             _runner.SimEventRaised += Route;
+            LightingQuality.Changed += OnQualityChanged;
         }
 
         private void OnDisable()
         {
             _runner.Loaded -= Build;
             _runner.SimEventRaised -= Route;
+            LightingQuality.Changed -= OnQualityChanged;
+        }
+
+        private void OnQualityChanged(QualityTier tier)
+        {
+            if (Context != null)
+            {
+                BuildAtmosphere(); // fog, shafts and dust follow the tier
+            }
         }
 
         private void LateUpdate()
@@ -139,9 +154,11 @@ namespace Wick.Game
             var tiles = new GameObject("Tiles").transform;
             tiles.SetParent(_root, false);
             ThemeDefinition theme = _registry.Theme;
-            _mask.SetProfile(theme.Lighting);
+            _mask.SetProfile(LightingOverride != null ? LightingOverride : theme.Lighting);
             LightingProfile lighting = _mask.Profile;
             lighting.ApplyAmbient();
+            Grade.Active?.ApplyProfile(lighting);
+            Grade.Active?.ClearResult();
             if (_mainLight != null)
             {
                 _mainLight.type = LightType.Directional;
@@ -199,6 +216,11 @@ namespace Wick.Game
                 GameObject go = DecorationProps.Spawn(d, vault, _registry, decor);
                 if (go != null)
                 {
+                    if (theme.ContactShadow != null && !Decorations.IsWallMounted(d.Kind))
+                    {
+                        Instantiate(theme.ContactShadow, go.transform, false); // hides with the prop in the dark
+                    }
+
                     DecorView view = go.AddComponent<DecorView>();
                     view.Init(Context, d);
                     _decor.Add(view);
@@ -209,6 +231,7 @@ namespace Wick.Game
             Wick.Init(Context);
             Decoy = Instantiate(_registry.Decoy, _root).GetComponent<DecoyView>();
             Decoy.Init(Context);
+            BuildAtmosphere();
 
             Built?.Invoke(this);
         }
@@ -219,65 +242,116 @@ namespace Wick.Game
         /// </summary>
         private void BuildLights(VaultDef vault, ThemeDefinition theme, LightingProfile lighting, Transform tiles)
         {
-            List<Sconce> sconces = StaticLights.PlaceSconces(vault, lighting.SconceSpacingTiles);
-            if (theme.Sconce != null)
-            {
-                foreach (Sconce s in sconces)
-                {
-                    Vector3 face = SimPose.TileCenter(s.Wall) + SimPose.DirVector(s.Facing) * 0.5f;
-                    Instantiate(theme.Sconce, face, SimPose.Facing(s.Facing), tiles);
-                }
-            }
-
+            List<Sconce> sconces = VaultLights.SpawnSconces(vault, theme, lighting, tiles);
             _mask.SetStaticLight(StaticLights.Compute(vault, sconces, lighting.TorchRadiusTiles));
 
             var glows = new GameObject("Glows").transform; // not batched: they switch on and off
             glows.SetParent(_root, false);
-            if (theme.PitEdge != null)
-            {
-                for (int y = 0; y < vault.Height; y++)
-                {
-                    for (int x = 0; x < vault.Width; x++)
-                    {
-                        var p = new TilePos(x, y);
-                        if (vault.TileAt(p) != TileType.Pit)
-                        {
-                            continue;
-                        }
+            _entranceGlow = VaultLights.SpawnTileGlows(vault, theme, lighting, glows, _tileGlows);
+        }
 
-                        for (int d = 0; d < 4; d++)
-                        {
-                            var dir = (Dir)d;
-                            TileType beside = vault.TileAt(p.Step(dir));
-                            if (beside != TileType.Pit && beside != TileType.Wall)
-                            {
-                                GameObject edge = Instantiate(theme.PitEdge, SimPose.TileCenter(p), SimPose.Facing(dir), glows);
-                                AddTileGlow(edge, ReadableKind.PitEdge, p, lighting.PitEdgeColor);
-                            }
-                        }
-                    }
+        /// <summary>
+        /// The vault's air from the theme's profile and the quality tier (docs/m10-2-lighting.md, layer
+        /// 7): low fog cards in pits and far corners, light shafts from a grate in each room's back
+        /// wall with a little dust drifting in them, and warm motes in Wick's own light. Placed from the
+        /// layout (Atmosphere); rebuilt when the tier changes. Never hides or reveals anything.
+        /// </summary>
+        public void BuildAtmosphere()
+        {
+            if (_atmosphere != null)
+            {
+                Kill(_atmosphere.gameObject);
+            }
+
+            _atmosphere = new GameObject("Atmosphere").transform;
+            _atmosphere.SetParent(_root, false);
+            VaultDef vault = Context.Vault;
+            ThemeDefinition theme = _registry.Theme;
+            LightingProfile p = _mask.Profile;
+            QualityTier tier = LightingQuality.Tier;
+            List<List<TilePos>> rooms = Atmosphere.Rooms(vault);
+
+            if (theme.FogCard != null && LightingQuality.Fog(tier) && p.FogDensity > 0f)
+            {
+                foreach (TilePos spot in Atmosphere.FogSpots(vault, rooms, p.FogCardsPerRoom))
+                {
+                    float depth = vault.TileAt(spot) == TileType.Pit ? -0.15f : 0.12f; // pooling in a pit
+                    GameObject fog = Instantiate(theme.FogCard, SimPose.TileCenter(spot) + Vector3.up * depth,
+                        Quaternion.Euler(0f, (spot.X * 37 + spot.Y * 53) % 360, 0f), _atmosphere);
+                    Tint(fog, p.FogColor, p.FogDensity);
                 }
             }
 
-            if (theme.EntranceGlow != null)
+            int shafts = Atmosphere.Scaled(p.ShaftsPerRoom, LightingQuality.ShaftShare(tier));
+            if (theme.ShaftCard != null && p.ShaftStrength > 0f)
             {
-                GameObject entrance = Instantiate(theme.EntranceGlow, SimPose.TileCenter(vault.Entrance), Quaternion.identity, glows);
-                _entranceGlow = AddTileGlow(entrance, ReadableKind.Entrance, vault.Entrance, lighting.EntranceColor);
+                foreach (TilePos wall in Atmosphere.ShaftWalls(vault, rooms, shafts))
+                {
+                    // From the grate high on the wall's south face, slanting down onto the floor below.
+                    Vector3 face = SimPose.TileCenter(wall) + SimPose.DirVector(Dir.S) * 0.5f;
+                    GameObject shaft = Instantiate(theme.ShaftCard, face, SimPose.Facing(Dir.S), _atmosphere);
+                    Tint(shaft, p.ShaftColor, p.ShaftStrength);
+                    AddDust(theme, p, shaft.transform, 0.3f * LightingQuality.DustShare(tier), 0.6f);
+                }
+            }
+
+            if (Wick != null)
+            {
+                AddDust(theme, p, Wick.transform, LightingQuality.DustShare(tier), 1f);
             }
         }
 
-        private ReadableGlow AddTileGlow(GameObject go, ReadableKind kind, TilePos tile, Color color)
+        private void AddDust(ThemeDefinition theme, LightingProfile p, Transform parent, float share, float radius)
         {
-            ReadableGlow glow = go.GetComponent<ReadableGlow>();
-            if (glow == null) // not ??: a missing component is Unity's fake null
+            float rate = p.DustAmount * share * 14f;
+            if (theme.Dust == null || rate <= 0f)
             {
-                glow = go.AddComponent<ReadableGlow>();
+                return;
             }
 
-            glow.Kind = kind;
-            glow.SetColor(color);
-            _tileGlows.Add((glow, tile));
-            return glow;
+            GameObject dust = Instantiate(theme.Dust, parent);
+            dust.transform.localPosition = Vector3.up * 0.8f;
+            dust.transform.localRotation = Quaternion.identity;
+            var ps = dust.GetComponent<ParticleSystem>();
+            ParticleSystem.MainModule main = ps.main;
+            main.startColor = p.DustColor;
+            main.simulationSpace = ParticleSystemSimulationSpace.World; // motes hang in the air as Wick moves
+            ParticleSystem.EmissionModule emission = ps.emission;
+            emission.rateOverTime = rate;
+            ParticleSystem.ShapeModule shape = ps.shape;
+            shape.radius = radius;
+            ParticleSystem.VelocityOverLifetimeModule velocity = ps.velocityOverLifetime;
+            velocity.enabled = true;
+            float rise = p.Dust == DustKind.Bubbles ? 0.35f : p.Dust == DustKind.Ash ? -0.08f : 0.02f;
+            velocity.y = new ParticleSystem.MinMaxCurve(rise * 0.6f, rise * 1.4f);
+            velocity.x = new ParticleSystem.MinMaxCurve(-0.05f, 0.05f);
+            velocity.z = new ParticleSystem.MinMaxCurve(-0.05f, 0.05f);
+            ps.Play();
+        }
+
+        private static void Tint(GameObject go, Color color, float strength)
+        {
+            var block = new MaterialPropertyBlock();
+            Color c = color;
+            c.a = strength;
+            foreach (Renderer r in go.GetComponentsInChildren<Renderer>())
+            {
+                r.GetPropertyBlock(block);
+                block.SetColor(EmissionColorId, c);
+                r.SetPropertyBlock(block);
+            }
+        }
+
+        private static void Kill(GameObject go)
+        {
+            if (Application.isPlaying)
+            {
+                Destroy(go);
+            }
+            else
+            {
+                DestroyImmediate(go);
+            }
         }
 
         /// <summary>Pit edges and the entrance: readable in the dark; the entrance pulses, brighter when Wick carries loot.</summary>
@@ -325,6 +399,7 @@ namespace Wick.Game
             _views.Clear();
             _tileGlows.Clear();
             _entranceGlow = null;
+            _atmosphere = null;
             _decor.Clear();
             _byObject = Array.Empty<EntityView>();
             Wick = null;

@@ -53,6 +53,7 @@ namespace Wick.Editor
         [MenuItem("Wick/Art/Build Themes")]
         public static void BuildMenu()
         {
+            LightingBuilder.BuildLuts(); // imports textures: before anything keeps references
             Build();
             AssetDatabase.SaveAssets();
             Debug.Log("ThemeBuilder: themes rebuilt.");
@@ -163,9 +164,18 @@ namespace Wick.Editor
             });
             // Lighting (docs/m10-2-lighting.md). Classic Treasury's profile is locked first; other themes
             // use its values until their own profiles are made (M10.2b). Created once, then tuned in place.
-            theme.Lighting = spec.Id == ThemeCatalog.DefaultId
-                ? LoadOrCreate<LightingProfile>(ThemesDir + "/lighting_" + spec.Name + ".asset")
-                : null;
+            if (spec.Id == ThemeCatalog.DefaultId)
+            {
+                theme.Lighting = LoadOrCreate<LightingProfile>(ThemesDir + "/lighting_" + spec.Name + ".asset");
+                LightingBuilder.FillLuts(theme.Lighting, LutGrade.WarmInterior);
+            }
+            else
+            {
+                theme.Lighting = LightingBuilder.Placeholder(spec.Name);
+            }
+
+            LightingBuilder.Placeholder("sunken_ship"); // no tile kit yet: the profile proves a theme is only data
+
             Material bracket = Mat(dir, "sconce_bracket", new Color(0.16f, 0.13f, 0.11f));
             Material sconceFlame = FlameMat(dir, "sconce_flame");
             theme.Sconce = Piece("sconce", t =>
@@ -187,6 +197,19 @@ namespace Wick.Editor
                 Quad(t, new Vector3(0f, 0.02f, 0f), Vector3.one, BlobMat(dir, "entrance_blob"));
                 t.gameObject.AddComponent<ReadableGlow>().Kind = ReadableKind.Entrance;
             });
+
+            // Atmosphere (M10.2b): shared across themes; the profile tints them.
+            Material fog = LightingBuilder.AtmosphereMat("FogCard", 0f, BlendMode.One, BlendMode.OneMinusSrcAlpha);
+            Material shaftMat = LightingBuilder.AtmosphereMat("ShaftCard", 1f, BlendMode.One, BlendMode.One);
+            theme.FogCard = Save(LightingBuilder.Dir + "/fog_card.prefab", t => Quad(t, Vector3.zero, Vector3.one, fog));
+            theme.ShaftCard = Save(LightingBuilder.Dir + "/shaft_card.prefab", t =>
+            {
+                // From a grate 1.9 m up on the wall face (z 0) down to the floor 0.9 m out: a slanted card.
+                GameObject card = Prim(PrimitiveType.Quad, t, new Vector3(0f, 0.95f, 0.45f), new Vector3(0.7f, 2.1f, 1f), shaftMat);
+                card.transform.localRotation = Quaternion.Euler(-25.3f, 0f, 0f);
+            });
+            theme.Dust = Save(LightingBuilder.Dir + "/dust.prefab", LightingBuilder.BuildDust);
+            theme.ContactShadow = Save(LightingBuilder.Dir + "/contact_shadow.prefab", t => LightingBuilder.AddContactShadow(t, 0.8f));
             theme.StandIn = real == 0;
             EditorUtility.SetDirty(theme);
             return theme;

@@ -101,6 +101,7 @@ namespace Wick.Game
             _ui.HomeScreenPressed += ShowScreen;
             _ui.SheetBackPressed += ShowPicker;
             _ui.DoubleLootPressed += DoubleLoot;
+            _ui.LightingBenchPressed += RunLightingBenchmark;
             _runner.SimEventRaised += TrackEvent;
             LinkRouter.Arrived += OnLink;
         }
@@ -129,6 +130,7 @@ namespace Wick.Game
             _ui.HomeScreenPressed -= ShowScreen;
             _ui.SheetBackPressed -= ShowPicker;
             _ui.DoubleLootPressed -= DoubleLoot;
+            _ui.LightingBenchPressed -= RunLightingBenchmark;
             _runner.SimEventRaised -= TrackEvent;
             LinkRouter.Arrived -= OnLink;
         }
@@ -189,6 +191,13 @@ namespace Wick.Game
                 {
                     l.enabled = AtHome;
                 }
+            }
+
+            // Home is fully lit and cosy: no visibility mask (docs/m10-2-lighting.md, other screens).
+            VisibilityMask mask = Mask;
+            if (mask != null)
+            {
+                mask.FullyLit = AtHome;
             }
 
             if (_runner.Mode != RaidMode.Scout || AtHome)
@@ -320,12 +329,62 @@ namespace Wick.Game
             _ui.HideTitle();
         }
 
+        private VisibilityMask _mask;
+        private LightingBenchmark _bench;
+
+        /// <summary>Dev menu: the per-tier lighting benchmark on the full-heist golden (LightingBenchmark).</summary>
+        private void RunLightingBenchmark()
+        {
+            _bench = _bench != null ? _bench : gameObject.AddComponent<LightingBenchmark>();
+            LightingBenchmark bench = _bench;
+            TextAsset golden = _goldens.Find(g => g.name == "full-heist");
+            if (bench.Running || golden == null)
+            {
+                _ui.ShowBenchResult(golden == null ? "No full-heist golden in this build" : "Already running");
+                return;
+            }
+
+            ClearModes();
+            _homeVault = null; // a raid, not Home: the mask is on
+            VaultView view = _runner.GetComponent<VaultView>();
+            StartCoroutine(bench.Run(_runner, view, RaidFile.Parse(golden.text), _camera.GetComponent<Camera>(), _ui.ShowBenchResult));
+        }
+
+        private VisibilityMask Mask => _mask != null ? _mask : _mask = _runner.GetComponent<VisibilityMask>();
+
+        /// <summary>
+        /// First launch only: renders Home at High quality for a couple of seconds and picks the
+        /// lighting tier from the average frame time (LightingQuality.FromFrameMs). Settings can change it.
+        /// </summary>
+        private IEnumerator BenchmarkQuality()
+        {
+            LightingQuality.Tier = QualityTier.High;
+            yield return new WaitForSecondsRealtime(0.5f); // let loading hitches pass
+            float total = 0f;
+            int frames = 0;
+            while (total < 2f)
+            {
+                yield return null;
+                total += Time.unscaledDeltaTime;
+                frames++;
+            }
+
+            QualityTier tier = LightingQuality.FromFrameMs(total * 1000f / Mathf.Max(1, frames));
+            LightingQuality.Tier = tier;
+            Debug.Log("Lighting quality: " + tier + " (" + (total * 1000f / Mathf.Max(1, frames)).ToString("0.0") + " ms a frame at High)");
+        }
+
         /// <summary>Home's backdrop: your latest vault (or a template), warmly lit, framed whole.</summary>
         private void ShowHomeVault()
         {
             _homeVault = HomeVault();
             _runner.LoadLive(_homeVault, 1); // presentation only: the clock never starts at Home
             _camera.ShowHome(_homeVault);
+            if (!LightingQuality.Chosen)
+            {
+                StartCoroutine(BenchmarkQuality());
+            }
+
             if (_homeLights == null)
             {
                 _homeLights = new Light[2];
@@ -779,6 +838,11 @@ namespace Wick.Game
                 return; // the clip renderer is replaying this raid offscreen
             }
 
+            if (_bench != null && _bench.Running)
+            {
+                return; // the lighting benchmark's replays aren't raids
+            }
+
             if (_replaying == null && _serverReplay == null)
             {
                 Telemetry.RaidEnd(_serverRaid?.VaultId ?? (_vaultIndex >= 0 ? _vaults[_vaultIndex].name : "test"), result.Outcome.ToString(), result.Stars,
@@ -788,6 +852,7 @@ namespace Wick.Game
             _quitLogged = false;
             _lastHitBy = 0;
 
+            Grade.Active?.ShowResult(result.Outcome == Outcome.Escaped); // warm victory or cool defeat grade
             _lastVault = runner.Vault;
             _lastSeed = runner.Seed;
             _lastLog = runner.Sim.RecordedLog;

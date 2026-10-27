@@ -33,6 +33,8 @@ Shader "Wick/LightBlob"
                 half _Falloff;
             CBUFFER_END
 
+            half _WickEmissiveExtra; // Low quality: brighter in place of bloom
+
             struct Attributes
             {
                 float4 positionOS : POSITION;
@@ -57,7 +59,7 @@ Shader "Wick/LightBlob"
             {
                 half d = saturate(length(i.uv - 0.5) * 2);
                 half a = pow(1 - d, _Falloff) * _EmissionColor.a;
-                return half4(_EmissionColor.rgb * a, 0);
+                return half4(_EmissionColor.rgb * a * (1 + _WickEmissiveExtra), 0);
             }
             ENDHLSL
         }

@@ -32,6 +32,7 @@
                     </ui:VisualElement>
                     <ui:Label name="route-label" text="Route 0 / 36 tiles" class="route-label" />
                 </ui:VisualElement>
+                <ui:Button name="preview-dark" text="Dark" class="pill" />
                 <ui:Button name="issues-button" text="Ready" class="pill" />
             </ui:VisualElement>
             <ui:Label name="status" class="status" picking-mode="Ignore" />

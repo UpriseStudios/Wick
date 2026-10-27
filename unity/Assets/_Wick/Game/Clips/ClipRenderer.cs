@@ -94,6 +94,10 @@ namespace Wick.Game
             int hold = HoldFrames;
             float zoom = 1.1f;
             Vector3 focus = RaidCamera.FocusFor(WickPosition(), _tuning);
+
+            // Clips may lift the exposure a little so they read on social feeds (docs/m10-2-lighting.md).
+            VisibilityMask mask = _runner.GetComponent<VisibilityMask>();
+            Grade.Active?.SetExposureLift(mask != null ? mask.Profile.ClipExposureLift : 0f);
             try
             {
                 while (true)
@@ -145,6 +149,7 @@ namespace Wick.Game
             }
             finally
             {
+                Grade.Active?.SetExposureLift(0f);
                 _runner.ManualClock = false;
                 Kill(overlay);
                 Kill(camera.gameObject);

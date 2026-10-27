@@ -107,6 +107,14 @@ namespace Wick.Game
             _root.Q<Button>("level-up").clicked += () => _controller.ChangeLevel(1);
             _root.Q<Button>("expand").clicked += () => _controller.Expand();
             _root.Q<Button>("issues-button").clicked += () => Show(_issuesPanel, !Visible(_issuesPanel));
+            _root.Q<Button>("preview-dark").clicked += () =>
+            {
+                _controller.TogglePreviewDarkness();
+                if (_controller.PreviewDarkness)
+                {
+                    Toast("Preview darkness: your vault as a raider sees it when the clock starts", 3f);
+                }
+            };
             _root.Q<Button>("issues-close").clicked += () => Show(_issuesPanel, false);
             _root.Q<Button>("tab-defences").clicked += () => _controller.SetTab(EditorTab.Defences);
             _root.Q<Button>("tab-rooms").clicked += () => _controller.SetTab(EditorTab.Rooms);
@@ -272,6 +280,8 @@ namespace Wick.Game
             var routeLabel = _root.Q<Label>("route-label");
             routeLabel.text = route < 0 ? "Route: no way to the hoard yet" : "Route " + route + " / " + minRoute + " tiles";
             routeLabel.EnableInClassList("short", route < minRoute);
+
+            _root.Q<Button>("preview-dark").EnableInClassList("selected", c.PreviewDarkness);
 
             var issuesButton = _root.Q<Button>("issues-button");
             int n = c.Issues.Count;

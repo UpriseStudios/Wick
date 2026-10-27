@@ -19,6 +19,14 @@ namespace Wick.Game
     /// brazier light blobs, the always-readable glows, and the atmosphere and post values M10.2b uses.
     /// A new theme only changes data. Presentation only: what is lit is Wick.Sim's decision.
     /// </summary>
+    /// <summary>What floats in a theme's air.</summary>
+    public enum DustKind
+    {
+        Motes,
+        Ash,
+        Bubbles,
+    }
+
     [CreateAssetMenu(menuName = "Wick/Lighting Profile", fileName = "LightingProfile")]
     public sealed class LightingProfile : ScriptableObject
     {
@@ -107,15 +115,40 @@ namespace Wick.Game
         [Tooltip("Entrance glow multiplier while Wick carries loot (head home).")]
         public float EntranceLootBoost = 1.8f;
 
-        [Header("Atmosphere and post (used from M10.2b)")]
+        [Header("Atmosphere (placed from the layout, a few per room)")]
         public Color FogColor = new Color(0.36f, 0.3f, 0.55f);
+        [Tooltip("How thick the low fog cards are (0 = none).")]
         [Range(0f, 1f)] public float FogDensity = 0.25f;
+        public int FogCardsPerRoom = 2;
         public Color ShaftColor = new Color(0.85f, 0.9f, 1f);
+        [Range(0f, 1f)] public float ShaftStrength = 0.35f;
         public int ShaftsPerRoom = 1;
+        public DustKind Dust = DustKind.Motes;
         public Color DustColor = new Color(1f, 0.8f, 0.55f);
         [Range(0f, 1f)] public float DustAmount = 0.5f;
+
+        [Header("Post-processing")]
+        [Tooltip("Colour-grading LUT (a 1024 x 32 strip, Wick > Art > Build Lighting LUTs).")]
         public Texture ColorGradeLut;
+        [Range(0f, 1f)] public float LutContribution = 1f;
+        public float BloomIntensity = 0.55f;
+        public float BloomThreshold = 1f;
+        [Range(0f, 1f)] public float VignetteIntensity = 0.34f;
+        public float PostExposure = 0.1f;
         public Color AccentColor = new Color(0.65f, 0.1f, 0.12f);
+
+        [Header("Other screens")]
+        [Tooltip("Blended in on the results screen after an escape.")]
+        public Texture VictoryLut;
+        [Tooltip("Blended in on the results screen after a snuff.")]
+        public Texture DefeatLut;
+        public float ResultsGradeSeconds = 0.6f;
+
+        [Tooltip("Exposure lift for share clips, in stops (0.14 is about +10%), so they read on social feeds.")]
+        public float ClipExposureLift = 0.14f;
+
+        [Tooltip("Low quality has no bloom, so emissives are brightened by this much instead.")]
+        public float LowEmissiveBoost = 0.6f;
 
         public bool IsReadable(ReadableKind kind)
         {

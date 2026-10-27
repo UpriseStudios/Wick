@@ -180,6 +180,12 @@
     font-size: 34px;
 }
 
+/* "Dark" (preview darkness) while it's on. */
+.pill.selected {
+    background-color: rgb(40, 34, 74);
+    border-color: rgb(140, 150, 220);
+}
+
 .status {
     font-size: 30px;
     margin: 8px 24px 0 24px;

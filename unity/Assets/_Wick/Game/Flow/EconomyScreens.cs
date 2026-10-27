@@ -586,10 +586,14 @@ namespace Wick.Game
                         Haptics.Play(HapticStrength.Medium); // a taste of it when turned on
                         DrawSettings();
                     }),
-                new RaidUI.SheetRow { Text = "Glow on flames: " + (Grade.Glow ? "on" : "off") + "\nTurn off if the game runs slowly." }
-                    .Button(Grade.Glow ? "Turn off" : "Turn on", () =>
+                new RaidUI.SheetRow
                     {
-                        Grade.Glow = !Grade.Glow;
+                        Text = "Lighting quality: " + LightingQuality.Name(LightingQuality.Tier) +
+                            "\nLower it if the game runs slowly. What you can see in a raid stays the same.",
+                    }
+                    .Button("Change", () =>
+                    {
+                        LightingQuality.Tier = (QualityTier)(((int)LightingQuality.Tier + 1) % 3);
                         DrawSettings();
                     }),
             };

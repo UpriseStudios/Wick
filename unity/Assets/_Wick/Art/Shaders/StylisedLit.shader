@@ -151,7 +151,7 @@ Shader "Wick/StylisedLit"
                 #endif
 
                 half rim = pow(1 - saturate(dot(normalWS, viewWS)), _RimPower) * mask.g * _RimStrength * (1 + saturate(nearLight) * _RimNearLight);
-                half3 emission = _EmissionColor.rgb * mask.r;
+                half3 emission = WickEmissive(_EmissionColor.rgb * mask.r);
 
                 half3 lit = albedo * (light + _WickLitBoost) + _RimColor.rgb * rim + emission;
                 return half4(WickShade(albedo, lit, input.positionWS, normalWS, _IgnoreMask), 1);

@@ -103,7 +103,7 @@ Shader "Wick/Flame"
                 half edge = smoothstep(0, 0.5, facing) * (1 - smoothstep(0.6, 1, height)); // soft rim and tip
                 half brightness = _Intensity * (1 + _Flare * 0.8) * lerp(1, 0.75, Frenzy()) * step(0.5, _Flickers);
 
-                half3 c = colour * edge * brightness;
+                half3 c = WickEmissive(colour * edge * brightness);
                 // A fire on an unseen tile is as hidden as the tile; only a flat trace of it remains.
                 c *= WickVisBrightness(input.positionWS, half3(0, 1, 0), _IgnoreMask);
                 return half4(c, 1);

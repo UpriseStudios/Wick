@@ -10,7 +10,7 @@ namespace Wick.Game.Tests
 {
     /// <summary>
     /// The mask texture the shader reads must be exactly Wick.Sim's visibility: the lit set
-    /// while the clock runs, the scout set before it. Checked on every tick of every golden.
+    /// while the clock runs; before it, the scout set as layout only. Checked on every tick of every golden.
     /// </summary>
     public class VisibilityMaskTests
     {
@@ -55,7 +55,13 @@ namespace Wick.Game.Tests
             mask.Refresh();
             var scout = new bool[raid.Vault.Width * raid.Vault.Height];
             Lighting.ComputeScout(raid.Vault, scout);
-            AssertTexture(mask, raid.Vault, scout, "scout");
+
+            // The scout shows the outer rooms' layout only (Remembered): nothing is lit, so defences stay hidden.
+            AssertTexture(mask, raid.Vault, new bool[scout.Length], "scout: nothing lit");
+            for (int i = 0; i < scout.Length; i++)
+            {
+                Assert.AreEqual(scout[i], mask.IsSeen(new TilePos(i % raid.Vault.Width, i / raid.Vault.Width)), "scout layout, tile " + i);
+            }
 
             runner.StartClock();
             mask.Refresh();

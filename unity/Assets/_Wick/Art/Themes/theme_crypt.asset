@@ -25,10 +25,14 @@ MonoBehaviour:
   Pit: {fileID: 3451636729953982610, guid: a3c24a20f5d191f468204063d6dd1ebc, type: 3}
   Ice: {fileID: 6323806137873285743, guid: 5e07409464d438f429d35654fe4934cc, type: 3}
   EntranceArch: {fileID: 5022137055091890043, guid: 2ff6542c867d6fd48922bd13afdf52f9, type: 3}
-  Lighting: {fileID: 0}
+  Lighting: {fileID: 11400000, guid: 0ecc413ccb0290544b4c9462b04ac540, type: 2}
   Sconce: {fileID: 7717721942938166954, guid: 8874f86278a79844f98098e0e1a03cfb, type: 3}
   PitEdge: {fileID: 6789695172158374535, guid: b04ba122731b72f4c82fc4cac6d52306, type: 3}
   EntranceGlow: {fileID: 6474282954309796686, guid: 1b8b24905c835034f8cb4f06d93ac257, type: 3}
+  FogCard: {fileID: 6413032064140163906, guid: be8083bd468389e41b7827e6e51fcd80, type: 3}
+  ShaftCard: {fileID: 1816655351462467354, guid: d8d947a010fccc4408bc16453e17b888, type: 3}
+  Dust: {fileID: 2029179372357749378, guid: 0de9e5eff2776c34cabdae4284cc94d5, type: 3}
+  ContactShadow: {fileID: 7972122898507681238, guid: 16a426239e683f840b311801b6e9945d, type: 3}
   AmbientSky: {r: 0.06, g: 0.05, b: 0.08, a: 1}
   AmbientEquator: {r: 0.035, g: 0.03, b: 0.04, a: 1}
   AmbientGround: {r: 0.015, g: 0.012, b: 0.015, a: 1}
