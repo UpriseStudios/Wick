@@ -102,6 +102,9 @@ namespace Wick.Game
             _ui.SheetBackPressed += ShowPicker;
             _ui.DoubleLootPressed += DoubleLoot;
             _ui.LightingBenchPressed += RunLightingBenchmark;
+            _ui.LightingLabPressed += StartLightingLab;
+            _ui.LightingTunePressed += TuneLighting;
+            _ui.LightingSignoffPressed += CaptureSignoff;
             _runner.SimEventRaised += TrackEvent;
             LinkRouter.Arrived += OnLink;
         }
@@ -131,6 +134,9 @@ namespace Wick.Game
             _ui.SheetBackPressed -= ShowPicker;
             _ui.DoubleLootPressed -= DoubleLoot;
             _ui.LightingBenchPressed -= RunLightingBenchmark;
+            _ui.LightingLabPressed -= StartLightingLab;
+            _ui.LightingTunePressed -= TuneLighting;
+            _ui.LightingSignoffPressed -= CaptureSignoff;
             _runner.SimEventRaised -= TrackEvent;
             LinkRouter.Arrived -= OnLink;
         }
@@ -331,6 +337,65 @@ namespace Wick.Game
 
         private VisibilityMask _mask;
         private LightingBenchmark _bench;
+        private LightingLab _lab;
+        private LightingTuner _tuner;
+        private bool _capturing;
+
+        private LightingLab Lab => _lab != null ? _lab : _lab = gameObject.AddComponent<LightingLab>();
+
+        /// <summary>Dev menu: the lighting lab's scripted walk on a loop (M10.2c).</summary>
+        public void StartLightingLab()
+        {
+            ClearModes();
+            _homeVault = null; // a raid, not Home: the mask is on
+            _ui.ShowReplayHud("LIGHTING LAB", RaidParams.Default.RaidTicks);
+            Lab.Begin(_runner, _runner.GetComponent<VaultView>());
+        }
+
+        /// <summary>Dev menu: the live tuning panel over whatever raid is showing (the lab first, if nothing is).</summary>
+        private void TuneLighting()
+        {
+            if (_runner.Sim == null || AtHome)
+            {
+                StartLightingLab();
+            }
+
+            _tuner = _tuner != null ? _tuner : new GameObject("Lighting Tuner").AddComponent<LightingTuner>();
+            _tuner.Show(_runner.GetComponent<VaultView>(), Mask, _ui.GetComponent<UnityEngine.UIElements.UIDocument>().panelSettings);
+        }
+
+        /// <summary>Dev menu: the sign-off shots, contact sheet and readability report, into persistentDataPath.</summary>
+        private void CaptureSignoff()
+        {
+            if (_capturing)
+            {
+                return;
+            }
+
+            StartCoroutine(Signoff());
+        }
+
+        private IEnumerator Signoff()
+        {
+            _capturing = true;
+            ClearModes();
+            _homeVault = null;
+            string dir = SignoffCapture.Folder(System.IO.Path.Combine(Application.persistentDataPath, "lighting-signoff"));
+            var capture = new SignoffCapture(_runner, _runner.GetComponent<VaultView>(), Mask, Grade.Active, _camera.GetComponent<Camera>(),
+                _tuning, Lab, dir);
+            _camera.enabled = false; // the capture places the camera itself
+            try
+            {
+                yield return capture.CaptureRaidShots(_ui.ShowBenchResult);
+                capture.Finish();
+                _ui.ShowBenchResult("Sign-off: " + capture.Shots.Count + " shots, " + capture.Flags + " flagged\n" + dir);
+            }
+            finally
+            {
+                _camera.enabled = true;
+                _capturing = false;
+            }
+        }
 
         /// <summary>Dev menu: the per-tier lighting benchmark on the full-heist golden (LightingBenchmark).</summary>
         private void RunLightingBenchmark()
@@ -474,6 +539,11 @@ namespace Wick.Game
 
         private void ClearModes()
         {
+            if (_lab != null)
+            {
+                _lab.Stop();
+            }
+
             _replaying = null;
             _vaultIndex = -1;
             _serverStart = null;
@@ -838,9 +908,9 @@ namespace Wick.Game
                 return; // the clip renderer is replaying this raid offscreen
             }
 
-            if (_bench != null && _bench.Running)
+            if ((_bench != null && _bench.Running) || (_lab != null && _lab.Running) || _capturing)
             {
-                return; // the lighting benchmark's replays aren't raids
+                return; // the lighting benchmark's, lab's and sign-off's replays aren't raids
             }
 
             if (_replaying == null && _serverReplay == null)

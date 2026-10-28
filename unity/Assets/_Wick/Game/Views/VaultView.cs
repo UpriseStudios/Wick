@@ -240,6 +240,18 @@ namespace Wick.Game
         /// Sconces along the walls and the static warm-pool map they, torch decorations and the
         /// entrance cast; a glowing strip on every pit edge that meets non-pit ground; the entrance glow.
         /// </summary>
+        /// <summary>Recomputes the static warm-pool map from the current profile (the lighting lab's live tuning).</summary>
+        public void RelightStatic()
+        {
+            if (Context == null)
+            {
+                return;
+            }
+
+            LightingProfile p = _mask.Profile;
+            _mask.SetStaticLight(StaticLights.Compute(Context.Vault, StaticLights.PlaceSconces(Context.Vault, p.SconceSpacingTiles), p.TorchRadiusTiles));
+        }
+
         private void BuildLights(VaultDef vault, ThemeDefinition theme, LightingProfile lighting, Transform tiles)
         {
             List<Sconce> sconces = VaultLights.SpawnSconces(vault, theme, lighting, tiles);

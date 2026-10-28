@@ -68,6 +68,7 @@ namespace Wick.Editor
             scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
             scenes.Add(new EditorBuildSettingsScene(EditorScenePath, true));
             EditorBuildSettings.scenes = scenes.ToArray();
+            LightingLabTools.BuildLabScene(); // a copy of the Raid scene just built; not in Build Settings
             RemoveTemplateLeftovers();
             ApplyProjectSettings();
             AssetDatabase.SaveAssets();

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -193,7 +194,7 @@ namespace Wick.Editor
             SideBySide(dir, "sheet-tiers", "8-tier-high", "8-tier-medium", "8-tier-low");
             SideBySide(dir, "sheet-tiers-overlay", "8-tier-high-overlay", "8-tier-medium-overlay", "8-tier-low-overlay");
             SideBySide(dir, "sheet-screens", "10-scout", "11-home", "9-results-victory", "9-results-defeat");
-            SideBySide(dir, "sheet-editor", "12-editor", "12-editor-preview-darkness", "1-tile-states");
+            SideBySide(dir, "sheet-editor", "20-editor", "21-editor-preview-darkness", "1-tile-states");
         }
 
         /// <summary>Puts shots next to each other in one PNG, left to right, for comparing.</summary>
@@ -226,11 +227,24 @@ namespace Wick.Editor
         /// <summary>The vault editor normally, then with "Preview darkness" (what a raider sees at the start).</summary>
         private static void CaptureEditorPreview(string dir)
         {
+            foreach ((string name, Texture2D image) in EditorShots(540, 960))
+            {
+                File.WriteAllBytes(Path.Combine(dir, name + ".png"), image.EncodeToPNG());
+                Object.DestroyImmediate(image);
+            }
+        }
+
+        /// <summary>
+        /// The vault editor (Three Halls with an owl and spikes) as builders see it, then with "Preview
+        /// darkness", at the given size. Opens the Editor scene. Used by the lighting sign-off too.
+        /// </summary>
+        public static List<(string name, Texture2D image)> EditorShots(int width, int height)
+        {
             EditorSceneManager.OpenScene("Assets/_Wick/Scenes/Editor.unity", OpenSceneMode.Single);
             var view = Object.FindAnyObjectByType<EditorView>();
             var editorCamera = Object.FindAnyObjectByType<EditorCamera>();
             var camera = editorCamera.GetComponent<Camera>();
-            camera.aspect = 540f / 960f;
+            camera.aspect = width / (float)height;
             var assets = AssetDatabase.LoadAssetAtPath<EditorAssets>("Assets/_Wick/Data/EditorAssets.asset");
             LightingProfile lighting = assets.Registry.Theme.Lighting;
             VaultDraft draft = VaultDraft.FromVault(VaultJson.Parse(Resources.Load<TextAsset>("VaultTemplates/1-three-halls").text), "preview");
@@ -238,11 +252,13 @@ namespace Wick.Editor
             draft.Place(ObjectType.SpikeFloor, new TilePos(3, 7));
             VaultDef vault = draft.ToVaultDef();
             editorCamera.Frame(draft.Width, draft.Height);
+            var shots = new List<(string, Texture2D)>();
 
             Shader.SetGlobalVector("_WickVisGrid", Vector4.zero);
             Shader.SetGlobalFloat("_WickLitBoost", assets.Tuning.LitBoost);
             view.Build(draft, VaultValidator.Validate(vault), EditorView.Marks.None);
-            Render(camera, Path.Combine(dir, "12-editor.png"));
+            Object.DestroyImmediate(RenderImage(camera, width, height));
+            shots.Add(("20-editor", RenderImage(camera, width, height)));
 
             var lit = new bool[vault.Width * vault.Height];
             var wick = new WickState { Tile = vault.Entrance, Flickers = SimTuning.StartFlickers, Facing = Dir.N };
@@ -254,9 +270,36 @@ namespace Wick.Editor
             mask.SetStaticLight(StaticLights.Compute(vault, StaticLights.PlaceSconces(vault, lighting.SconceSpacingTiles), lighting.TorchRadiusTiles));
             lighting.ApplyAmbient();
             view.Build(draft, VaultValidator.Validate(vault), new EditorView.Marks { Selected = -1, Moving = -1, PreviewLit = lit, Lighting = lighting });
-            Render(camera, Path.Combine(dir, "12-editor-preview-darkness.png"));
-            Render(camera, Path.Combine(dir, "12-editor-preview-darkness.png"));
+            Object.DestroyImmediate(RenderImage(camera, width, height));
+            shots.Add(("21-editor-preview-darkness", RenderImage(camera, width, height)));
             Object.DestroyImmediate(maskGo);
+            return shots;
+        }
+
+        private static Texture2D RenderImage(Camera camera, int width, int height)
+        {
+            var rt = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB32);
+            var request = new RenderPipeline.StandardRequest { destination = rt };
+            if (RenderPipeline.SupportsRenderRequest(camera, request))
+            {
+                RenderPipeline.SubmitRenderRequest(camera, request);
+            }
+            else
+            {
+                camera.targetTexture = rt;
+                camera.Render();
+                camera.targetTexture = null;
+            }
+
+            RenderTexture previous = RenderTexture.active;
+            RenderTexture.active = rt;
+            var tex = new Texture2D(width, height, TextureFormat.RGB24, false);
+            tex.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            tex.Apply();
+            RenderTexture.active = previous;
+            rt.Release();
+            Object.DestroyImmediate(rt);
+            return tex;
         }
 
         /// <summary>The vault editor with each template, plus one draft with problems shown in red.</summary>

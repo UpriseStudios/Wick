@@ -69,6 +69,12 @@ namespace Wick.Game
 
         /// <summary>Dev menu: replay a golden at each lighting tier and report frame times.</summary>
         public event Action LightingBenchPressed;
+
+        /// <summary>Dev menu: the lighting lab, its tuning panel, and the sign-off capture (M10.2c).</summary>
+        public event Action LightingLabPressed;
+
+        public event Action LightingTunePressed;
+        public event Action LightingSignoffPressed;
         public event Action<string> HomeScreenPressed;
 
         /// <summary>The title screen was tapped.</summary>
@@ -132,6 +138,9 @@ namespace Wick.Game
             _root.Q<Button>("menu-button").clicked += () => MenuPressed?.Invoke();
             _root.Q<Button>("dev-vaults").clicked += () => MenuPressed?.Invoke();
             _root.Q<Button>("dev-bench").clicked += () => LightingBenchPressed?.Invoke();
+            _root.Q<Button>("dev-lab").clicked += () => LightingLabPressed?.Invoke();
+            _root.Q<Button>("dev-tune").clicked += () => LightingTunePressed?.Invoke();
+            _root.Q<Button>("dev-signoff").clicked += () => LightingSignoffPressed?.Invoke();
             _devToggle.clicked += () => Show(_devMenu, !Visible(_devMenu));
             _root.Q<Button>("defence-back").clicked += () => DefenceBackPressed?.Invoke();
             _root.Q<Button>("replay-pause").clicked += () => ReplayPausePressed?.Invoke();

@@ -23,6 +23,9 @@ namespace Wick.Game
         private MaterialPropertyBlock _block;
         private bool _shown = true;
 
+        /// <summary>The lab's silhouette check hides every glow (VisibilityMask.Silhouette sets it).</summary>
+        public static bool Silhouette { get; set; }
+
         /// <summary>Set by the owning view: whether the thing it shows is happening (warning on, eyes open).</summary>
         public bool Active { get; set; } = true;
 
@@ -31,7 +34,7 @@ namespace Wick.Game
         /// <summary>Shows or hides the glow for this frame.</summary>
         public void Apply(bool tileLit, LightingProfile profile)
         {
-            bool show = Active && (tileLit || profile.IsReadable(Kind));
+            bool show = Active && (tileLit || profile.IsReadable(Kind)) && !Silhouette;
             if (show == _shown)
             {
                 return;

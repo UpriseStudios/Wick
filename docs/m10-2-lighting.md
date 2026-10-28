@@ -27,6 +27,13 @@ Three prompts, each ending with screenshots for sign-off:
 - No low-end phone yet: the per-tier device benchmark is built ready to run; the measured sign-off waits for the phone.
 - There are no hand-placed vault markers: atmosphere (fog, shafts, dust) is placed from the layout, like the sconces, one room at a time (rooms are floor areas split at doors).
 
+**M10.2c as built (28 October 2026):**
+- Lighting lab: dev menu > Lighting lab, or open `Scenes/LightingLab.unity` (editor-only, not in Build Settings) and press Play. A test vault (`LightingLab`) with one of every trap, guardian, prop family, treasure, brazier, pit and ice, and a white / mid-grey / dark prop row; Wick walks the gallery to the hoard and back on a loop without losing a flicker. Moths, troll and Sir Whiskers wake behind their gates; the owl's alert comes from its golden replay.
+- Tuning panel: dev menu > Tune lighting. Every profile value, the open decisions first, applied live; a Silhouette switch. Save writes the asset in the Editor, or `persistentDataPath/lighting/<profile>.json` on a phone (Wick > Lighting > Import Tuned Profile brings it in). Light radius isn't in the panel: it's sim (see above).
+- Sign-off capture: Wick > Lighting > Capture Sign-off (or dev menu > Capture lighting sign-off on a phone, into `persistentDataPath/lighting-signoff/`). 21 shots at 1080 x 2340 (JPEG), `contact-sheet.jpg`, `index.md` and `report.md`, which checks every readable item in the dark against its surroundings at 50% screen brightness.
+- First capture: `docs/art/lighting-signoff/2026-10-28/`, 5 flags: the brazier's floor pool is borderline in the dark (contrast 0.029–0.038, needs 0.04; a Blob Opacity call for the lab), and two guardian-eye readings that look like camera-angle misses, to check by eye.
+- Still open: the device captures (low-end Android, and iPhone once there's an iOS pipeline), and your lab tuning. The final values and decisions get written into the tables below after it.
+
 **M10.2b as built (27 October 2026):**
 - Profiles: Classic Treasury (`Art/Themes/lighting_treasury.asset`), Crypt and a Sunken Ship placeholder (`Art/Lighting/`); Sunken Ship has no tile kit yet. Profiles are created once and tuned in place; rebuilds only fill in missing LUTs.
 - LUTs: `Wick > Art > Build Lighting` bakes warm interior, cool vault depth, mixed lighting, dramatic contrast, victory, defeat and neutral strips (`Art/Lighting/Luts`, maths in `LutGrades`). Results blend in victory or defeat over the theme's grade.
@@ -292,8 +299,8 @@ Lighting is locked when every box is ticked. After that, changes to these values
 - [ ] Every always-readable item shows in the dark on both test phones at 50% brightness.
 - [ ] No active trap or warning is ever hidden by darkness.
 - [ ] Danger never appears in flame orange.
-- [ ] Braziers light and snuff correctly, and the corner darkens when one is used.
-- [ ] Home, editor, scout flyover, clips and results each use their own lighting.
+- [x] Braziers light and snuff correctly, and the corner darkens when one is used.
+- [x] Home, editor, scout flyover, clips and results each use their own lighting.
 - [ ] 60 fps on the low-end Android at its auto tier; identical gameplay visibility on all tiers.
 - [ ] Contact sheet saved to `docs/art/lighting-signoff/` and compared with the lighting reference sheet.
 - [ ] Artists handed the LightingLab scene, the contact sheet and the "What the final artists need" list.

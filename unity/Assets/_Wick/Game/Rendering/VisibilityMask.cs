@@ -44,9 +44,25 @@ namespace Wick.Game
         private bool _hasStatic;
         private bool _still;
         private bool _fullyLit;
+        private bool _silhouette;
         private LightingProfile _fallback;
 
         public Texture2D Texture => _texture;
+
+        /// <summary>
+        /// The lab's silhouette check: every tile drawn Unseen and every body shown (no glows), so each
+        /// asset can be judged for a readable shape in the dark. Presentation only.
+        /// </summary>
+        public bool Silhouette
+        {
+            get => _silhouette;
+            set
+            {
+                _silhouette = value;
+                ReadableGlow.Silhouette = value;
+                _wroteTick = -1;
+            }
+        }
 
         /// <summary>No mask at all (Home: the vault fully lit and cosy). Every tile counts as visible.</summary>
         public bool FullyLit
@@ -88,7 +104,7 @@ namespace Wick.Game
                 return false;
             }
 
-            if (_fullyLit)
+            if (_fullyLit || _silhouette)
             {
                 return true;
             }
@@ -232,8 +248,8 @@ namespace Wick.Game
         {
             for (int i = 0; i < lit.Length; i++)
             {
-                _pixels[i * 2] = lit[i] ? (byte)255 : (byte)0;
-                _pixels[i * 2 + 1] = lit[i] || seen[i] ? (byte)255 : (byte)0;
+                _pixels[i * 2] = lit[i] && !_silhouette ? (byte)255 : (byte)0;
+                _pixels[i * 2 + 1] = (lit[i] || seen[i]) && !_silhouette ? (byte)255 : (byte)0;
             }
 
             _texture.SetPixelData(_pixels, 0);
